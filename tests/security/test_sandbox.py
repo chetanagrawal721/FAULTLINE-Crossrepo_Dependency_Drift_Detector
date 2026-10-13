@@ -221,7 +221,10 @@ def test_container_profile_flags_contain_the_required_hardening():
                    "--pids-limit", "--memory-swap"):
         assert needle in joined, needle
     assert "--privileged" not in joined and "docker.sock" not in joined
-    assert FETCH.network == "bridge" and EXEC.network == "none"
+    assert EXEC.network == "none"
+    assert FETCH.network == "faultline-fetch" and FETCH.network not in ("bridge", "host")      # SR-4: only the internal network, never the default bridge
+    fetch_args = " ".join(FETCH.docker_args(__import__("faultline.sandbox.profiles", fromlist=["x"]).DEFAULT_LIMITS, "n", "j"))
+    assert "--network faultline-fetch" in fetch_args and "HTTPS_PROXY=http://faultline-egress:3128" in fetch_args
 
 
 # ----------------------------------------------------------------------------- real-deployment verification
@@ -238,3 +241,94 @@ def test_status_reports_verified_only_after_real_checks(daemon, sbx):
     daemon.verify_boundary()
     s = status.current_sandbox_status(sbx, use_cache=False)
     assert s.verified is True and s.state.value == "verified"
+
+
+# ----------------------------------------------------------------------------- SR-4 fetch-zone egress (real containers)
+
+@pytest.fixture(scope="module")
+def egress_probe(daemon, image):
+    from faultline.sandbox.client import SandboxClient
+    from tests.conftest import TOKEN
+    sbx = SandboxClient(port=daemon.port, token=TOKEN, timeout=120)
+    r = sbx.submit({"image": image, "zone": "fetch", "probe": "egress", "limits": {"timeout_s": 60},
+                    "args": {"targets": ["169.254.169.254:80", "127.0.0.1:443", "10.0.0.1:443", "example.com:443", "github.com:22", "github.com:443"],
+                             "direct": [["1.1.1.1", 443], ["169.254.169.254", 80]]}})
+    assert r["failure_class"] == "NONE", r
+    return r["data"]["data"]
+
+
+def test_sr4_fetch_zone_has_no_direct_route_out(egress_probe):
+    assert egress_probe["direct"] == {"1.1.1.1:443": False, "169.254.169.254:80": False}
+
+
+def test_sr4_proxy_refuses_metadata_private_unlisted_and_other_ports(egress_probe):
+    c = egress_probe["connect"]
+    assert all(c[t] == "403" for t in ("169.254.169.254:80", "127.0.0.1:443", "10.0.0.1:443", "example.com:443", "github.com:22")), c
+
+
+def test_sr4_proxy_allows_a_listed_host_when_the_network_is_up(egress_probe):
+    status = egress_probe["connect"]["github.com:443"]
+    if status.startswith("error") or status in ("502", "503"):
+        pytest.skip(f"no outbound network from this machine ({status})")
+    assert status == "200"
+
+
+def test_sr4_fetch_network_is_internal_and_the_boundary_report_includes_the_egress_checks(daemon):
+    from faultline.sandbox import egress
+    assert egress.network_internal() is True
+    b = daemon.verify_boundary()
+    names = {c["check"]: c["ok"] for c in b["checks"]}
+    for need in ("egress proxy running", "fetch network is internal", "direct egress from the fetch zone is blocked",
+                 "proxy refuses cloud metadata, loopback and private targets", "proxy refuses hosts that are not allowlisted and other ports"):
+        assert names.get(need) is True, (need, b["checks"])
+    assert b["verified"] is True
+
+
+def test_sr4_fetch_fails_closed_when_the_proxy_cannot_start(daemon, image, monkeypatch):
+    from faultline.sandbox import egress
+    monkeypatch.setattr(egress, "ensure", lambda *a, **k: (False, "simulated: proxy cannot start"))
+    r = daemon.run({"image": image, "zone": "fetch", "probe": "echo", "args": {}, "limits": {"timeout_s": 30}})
+    assert r["failure_class"] == "SANDBOX_FAILURE" and "fetch zone disabled" in r["error"] and r["data"] is None
+
+
+def test_sr4_the_orphan_sweeper_never_removes_the_egress_proxy(daemon, image):
+    from faultline.sandbox import egress, runner
+    ok, why = egress.ensure(image)
+    assert ok, why
+    removed = runner.sweep_orphans()
+    assert "faultline-egress" not in removed
+    ok, why = egress.ensure(image)                                       # still there, no restart needed
+    assert ok, why
+
+
+def _online() -> bool:
+    import socket
+    try:
+        socket.create_connection(("github.com", 443), timeout=5).close()
+        return True
+    except OSError:
+        return False
+
+
+def test_sr4_a_real_github_clone_goes_through_the_proxy(daemon, image):
+    """A fresh store, so nothing is cached: git inside the fetch zone must reach github.com only via the egress proxy."""
+    if not _online():
+        pytest.skip("no outbound network from this machine")
+    from faultline.ingestion.clone import fetch_snapshot
+    from faultline.sandbox.client import SandboxClient
+    from tests.conftest import TOKEN
+    sbx = SandboxClient(port=daemon.port, token=TOKEN, timeout=300)
+    snap = fetch_snapshot(sbx, image, daemon.store, "chetanagrawal721", "faultline-fixture-acme-models", "2e072e64e4ed0cba0127fd9e457274823febe8a6")
+    assert not snap.cached and any(e["path"] == "pyproject.toml" for e in snap.inventory["entries"])
+
+
+def test_sr4_uv_resolution_goes_through_the_proxy(daemon, image):
+    if not _online():
+        pytest.skip("no outbound network from this machine")
+    from faultline.sandbox.client import SandboxClient
+    from tests.conftest import TOKEN
+    sbx = SandboxClient(port=daemon.port, token=TOKEN, timeout=300)
+    r = sbx.submit({"image": image, "zone": "fetch", "script": "resolve_uv.py", "limits": {"timeout_s": 240},
+                    "args": {"requirements": ["idna==3.4"], "exclude_newer": "2024-10-30T00:00:00Z"}})
+    data = r.get("data") or {}
+    assert r["failure_class"] == "NONE" and data.get("returncode") == 0, (r.get("failure_class"), (data.get("stderr") or r.get("stderr_tail") or "")[-300:])

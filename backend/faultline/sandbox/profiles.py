@@ -20,10 +20,17 @@ def clamp_limits(requested: dict | None) -> dict:
     return out
 
 
+FETCH_NETWORK = "faultline-fetch"          # an internal Docker network: no route to the outside except through the egress proxy
+EGRESS_HOST = "faultline-egress"
+EGRESS_PORT = 3128
+PROXY_ENV = {k: f"http://{EGRESS_HOST}:{EGRESS_PORT}" for k in ("HTTPS_PROXY", "HTTP_PROXY", "https_proxy", "http_proxy")}
+
+
 @dataclass(frozen=True)
 class Profile:
     name: str
-    network: str                 # "none" or "bridge"
+    network: str                 # "none" or the internal fetch network
+    extra_env: tuple = ()        # fixed (name, value) pairs; never taken from a request
 
     def docker_args(self, limits: dict, container_name: str, job_id: str) -> list[str]:
         mem = f"{int(limits['memory_mb'])}m"
@@ -45,12 +52,12 @@ class Profile:
             "--stop-timeout", "1",
             "-i",
         ]
-        for k, v in ALLOWED_ENV.items():
+        for k, v in {**ALLOWED_ENV, **dict(self.extra_env)}.items():
             args += ["-e", f"{k}={v}"]
         return args
 
 
-# The execution zone never has a network. The fetch zone (downloads wheels, clones repositories) does.
+# The execution zone never has a network. The fetch zone (downloads wheels, clones repositories) can reach only the egress proxy, which allows GitHub and PyPI over HTTPS.
 EXEC = Profile("exec", "none")
-FETCH = Profile("fetch", "bridge")
+FETCH = Profile("fetch", FETCH_NETWORK, tuple(sorted(PROXY_ENV.items())))
 PROFILES = {"exec": EXEC, "fetch": FETCH}

@@ -60,10 +60,10 @@ def volume_rm(name: str, docker_host: str | None = None) -> bool:
 
 
 def sweep_orphans(docker_host: str | None = None) -> list[str]:
-    """Remove every faultline-labelled container (crash recovery). Returns the removed names."""
+    """Remove every faultline-labelled job container (crash recovery), but not the long-lived egress proxy. Returns the removed names."""
     r = subprocess.run(docker_cmd(docker_host, "ps", "-a", "--filter", f"label={LABEL}", "--format", "{{.Names}}"),
                        capture_output=True, text=True, timeout=30)
-    names = [n for n in r.stdout.split() if n]
+    names = [n for n in r.stdout.split() if n and n != profiles.EGRESS_HOST]
     if names:
         subprocess.run(docker_cmd(docker_host, "rm", "-f", *names), capture_output=True, timeout=60)
     return names

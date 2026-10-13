@@ -20,7 +20,7 @@ from pathlib import Path
 
 from ..core.config import Settings, repo_root
 from ..storage.store import Store
-from . import images, runner
+from . import egress, images, profiles, runner
 
 log = logging.getLogger("faultline.sandboxd")
 MAX_CONCURRENT = int(os.environ.get("FAULTLINE_SANDBOX_CONCURRENCY", "4"))
@@ -110,6 +110,14 @@ class Daemon:
             mounts = self.mounts(job.get("mounts", {}), job)
         except (ValueError, KeyError) as exc:
             return {"failure_class": "SANDBOX_FAILURE", "error": f"rejected: {exc}", "data": None}
+        if job.get("zone") == "fetch":                                    # fail closed: no fetch without the egress allowlist in place
+            try:
+                allowed = images.require_allowed(job["image"], self.lock_path)
+            except (KeyError, ValueError) as exc:
+                return {"failure_class": "SANDBOX_FAILURE", "error": f"rejected: {exc}", "data": None}
+            ok, reason = egress.ensure(allowed, self.docker_host)
+            if not ok:
+                return {"failure_class": "SANDBOX_FAILURE", "error": f"fetch zone disabled: {reason}", "data": None}
         with self.slots:
             return runner.run_job(job, mounts=mounts, docker_host=self.docker_host, lock_path=self.lock_path)
 
@@ -145,6 +153,22 @@ class Daemon:
         check("no network", net.get("connected") is False and net.get("dns") is False, net)
         w = probe("write", {"path": "/etc/faultline_probe"}) or {}
         check("cannot write to /etc", w.get("written") is False, w)
+        # the fetch zone: reachable only through the allowlisting proxy (SR-4)
+        ok_net, why = egress.ensure(image, self.docker_host)
+        check("egress proxy running", ok_net, why)
+        check("fetch network is internal", egress.network_internal(self.docker_host) is True, profiles.FETCH_NETWORK)
+        eg = {}
+        if ok_net:
+            r = self.run({"image": image, "zone": "fetch", "probe": "egress", "limits": {"timeout_s": 60},
+                          "args": {"targets": ["169.254.169.254:80", "169.254.169.254:443", "127.0.0.1:443", "10.0.0.1:443", "example.com:443",
+                                               "github.com:22", "github.com:443"],
+                                   "direct": [["1.1.1.1", 443], ["169.254.169.254", 80], ["8.8.8.8", 53]]}})
+            eg = (r.get("data") or {}).get("data") or {}
+        conn = eg.get("connect", {})
+        check("direct egress from the fetch zone is blocked", bool(eg) and not any((eg.get("direct") or {"x": True}).values()), eg.get("direct"))
+        check("proxy refuses cloud metadata, loopback and private targets",
+              all(conn.get(t) == "403" for t in ("169.254.169.254:80", "169.254.169.254:443", "127.0.0.1:443", "10.0.0.1:443")), conn)
+        check("proxy refuses hosts that are not allowlisted and other ports", conn.get("example.com:443") == "403" and conn.get("github.com:22") == "403", conn)
         ok = all(c["ok"] for c in checks) and len(checks) >= 8
         res = {"verified": ok, "reason": "all boundary checks passed" if ok else
                "failed: " + ", ".join(c["check"] for c in checks if not c["ok"]) or "no result", "checks": checks,

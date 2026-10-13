@@ -57,6 +57,30 @@ def probe_network(a: dict) -> dict:
     return out
 
 
+def probe_egress(a: dict) -> dict:
+    """From a fetch-zone container: what the egress proxy allows and what a direct connection can reach. Reports data only."""
+    proxy = (a.get("proxy_host", "faultline-egress"), int(a.get("proxy_port", 3128)))
+    out: dict = {"proxy": f"{proxy[0]}:{proxy[1]}", "env_proxy": os.environ.get("HTTPS_PROXY"), "connect": {}}
+    for target in a.get("targets", []):
+        try:
+            with socket.create_connection(proxy, timeout=10) as s:
+                s.settimeout(15)
+                s.sendall(f"CONNECT {target} HTTP/1.1\r\nHost: {target}\r\n\r\n".encode("ascii"))
+                head = s.recv(256).split(b"\r\n", 1)[0].decode("latin-1")
+                out["connect"][target] = head.split(" ", 2)[1] if head.startswith("HTTP/") and len(head.split(" ", 2)) > 1 else head
+        except OSError as exc:
+            out["connect"][target] = f"error:{type(exc).__name__}"
+    direct = {}
+    for host, port in a.get("direct", []):
+        try:
+            socket.create_connection((host, int(port)), timeout=3).close()
+            direct[f"{host}:{port}"] = True
+        except OSError:
+            direct[f"{host}:{port}"] = False
+    out["direct"] = direct
+    return out
+
+
 def probe_write(a: dict) -> dict:
     path = a["path"]
     try:
@@ -150,7 +174,7 @@ def probe_echo(a: dict) -> dict:
 PROBES = {
     "identity": probe_identity, "network": probe_network, "write": probe_write, "read": probe_read,
     "fork_bomb": probe_fork_bomb, "memory": probe_memory, "disk": probe_disk, "print_flood": probe_print_flood,
-    "sleep": probe_sleep, "busy": probe_busy, "echo": probe_echo,
+    "sleep": probe_sleep, "busy": probe_busy, "echo": probe_echo, "egress": probe_egress,
 }
 
 
