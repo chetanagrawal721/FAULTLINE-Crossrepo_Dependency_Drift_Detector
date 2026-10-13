@@ -86,17 +86,20 @@ class WorldBuilder:
 
     # -- step 1
     def fetch_wheels(self, lock_text: str) -> list[dict]:
-        r = self.sandbox.submit({"image": self.image, "zone": "fetch", "script": "fetch_wheels.py",
-                                 "args": {"lock_text": lock_text}, "limits": {"timeout_s": 300},
-                                 "mounts": {"/wheelhouse": {"rw": True}}})
+        spec = {"image": self.image, "zone": "fetch", "script": "fetch_wheels.py",
+                "args": {"lock_text": lock_text}, "limits": {"timeout_s": 300}, "mounts": {"/wheelhouse": {"rw": True}}}
+        r = self.sandbox.submit(spec)
         data = r.get("data") or {}
+        if r["failure_class"] != "NONE" and not data.get("stderr_tail"):      # an infrastructure failure with no pip output: try once more
+            r = self.sandbox.submit(spec)
+            data = r.get("data") or {}
         if r["failure_class"] != "NONE" or data.get("returncode") != 0:
             tail = data.get("stderr_tail", r.get("error", ""))
             code = ErrorCode.NO_WHEEL if "No matching distribution" in tail or "only-binary" in tail else ErrorCode.WORLD_BUILD_FAILED
             if "DO NOT MATCH THE HASHES" in tail.upper():
                 raise WorldBuildError("a downloaded wheel does not match the hash in the lock", code=ErrorCode.WORLD_BUILD_FAILED,
                                       details={"reason": "hash_mismatch", "tail": tail[-600:]})
-            raise WorldBuildError("could not fetch wheels", code=code, details={"tail": tail[-600:]})
+            raise WorldBuildError("could not fetch wheels", code=code, details={"tail": tail[-600:], "failure_class": r["failure_class"], "returncode": data.get("returncode")})
         return data["files"]
 
     # -- step 2
