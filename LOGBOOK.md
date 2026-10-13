@@ -851,3 +851,17 @@ Format: `### <UTC time> | <EVENT> | <id> | by <name>` followed by details.
 ### 2026-10-13 15:31 UTC | DONE | M4.G | by Chetan Agrawal
 - Gate C acceptance: first live finding
 - test cases passed: 3/3
+
+### 2026-10-13 16:06 UTC | START | M12.1 | by Chetan Agrawal
+- Real-world historical case (not a fixture)
+
+### 2026-10-13 16:09 UTC | NOTE | - | by Chetan Agrawal
+- M12.1 uses REAL2 (requests-toolbelt 0.10.1, urllib3 1.26.15 -> 2.0.2) instead of REAL1 because REAL1 needs a MarkupSafe sdist build on 3.12. Playbook text says REAL1.md; the record is fixtures/verification/REAL2.md. Pipeline: BREAK WITNESSED, delta certifi/requests/urllib3, attribution urllib3 two-sided. Found and fixed on the way: artifact_roots ignored setup.py manifests; a computed setup.py version made the parse partial.
+
+### 2026-10-13 16:09 UTC | TC PASS | TC-12.1.1 | by Chetan Agrawal
+- Facts verified by hand
+- evidence: evidence/M12.1/TC-12.1.1.md
+
+### 2026-10-13 16:09 UTC | TC PASS | TC-12.1.2 | by Chetan Agrawal
+- Faultline reproduces it
+- evidence: evidence/M12.1/TC-12.1.2.txt

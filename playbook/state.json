@@ -79,6 +79,10 @@
       "done": "2026-10-13 11:58 UTC",
       "status": "done"
     },
+    "M12.1": {
+      "started": "2026-10-13 16:06 UTC",
+      "status": "in_progress"
+    },
     "M12.2": {
       "started": "2026-10-13 11:20 UTC",
       "status": "in_progress"
@@ -479,6 +483,18 @@
     "TC-11.2.3": {
       "date": "2026-10-13 11:58 UTC",
       "evidence": "evidence/M11.2/TC-11.2.3.txt",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-12.1.1": {
+      "date": "2026-10-13 16:09 UTC",
+      "evidence": "evidence/M12.1/TC-12.1.1.md",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-12.1.2": {
+      "date": "2026-10-13 16:09 UTC",
+      "evidence": "evidence/M12.1/TC-12.1.2.txt",
       "note": "",
       "status": "pass"
     },

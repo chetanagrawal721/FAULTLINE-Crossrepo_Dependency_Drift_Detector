@@ -1,0 +1,9 @@
+tests/integration/test_real1.py::test_tc_12_1_2_faultline_reproduces_the_public_break_and_attributes_it[REAL2] PASSED [ 16%]
+tests/integration/test_real1.py::test_both_resolution_cutoffs_are_recorded_in_the_provenance[REAL2] PASSED [ 33%]
+tests/integration/test_real1.py::test_tc_12_1_2_faultline_reproduces_the_public_break_and_attributes_it[REAL1] XFAIL [ 50%]
+tests/integration/test_real1.py::test_both_resolution_cutoffs_are_recorded_in_the_provenance[REAL1] XFAIL [ 66%]
+tests/integration/test_real1.py::test_the_scenario_file_links_public_evidence_and_the_hand_verification_record_exists PASSED [ 83%]
+tests/integration/test_real1.py::test_real2_scenario_links_public_evidence_and_the_hand_verification_record_exists PASSED [100%]
+XFAIL tests/integration/test_real1.py::test_tc_12_1_2_faultline_reproduces_the_public_break_and_attributes_it[REAL1] - REAL1 is not reproducible by the pipeline: a dependency has no CPython 3.12 wheel at that date and Faultline never builds from source
+XFAIL tests/integration/test_real1.py::test_both_resolution_cutoffs_are_recorded_in_the_provenance[REAL1] - REAL1 is not reproducible by the pipeline: a dependency has no CPython 3.12 wheel at that date and Faultline never builds from source
+================== 4 passed, 2 xfailed in 136.05s (0:02:16) ===================
