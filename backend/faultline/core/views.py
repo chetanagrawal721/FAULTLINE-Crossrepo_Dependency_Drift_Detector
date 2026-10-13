@@ -227,3 +227,86 @@ class ProjectDetail(View):
     manifests: list[ManifestView]
     world: WorldDetail | None
     inventory: list[InventoryDep] = []        # declared dependencies, for ecosystems where no world is built (Maven)
+
+
+# ---- live analysis (Phase 4) -------------------------------------------------------------------------------
+
+class EvidenceLine(View):
+    signal: str
+    repository: str                   # owner/name
+    commit: str                       # the pinned SHA the line was read at
+    file_path: str
+    line: int | None
+    excerpt: str | None
+
+
+class RelationshipView(View):
+    id: str
+    producer: str                     # owner/name[:path]
+    consumer: str
+    level: str
+    kind: str
+    confidence: str
+    actionable: bool
+    status: str                       # ACTIVE | SUSPECTED
+    notes: list[str]
+    evidence: list[EvidenceLine]
+
+
+class DeltaLine(View):
+    name: str
+    reference: str | None
+    consumer: str | None
+    kind: str
+
+
+class AttemptView(View):
+    direction: str                    # search | sufficiency | necessity
+    subset: list[str]
+    outcome: str                      # FAIL | PASS | UNRESOLVED
+    note: str | None
+    label: str                        # always the forced-world label: these are experiments, never observations
+
+
+class AttributionView(View):
+    status: str                       # COMPLETE | PARTIAL | BUDGET_LIMITED | UNSTABLE | UNAVAILABLE
+    sidedness: str
+    minimal: list[str]
+    minimal_claim: str | None         # only set when COMPLETE and two-sided
+    notes: list[str]
+    attempts: list[AttemptView]
+
+
+class CellView(View):
+    id: str
+    state: str
+    ref_world_hash: str
+    test_world_hash: str
+    consumers: list[str]
+    imported_modules: list[str]
+    delta: list[DeltaLine]
+    finding_id: str | None
+    verdict: str | None
+    headline: str | None
+    attribution: AttributionView | None = None
+
+
+class FailedConsumer(View):
+    consumer: str
+    producer: str
+    side: str
+    reason: str
+    text: str
+
+
+class AnalysisView(View):
+    id: str
+    project_id: str
+    status: str
+    mode: str
+    started_at: str | None
+    finished_at: str | None
+    funnel: dict
+    failed: list[FailedConsumer]
+    relationships: list[RelationshipView]
+    cells: list[CellView]

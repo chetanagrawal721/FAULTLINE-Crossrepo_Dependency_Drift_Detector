@@ -124,6 +124,27 @@ def analyze_repository(ctx: JobContext) -> dict:
         conn.close()
 
 
+def live_analysis(ctx: JobContext) -> dict:
+    """Relationships, cells, oracle runs, witnesses and findings for every ingested repository of an analysis project."""
+    from ..analysis.live import run_live_analysis
+    from ..core.config import Settings
+    from ..sandbox.client import SandboxClient
+    from ..sandbox.images import default_image
+    from ..storage.db import connect
+    from ..storage.store import Store
+
+    settings = Settings.from_env()
+    conn = connect(settings.db_path)
+    try:
+        def progress(fraction: float, message: str) -> None:
+            ctx.check_cancel()
+            ctx.progress(fraction, message)
+        res = run_live_analysis(conn, SandboxClient(), default_image(), Store(settings.store_path), ctx.payload["analysis_project_id"], progress=progress)
+        return {"analysis_id": res.analysis_id, "cells": res.cells, "funnel": res.funnel}
+    finally:
+        conn.close()
+
+
 HANDLERS: dict[str, Callable[[JobContext], dict]] = {
     "noop": noop,
     "sleep": sleep,
@@ -132,4 +153,5 @@ HANDLERS: dict[str, Callable[[JobContext], dict]] = {
     "fixture_scenario": fixture_scenario,
     "ingest_repository": ingest_repository,
     "analyze_repository": analyze_repository,
+    "live_analysis": live_analysis,
 }

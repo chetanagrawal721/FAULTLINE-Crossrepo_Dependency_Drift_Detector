@@ -86,3 +86,14 @@ def retry_ingest(repository_id: str, conn=Depends(get_conn)) -> RepositoryView:
     conn.execute("UPDATE repository SET status='PENDING', error_json=NULL WHERE id=?", (repository_id,))
     job = _queue_ingest(conn, repository_id, repo["pinned_sha"], new_id("r"))
     return repository_view(conn, service.get_repository(conn, repository_id), job.job_id)
+
+
+@router.post("/projects/{project_id}/analyze", response_model=Job, status_code=202, dependencies=[Depends(require_token)])
+def analyze_project(project_id: str, conn=Depends(get_conn)) -> Job:
+    """Run the live cross-repository analysis over the repositories already ingested into this project."""
+    service.get_project(conn, project_id)
+    ingested = conn.execute("SELECT COUNT(*) FROM repository WHERE analysis_project_id=? AND status='INGESTED'", (project_id,)).fetchone()[0]
+    if ingested < 2:
+        raise InvalidTransitionError(f"a cross-repository analysis needs at least 2 ingested repositories (this project has {ingested})")
+    job, _ = jobs.create_job(conn, "live_analysis", {"analysis_project_id": project_id}, f"live:{project_id}:{new_id('r')}")
+    return job

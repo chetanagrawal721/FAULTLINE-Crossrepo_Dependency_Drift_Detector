@@ -16,6 +16,9 @@ export type ProjectDetail = components["schemas"]["ProjectDetail"];
 export type WorldDetail = components["schemas"]["WorldDetail"];
 export type InventoryDep = components["schemas"]["InventoryDep"];
 export type PackageView = components["schemas"]["PackageView"];
+export type AnalysisView = components["schemas"]["AnalysisView"];
+export type CellView = components["schemas"]["CellView"];
+export type RelationshipView = components["schemas"]["RelationshipView"];
 export type FileView = components["schemas"]["FileView"];
 
 /** An API failure that keeps the machine-readable code, so the UI can show distinct states. */
@@ -74,5 +77,7 @@ export const api = {
   retryRepository: (id: string) => request<RepositoryView>(`/api/repositories/${encodeURIComponent(id)}/retry`, { method: "POST" }),
   analyzeRepository: (id: string) => request<Job>(`/api/repositories/${encodeURIComponent(id)}/analyze`, { method: "POST" }),
   repositoryProjects: (id: string) => request<ProjectDetail[]>(`/api/repositories/${encodeURIComponent(id)}/projects`),
+  analyzeProject: (id: string) => request<Job>(`/api/projects/${encodeURIComponent(id)}/analyze`, { method: "POST" }),
+  projectAnalysis: (id: string) => request<AnalysisView>(`/api/projects/${encodeURIComponent(id)}/analysis`),
   bundleUrl: (witnessId: string) => `/api/witnesses/${encodeURIComponent(witnessId)}/bundle`,
 };

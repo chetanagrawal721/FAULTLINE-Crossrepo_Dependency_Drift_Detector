@@ -163,7 +163,7 @@ export function RepositoriesPanel() {
       .then((ps) => {
         const p = ps[0];
         setProjectId(p?.id ?? null);
-        const all = ps.flatMap((x) => x.repositories);
+        const all = p?.repositories ?? [];                      // the newest project: the same one the analysis dashboard shows
         setRepos(all);
         const active = all.some((r) => r.status === "PENDING" || r.status === "INGESTING");
         if (timer.current) window.clearTimeout(timer.current);

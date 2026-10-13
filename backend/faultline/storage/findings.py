@@ -27,7 +27,14 @@ def _consumer_name(conn: sqlite3.Connection, analysis_id: str) -> str:
     # fixture analysis ids end with the consumer name hash; the human name is stored on the analysis_project name only
     # for the project, so the consumer is read from the finding's oracle plan instead (kept in cell_consumer later)
     row = conn.execute("SELECT options_json FROM analysis WHERE id=?", (analysis_id,)).fetchone()
-    return (json.loads(row["options_json"] or "{}").get("consumer") if row else None) or "consumer"
+    named = json.loads(row["options_json"] or "{}").get("consumer") if row else None
+    if named:
+        return named
+    # live analyses: the consumers linked to the cells of this analysis
+    names = sorted({f"{x['owner']}/{x['name']}" for x in conn.execute(
+        "SELECT r.owner, r.name FROM cell_consumer cc JOIN cell c ON c.id = cc.cell_id JOIN project p ON p.id = cc.consumer_project_id "
+        "JOIN snapshot s ON s.id = p.snapshot_id JOIN repository r ON r.id = s.repository_id WHERE c.analysis_id=?", (analysis_id,))})
+    return ", ".join(names) or "consumer"
 
 
 def _summary(conn: sqlite3.Connection, r: sqlite3.Row) -> FindingSummary:

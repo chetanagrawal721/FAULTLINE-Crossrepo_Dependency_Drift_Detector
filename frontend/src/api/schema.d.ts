@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/analyses/{analysis_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Analysis */
+        get: operations["get_analysis_api_analyses__analysis_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/capabilities": {
         parameters: {
             query?: never;
@@ -159,6 +176,46 @@ export interface paths {
         get: operations["get_project_api_projects__project_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{project_id}/analysis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Latest For Project
+         * @description The most recent live analysis of a project, straight from the database.
+         */
+        get: operations["latest_for_project_api_projects__project_id__analysis_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{project_id}/analyze": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Analyze Project
+         * @description Run the live cross-repository analysis over the repositories already ingested into this project.
+         */
+        post: operations["analyze_project_api_projects__project_id__analyze_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -354,6 +411,59 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AnalysisView */
+        AnalysisView: {
+            /** Cells */
+            cells: components["schemas"]["CellView"][];
+            /** Failed */
+            failed: components["schemas"]["FailedConsumer"][];
+            /** Finished At */
+            finished_at: string | null;
+            /** Funnel */
+            funnel: {
+                [key: string]: unknown;
+            };
+            /** Id */
+            id: string;
+            /** Mode */
+            mode: string;
+            /** Project Id */
+            project_id: string;
+            /** Relationships */
+            relationships: components["schemas"]["RelationshipView"][];
+            /** Started At */
+            started_at: string | null;
+            /** Status */
+            status: string;
+        };
+        /** AttemptView */
+        AttemptView: {
+            /** Direction */
+            direction: string;
+            /** Label */
+            label: string;
+            /** Note */
+            note: string | null;
+            /** Outcome */
+            outcome: string;
+            /** Subset */
+            subset: string[];
+        };
+        /** AttributionView */
+        AttributionView: {
+            /** Attempts */
+            attempts: components["schemas"]["AttemptView"][];
+            /** Minimal */
+            minimal: string[];
+            /** Minimal Claim */
+            minimal_claim: string | null;
+            /** Notes */
+            notes: string[];
+            /** Sidedness */
+            sidedness: string;
+            /** Status */
+            status: string;
+        };
         /** Capabilities */
         Capabilities: {
             /** Api Version */
@@ -384,6 +494,30 @@ export interface components {
             reason?: string | null;
             state: components["schemas"]["CapabilityState"];
         };
+        /** CellView */
+        CellView: {
+            attribution?: components["schemas"]["AttributionView"] | null;
+            /** Consumers */
+            consumers: string[];
+            /** Delta */
+            delta: components["schemas"]["DeltaLine"][];
+            /** Finding Id */
+            finding_id: string | null;
+            /** Headline */
+            headline: string | null;
+            /** Id */
+            id: string;
+            /** Imported Modules */
+            imported_modules: string[];
+            /** Ref World Hash */
+            ref_world_hash: string;
+            /** State */
+            state: string;
+            /** Test World Hash */
+            test_world_hash: string;
+            /** Verdict */
+            verdict: string | null;
+        };
         /** DeclaredView */
         DeclaredView: {
             /** Group */
@@ -401,6 +535,17 @@ export interface components {
         DeltaItem: {
             /** Consumer */
             consumer: string | null;
+            /** Name */
+            name: string;
+            /** Reference */
+            reference: string | null;
+        };
+        /** DeltaLine */
+        DeltaLine: {
+            /** Consumer */
+            consumer: string | null;
+            /** Kind */
+            kind: string;
             /** Name */
             name: string;
             /** Reference */
@@ -437,6 +582,34 @@ export interface components {
             passed: boolean;
             /** Skipped */
             skipped: boolean;
+        };
+        /** EvidenceLine */
+        EvidenceLine: {
+            /** Commit */
+            commit: string;
+            /** Excerpt */
+            excerpt: string | null;
+            /** File Path */
+            file_path: string;
+            /** Line */
+            line: number | null;
+            /** Repository */
+            repository: string;
+            /** Signal */
+            signal: string;
+        };
+        /** FailedConsumer */
+        FailedConsumer: {
+            /** Consumer */
+            consumer: string;
+            /** Producer */
+            producer: string;
+            /** Reason */
+            reason: string;
+            /** Side */
+            side: string;
+            /** Text */
+            text: string;
         };
         /** FailureSignature */
         FailureSignature: {
@@ -710,6 +883,29 @@ export interface components {
             /** Repositories */
             repositories: components["schemas"]["RepositoryView"][];
         };
+        /** RelationshipView */
+        RelationshipView: {
+            /** Actionable */
+            actionable: boolean;
+            /** Confidence */
+            confidence: string;
+            /** Consumer */
+            consumer: string;
+            /** Evidence */
+            evidence: components["schemas"]["EvidenceLine"][];
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Level */
+            level: string;
+            /** Notes */
+            notes: string[];
+            /** Producer */
+            producer: string;
+            /** Status */
+            status: string;
+        };
         /** RepositoryCreate */
         RepositoryCreate: {
             /** Ref */
@@ -929,6 +1125,37 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_analysis_api_analyses__analysis_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                analysis_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     capabilities_api_capabilities_get: {
         parameters: {
             query?: never;
@@ -1234,6 +1461,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    latest_for_project_api_projects__project_id__analysis_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    analyze_project_api_projects__project_id__analyze_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Job"];
                 };
             };
             /** @description Validation Error */

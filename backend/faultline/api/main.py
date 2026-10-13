@@ -14,7 +14,7 @@ from ..core.config import API_VERSION, Settings, repo_root
 from ..core.errors import ErrorCode, FaultlineError
 from ..storage.db import connect
 from ..storage.migrate import migrate
-from .routers import findings, jobs, projects, system, worlds
+from .routers import analysis, findings, jobs, projects, system, worlds
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -47,6 +47,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(findings.router)
     app.include_router(projects.router)
     app.include_router(worlds.router)
+    app.include_router(analysis.router)
 
     dist = Path(repo_root() / "frontend" / "dist")
     if dist.is_dir():

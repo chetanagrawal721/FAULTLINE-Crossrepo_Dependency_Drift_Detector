@@ -4,6 +4,7 @@ import { CapabilityBanner } from "./components/CapabilityBanner";
 import { FindingDetailView } from "./components/FindingDetail";
 import { FindingsList } from "./components/FindingsList";
 import { ModeBadge } from "./components/ModeBadge";
+import { Dashboard } from "./pages/Dashboard";
 import { RepositoriesPanel } from "./components/RepositoriesPanel";
 import { WorldInspector } from "./pages/WorldInspector";
 import { ScenarioPanel } from "./components/ScenarioPanel";
@@ -82,6 +83,7 @@ export default function App() {
       ) : (
         <>
           <RepositoriesPanel />
+          <Dashboard />
           <ScenarioPanel onFinished={loadFindings} />
           <FindingsList findings={findings} />
           {caps ? <CapabilityBanner caps={caps} /> : !error && <p className="muted">Loading capabilities…</p>}

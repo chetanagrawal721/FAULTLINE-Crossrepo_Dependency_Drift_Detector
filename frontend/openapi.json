@@ -1,6 +1,188 @@
 {
   "components": {
     "schemas": {
+      "AnalysisView": {
+        "additionalProperties": false,
+        "properties": {
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/CellView"
+            },
+            "title": "Cells",
+            "type": "array"
+          },
+          "failed": {
+            "items": {
+              "$ref": "#/components/schemas/FailedConsumer"
+            },
+            "title": "Failed",
+            "type": "array"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "funnel": {
+            "additionalProperties": true,
+            "title": "Funnel",
+            "type": "object"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          },
+          "relationships": {
+            "items": {
+              "$ref": "#/components/schemas/RelationshipView"
+            },
+            "title": "Relationships",
+            "type": "array"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "project_id",
+          "status",
+          "mode",
+          "started_at",
+          "finished_at",
+          "funnel",
+          "failed",
+          "relationships",
+          "cells"
+        ],
+        "title": "AnalysisView",
+        "type": "object"
+      },
+      "AttemptView": {
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "outcome": {
+            "title": "Outcome",
+            "type": "string"
+          },
+          "subset": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Subset",
+            "type": "array"
+          }
+        },
+        "required": [
+          "direction",
+          "subset",
+          "outcome",
+          "note",
+          "label"
+        ],
+        "title": "AttemptView",
+        "type": "object"
+      },
+      "AttributionView": {
+        "additionalProperties": false,
+        "properties": {
+          "attempts": {
+            "items": {
+              "$ref": "#/components/schemas/AttemptView"
+            },
+            "title": "Attempts",
+            "type": "array"
+          },
+          "minimal": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Minimal",
+            "type": "array"
+          },
+          "minimal_claim": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minimal Claim"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "sidedness": {
+            "title": "Sidedness",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "sidedness",
+          "minimal",
+          "minimal_claim",
+          "notes",
+          "attempts"
+        ],
+        "title": "AttributionView",
+        "type": "object"
+      },
       "Capabilities": {
         "additionalProperties": false,
         "properties": {
@@ -86,6 +268,105 @@
         "title": "CapabilityStatus",
         "type": "object"
       },
+      "CellView": {
+        "additionalProperties": false,
+        "properties": {
+          "attribution": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AttributionView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consumers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Consumers",
+            "type": "array"
+          },
+          "delta": {
+            "items": {
+              "$ref": "#/components/schemas/DeltaLine"
+            },
+            "title": "Delta",
+            "type": "array"
+          },
+          "finding_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finding Id"
+          },
+          "headline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headline"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "imported_modules": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Imported Modules",
+            "type": "array"
+          },
+          "ref_world_hash": {
+            "title": "Ref World Hash",
+            "type": "string"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "test_world_hash": {
+            "title": "Test World Hash",
+            "type": "string"
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verdict"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "ref_world_hash",
+          "test_world_hash",
+          "consumers",
+          "imported_modules",
+          "delta",
+          "finding_id",
+          "verdict",
+          "headline"
+        ],
+        "title": "CellView",
+        "type": "object"
+      },
       "DeclaredView": {
         "additionalProperties": false,
         "properties": {
@@ -163,6 +444,49 @@
           "consumer"
         ],
         "title": "DeltaItem",
+        "type": "object"
+      },
+      "DeltaLine": {
+        "additionalProperties": false,
+        "properties": {
+          "consumer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consumer"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          }
+        },
+        "required": [
+          "name",
+          "reference",
+          "consumer",
+          "kind"
+        ],
+        "title": "DeltaLine",
         "type": "object"
       },
       "Ecosystem": {
@@ -271,6 +595,93 @@
           "origin_module"
         ],
         "title": "EntryView",
+        "type": "object"
+      },
+      "EvidenceLine": {
+        "additionalProperties": false,
+        "properties": {
+          "commit": {
+            "title": "Commit",
+            "type": "string"
+          },
+          "excerpt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excerpt"
+          },
+          "file_path": {
+            "title": "File Path",
+            "type": "string"
+          },
+          "line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line"
+          },
+          "repository": {
+            "title": "Repository",
+            "type": "string"
+          },
+          "signal": {
+            "title": "Signal",
+            "type": "string"
+          }
+        },
+        "required": [
+          "signal",
+          "repository",
+          "commit",
+          "file_path",
+          "line",
+          "excerpt"
+        ],
+        "title": "EvidenceLine",
+        "type": "object"
+      },
+      "FailedConsumer": {
+        "additionalProperties": false,
+        "properties": {
+          "consumer": {
+            "title": "Consumer",
+            "type": "string"
+          },
+          "producer": {
+            "title": "Producer",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "side": {
+            "title": "Side",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "consumer",
+          "producer",
+          "side",
+          "reason",
+          "text"
+        ],
+        "title": "FailedConsumer",
         "type": "object"
       },
       "FailureSignature": {
@@ -1127,6 +1538,71 @@
         "title": "ProjectView",
         "type": "object"
       },
+      "RelationshipView": {
+        "additionalProperties": false,
+        "properties": {
+          "actionable": {
+            "title": "Actionable",
+            "type": "boolean"
+          },
+          "confidence": {
+            "title": "Confidence",
+            "type": "string"
+          },
+          "consumer": {
+            "title": "Consumer",
+            "type": "string"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceLine"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "producer": {
+            "title": "Producer",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "producer",
+          "consumer",
+          "level",
+          "kind",
+          "confidence",
+          "actionable",
+          "status",
+          "notes",
+          "evidence"
+        ],
+        "title": "RelationshipView",
+        "type": "object"
+      },
       "RepositoryCreate": {
         "additionalProperties": false,
         "properties": {
@@ -1792,6 +2268,48 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/analyses/{analysis_id}": {
+      "get": {
+        "operationId": "get_analysis_api_analyses__analysis_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "analysis_id",
+            "required": true,
+            "schema": {
+              "title": "Analysis Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Analysis",
+        "tags": [
+          "analysis"
+        ]
+      }
+    },
     "/api/capabilities": {
       "get": {
         "operationId": "capabilities_api_capabilities_get",
@@ -2257,6 +2775,108 @@
           }
         },
         "summary": "Get Project",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/projects/{project_id}/analysis": {
+      "get": {
+        "description": "The most recent live analysis of a project, straight from the database.",
+        "operationId": "latest_for_project_api_projects__project_id__analysis_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Latest For Project",
+        "tags": [
+          "analysis"
+        ]
+      }
+    },
+    "/api/projects/{project_id}/analyze": {
+      "post": {
+        "description": "Run the live cross-repository analysis over the repositories already ingested into this project.",
+        "operationId": "analyze_project_api_projects__project_id__analyze_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Analyze Project",
         "tags": [
           "projects"
         ]
