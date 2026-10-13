@@ -39,6 +39,9 @@ def recorded(conn, tmp_path):
     for plan in plan_cells(conn, rels).cells:
         persist_cell(conn, aid, plan, "w_projected", {})
     conn.execute("UPDATE analysis SET status='DONE' WHERE id=?", (aid,))
+    from faultline.storage import jobs  # a finished job with an attempt: the pack must still export
+    jobs.create_job(conn, "analyze_project", {"project_id": apid})
+    assert jobs.claim_next(conn, "w1", 30) is not None
     db = conn.execute("PRAGMA database_list").fetchone()["file"]
     pack = export(Path(db), store.root, tmp_path / "pack")
     return apid, aid, tmp_path / "pack", pack

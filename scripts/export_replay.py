@@ -40,6 +40,7 @@ def export(db: Path, store: Path, out: Path) -> dict:
         opts = json.loads(a["options_json"] or "{}")
         opts["recorded_from_mode"] = a["mode"]
         conn.execute("UPDATE analysis SET mode='REPLAY', options_json=? WHERE id=?", (json.dumps(opts, sort_keys=True), a["id"]))
+    conn.execute("DELETE FROM job_attempt")                    # attempts point at jobs, so they go first
     conn.execute("DELETE FROM job")
     bundles = out / "store" / "bundles"
     bundles.mkdir(parents=True, exist_ok=True)
