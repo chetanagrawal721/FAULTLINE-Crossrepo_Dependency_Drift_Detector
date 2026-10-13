@@ -1,0 +1,32 @@
+# REAL2: a publicly reported dependency break, reproduced from public registries by resolution date (not a fixture).
+# requests-toolbelt 0.10.1 (2022-10-25) imports urllib3.contrib.appengine. urllib3 2.0 (2023-04-26) removed it and requests 2.30.0
+# (2023-05-04) allows it. Resolve the same source before and after and it fails to import. Facts verified by hand: fixtures/verification/REAL2.md
+# Pure-Python wheels only, so a wheels-only resolver on CPython 3.12 can reproduce it (REAL1 could not: MarkupSafe has no 3.12 wheel before 2024).
+id: REAL2
+title: "requests-toolbelt 0.10.1 with urllib3 resolved before and after 2.0 (appengine removed)"
+kind: real_world
+truth: break
+verified_by: REAL2
+real_source:
+  url: https://github.com/requests/toolbelt
+  ref: 0.10.1
+time_machine:
+  reference_cutoff: "2023-04-15T00:00:00Z"
+  consumer_cutoff: "2023-05-20T00:00:00Z"
+public_evidence:
+  - https://github.com/requests/toolbelt/issues/354
+  - https://github.com/requests/toolbelt/issues/361
+artifact: {repo: toolbelt, path: "", import_package: requests_toolbelt}
+consumers: []
+expect:
+  relationships: []
+  cells:
+    - consumer: toolbelt
+      delta: [certifi, requests, urllib3]
+      state: ANALYZED
+      verdict: BREAK_WITNESSED
+      witness: true
+      oracle: o_import
+      entry_point: requests_toolbelt
+      signature: {exc_type: ImportError, message_contains: "cannot import name 'appengine' from 'urllib3.contrib'"}
+      attribution: {minimal_set: [urllib3], sidedness: two_sided}

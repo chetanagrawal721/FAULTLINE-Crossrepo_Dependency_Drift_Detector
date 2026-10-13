@@ -8,7 +8,7 @@ import ast
 
 from packaging.requirements import InvalidRequirement, Requirement
 
-from ..common import Dependency, ManifestError, ManifestResult, SnapshotFS, canonical_name, failed
+from ..common import Dependency, Diagnostic, ManifestError, ManifestResult, SnapshotFS, canonical_name, failed
 
 KEYS = ("install_requires", "extras_require", "python_requires", "name", "version")
 
@@ -69,7 +69,11 @@ def parse_setup_py(fs: SnapshotFS, rel: str) -> ManifestResult:
             try:
                 got[kw.arg] = _value(kw.value, names)
             except (ValueError, TypeError, SyntaxError):
-                res.add("NON_LITERAL_ARGUMENT", f"{kw.arg} is computed, not a literal; it is not evaluated (setup.py is never executed)", kw.value.lineno)
+                msg = f"{kw.arg} is computed, not a literal; it is not evaluated (setup.py is never executed)"
+                if kw.arg in ("install_requires", "extras_require"):       # dependencies are unknown: the parse is partial
+                    res.add("NON_LITERAL_ARGUMENT", msg, kw.value.lineno)
+                else:                                                      # name, version or python_requires do not change which packages resolve
+                    res.diagnostics.append(Diagnostic("NON_LITERAL_ARGUMENT", msg, res.path, kw.value.lineno))
         elif kw.arg is None:
             res.add("NON_LITERAL_ARGUMENT", "setup(**kwargs) hides its arguments; they are not evaluated", kw.value.lineno)
     res.meta.update(name=got.get("name"), version=got.get("version"), requires_python=got.get("python_requires"), setup_py=True)

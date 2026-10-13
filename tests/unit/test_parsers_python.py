@@ -182,3 +182,13 @@ def test_setup_py_is_parsed_to_an_ast_and_never_executed(tmp_path):
     assert computed.dependencies == [] and any(d.code == "NON_LITERAL_ARGUMENT" for d in computed.diagnostics) and computed.status == "PARTIAL"
     assert parse_setup_py(snap(tmp_path / "n", {"setup.py": "print('hi')\n"}), "setup.py").status == "UNSUPPORTED"
     assert parse_setup_py(snap(tmp_path / "b", {"setup.py": "def ("}), "setup.py").status == "FAILED"
+
+
+def test_a_computed_version_does_not_make_a_setup_py_partial_but_computed_dependencies_do(tmp_path):
+    from faultline.parsers.python.setup_py import parse_setup_py
+    src = "from setuptools import setup\nsetup(name='x', version=open('v.txt').read(), install_requires=['requests>=2'])\n"
+    ok = parse_setup_py(snap(tmp_path / "a", {"setup.py": src}), "setup.py")
+    assert ok.status == "OK" and [d.name for d in ok.dependencies] == ["requests"]
+    assert any(d.code == "NON_LITERAL_ARGUMENT" and "version" in d.message for d in ok.diagnostics)         # still reported, not hidden
+    bad = parse_setup_py(snap(tmp_path / "b", {"setup.py": "from setuptools import setup\nsetup(name='x', install_requires=f())\n"}), "setup.py")
+    assert bad.status == "PARTIAL"
