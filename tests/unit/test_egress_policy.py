@@ -8,8 +8,8 @@ PUBLIC = lambda host: ["140.82.112.3"]  # noqa: E731
 
 def test_allowlisted_hosts_on_443_are_allowed_and_connect_to_the_checked_address():
     for host in ALLOWED_HOSTS:
-        allowed, reason, address = decide(host, 443, PUBLIC)
-        assert allowed and address == "140.82.112.3", (host, reason)
+        allowed, reason, addresses = decide(host, 443, PUBLIC)
+        assert allowed and addresses == ["140.82.112.3"], (host, reason)
     assert decide("GitHub.com.", 443, PUBLIC)[0]                       # case and the trailing dot do not matter
 
 
@@ -23,13 +23,13 @@ def test_other_names_and_ports_are_refused(host, port):
 
 @pytest.mark.parametrize("literal", ["169.254.169.254", "127.0.0.1", "10.0.0.1", "192.168.1.1", "172.16.0.1", "0.0.0.0", "8.8.8.8", "::1", "fd00::1", "140.82.112.3"])
 def test_ip_literals_are_always_refused(literal):
-    assert decide(literal, 443, PUBLIC) == (False, "IP literals are not allowed", None)
+    assert decide(literal, 443, PUBLIC) == (False, "IP literals are not allowed", [])
 
 
 @pytest.mark.parametrize("answer", ["169.254.169.254", "127.0.0.1", "10.1.2.3", "192.168.0.9", "172.20.0.2", "100.64.0.1", "::1", "fe80::1", "fc00::1", "::ffff:10.0.0.1"])
 def test_an_allowlisted_name_that_resolves_to_a_non_public_address_is_refused(answer):
-    allowed, reason, address = decide("github.com", 443, lambda h: [answer])
-    assert allowed is False and address is None and "non-public" in reason
+    allowed, reason, addresses = decide("github.com", 443, lambda h: [answer])
+    assert allowed is False and addresses == [] and "non-public" in reason
 
 
 def test_one_bad_answer_among_good_ones_refuses_the_name():
@@ -46,3 +46,8 @@ def test_resolution_failure_is_a_refusal_not_an_error():
 def test_public_address_classifier():
     assert is_public("140.82.112.3") and is_public("2606:4700::1111")
     assert not any(is_public(a) for a in ["169.254.169.254", "127.0.0.1", "10.0.0.1", "224.0.0.1", "not-an-ip"])
+
+
+def test_every_resolved_address_is_returned_so_the_proxy_can_fall_back_and_all_must_be_public():
+    allowed, _, addresses = decide("pypi.org", 443, lambda h: ["151.101.0.223", "151.101.64.223", "2a04:4e42::223"])
+    assert allowed and addresses == ["151.101.0.223", "151.101.64.223", "2a04:4e42::223"]

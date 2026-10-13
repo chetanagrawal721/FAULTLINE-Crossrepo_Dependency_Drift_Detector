@@ -332,3 +332,29 @@ def test_sr4_uv_resolution_goes_through_the_proxy(daemon, image):
                     "args": {"requirements": ["idna==3.4"], "exclude_newer": "2024-10-30T00:00:00Z"}})
     data = r.get("data") or {}
     assert r["failure_class"] == "NONE" and data.get("returncode") == 0, (r.get("failure_class"), (data.get("stderr") or r.get("stderr_tail") or "")[-300:])
+
+
+# ----------------------------------------------------------------------------- TC-11.3.2 fail closed on a bad control
+
+def test_tc_11_3_2_a_network_on_the_execution_profile_fails_the_inspector_and_disables_execution(daemon, sbx, monkeypatch):
+    from faultline.sandbox import profiles
+    try:
+        monkeypatch.setitem(profiles.PROFILES, "exec", profiles.Profile("exec", "bridge"))          # the misconfiguration: the execution zone gets a network
+        res = daemon.verify_boundary()
+        assert res["verified"] is False and "no network" in res["reason"], res
+        failed = [c["check"] for c in res["checks"] if not c["ok"]]
+        assert "no network" in failed
+        s = status.current_sandbox_status(sbx, use_cache=False)
+        assert s.verified is False and s.state.value != "verified" and s.reason       # execution is reported unavailable, with a reason
+    finally:
+        monkeypatch.undo()
+        assert daemon.verify_boundary()["verified"] is True                              # and it recovers once the profile is correct
+
+
+def test_tc_11_3_2_a_broken_egress_control_fails_the_inspector(daemon, monkeypatch):
+    from faultline.sandbox import egress
+    monkeypatch.setattr(egress, "ensure", lambda *a, **k: (False, "simulated: proxy cannot start"))
+    res = daemon.verify_boundary()
+    assert res["verified"] is False and "egress proxy running" in res["reason"]
+    monkeypatch.undo()
+    assert daemon.verify_boundary()["verified"] is True

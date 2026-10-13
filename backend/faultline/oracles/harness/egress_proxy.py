@@ -38,32 +38,33 @@ def is_public(address: str) -> bool:
     return ip.is_global and not (ip.is_multicast or ip.is_loopback or ip.is_link_local or ip.is_private or ip.is_reserved or ip.is_unspecified)
 
 
-def decide(host: str, port: int, resolve=None) -> tuple[bool, str, str | None]:
-    """(allowed, reason, address to connect to). `resolve(host) -> list[str]` defaults to the system resolver."""
+def decide(host: str, port: int, resolve=None) -> tuple[bool, str, list[str]]:
+    """(allowed, reason, addresses to connect to, all of them verified public). `resolve(host) -> list[str]` defaults to the system resolver."""
     host = host.strip().lower().rstrip(".")
     if port not in ALLOWED_PORTS:
-        return False, f"port {port} is not allowed", None
+        return False, f"port {port} is not allowed", []
     try:
         ipaddress.ip_address(host.strip("[]"))
-        return False, "IP literals are not allowed", None
+        return False, "IP literals are not allowed", []
     except ValueError:
         pass
     if host not in ALLOWED_HOSTS:
-        return False, f"{host} is not on the allowlist", None
+        return False, f"{host} is not on the allowlist", []
     try:
         addresses = (resolve or _resolve)(host)
     except OSError as exc:
-        return False, f"could not resolve {host}: {type(exc).__name__}", None
+        return False, f"could not resolve {host}: {type(exc).__name__}", []
     if not addresses:
-        return False, f"{host} did not resolve", None
+        return False, f"{host} did not resolve", []
     bad = [a for a in addresses if not is_public(a)]
     if bad:
-        return False, f"{host} resolves to a non-public address ({bad[0]})", None
-    return True, "allowed", addresses[0]
+        return False, f"{host} resolves to a non-public address ({bad[0]})", []
+    return True, "allowed", addresses
 
 
 def _resolve(host: str) -> list[str]:
-    return sorted({info[4][0] for info in socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)})
+    found = {info[4][0] for info in socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)}
+    return sorted(found, key=lambda a: (":" in a, a))          # IPv4 first, then IPv6
 
 
 def _log(event: dict) -> None:
@@ -94,16 +95,21 @@ class Handler(socketserver.StreamRequestHandler):
         except ValueError:
             _log({"decision": "deny", "reason": "bad target", "target": target[:80]})
             return self._reply(400, "Bad Request")
-        allowed, reason, address = decide(host.strip("[]"), port)
+        allowed, reason, addresses = decide(host.strip("[]"), port)
         _log({"decision": "allow" if allowed else "deny", "host": host[:100], "port": port, "reason": reason})
         if not allowed:
             return self._reply(403, "Forbidden")
         if not _slots.acquire(blocking=False):
             return self._reply(503, "Busy")
         try:
-            try:
-                upstream = socket.create_connection((address, port), timeout=15)
-            except OSError:
+            upstream = None
+            for address in addresses:                                  # every address was verified public; use the first that answers
+                try:
+                    upstream = socket.create_connection((address, port), timeout=6)
+                    break
+                except OSError:
+                    continue
+            if upstream is None:
                 return self._reply(502, "Bad Gateway")
             self._reply_connected()
             self._pump(self.connection, upstream)
