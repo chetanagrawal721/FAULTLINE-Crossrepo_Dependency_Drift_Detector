@@ -1,0 +1,7 @@
+# Ground-truth label for scenario E. Written before any benchmark result exists; results never edit this file.
+id: scenario-E
+scenario: E
+kind: fixture
+truth: unlabelled
+evaluated: false
+note: "silent divergence: needs contract replay; truth not committed until verified by hand"

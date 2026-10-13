@@ -1,0 +1,7 @@
+# Ground-truth label for scenario H. Written before any benchmark result exists; results never edit this file.
+id: scenario-H
+scenario: H
+kind: negative_control
+truth: no_break
+evaluated: true
+note: "pydantic 2 differs but only the deprecated .dict() is used"

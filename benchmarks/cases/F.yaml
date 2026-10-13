@@ -1,0 +1,7 @@
+# Ground-truth label for scenario F. Written before any benchmark result exists; results never edit this file.
+id: scenario-F
+scenario: F
+kind: fixture
+truth: unlabelled
+evaluated: false
+note: "static exposure: needs static analysis; truth not committed until verified by hand"

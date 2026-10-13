@@ -1,0 +1,7 @@
+# Ground-truth label for scenario G. Written before any benchmark result exists; results never edit this file.
+id: scenario-G
+scenario: G
+kind: negative_control
+truth: not_a_finding
+evaluated: true
+note: "only requests differs and it is outside the artifact closure"

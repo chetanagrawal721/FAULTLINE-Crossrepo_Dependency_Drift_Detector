@@ -1,0 +1,7 @@
+# Ground-truth label for scenario A. Written before any benchmark result exists; results never edit this file.
+id: scenario-A
+scenario: A
+kind: negative_control
+truth: no_break
+evaluated: true
+note: "all consumers resolve exactly the reference world"

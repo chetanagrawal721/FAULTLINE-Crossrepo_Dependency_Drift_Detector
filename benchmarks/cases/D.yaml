@@ -1,0 +1,7 @@
+# Ground-truth label for scenario D. Written before any benchmark result exists; results never edit this file.
+id: scenario-D
+scenario: D
+kind: fixture
+truth: break
+evaluated: true
+note: "Werkzeug 3 removed url_quote that Flask 2.2.2 imports"

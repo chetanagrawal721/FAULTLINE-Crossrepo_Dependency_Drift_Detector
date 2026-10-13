@@ -1,0 +1,7 @@
+# Ground-truth label for scenario J. Written before any benchmark result exists; results never edit this file.
+id: scenario-J
+scenario: J
+kind: fixture
+truth: unlabelled
+evaluated: false
+note: "data contract drift: needs contract replay; truth not committed until verified by hand"

@@ -1,0 +1,7 @@
+# Ground-truth label for scenario I. Written before any benchmark result exists; results never edit this file.
+id: scenario-I
+scenario: I
+kind: fixture
+truth: unlabelled
+evaluated: false
+note: "dynamic usage: needs the usage index; truth not committed until verified by hand"

@@ -1,0 +1,7 @@
+# Ground-truth label for scenario B. Written before any benchmark result exists; results never edit this file.
+id: scenario-B
+scenario: B
+kind: fixture
+truth: break
+evaluated: true
+note: "BaseSettings moved out of pydantic 2: importing acme_models.settings raises PydanticImportError"

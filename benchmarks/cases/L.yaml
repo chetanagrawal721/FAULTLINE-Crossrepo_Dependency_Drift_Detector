@@ -1,0 +1,7 @@
+# Ground-truth label for scenario L. Written before any benchmark result exists; results never edit this file.
+id: scenario-L
+scenario: L
+kind: negative_control
+truth: not_a_finding
+evaluated: true
+note: "look-alike model in an unrelated repository"
