@@ -1,0 +1,17 @@
+# Single source of truth for pinned tool versions. scripts/check_pins.py compares these to reality.
+# Container images are added here (with @sha256 digests) when they are introduced in M1.2.
+
+[python]
+version = "3.12.15"            # control plane and, until M1.2, the only interpreter
+
+[tools]
+uv = "0.13.0"
+node_major = "24"              # CI uses the same major
+npm_major = "11"
+
+[ci]
+python = "3.12"
+node = "24"
+
+# [images]  # filled in by M1.2, each value must be "name@sha256:<64 hex>"
+[images]

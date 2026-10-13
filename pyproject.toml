@@ -1,0 +1,53 @@
+[project]
+name = "faultline"
+version = "0.1.0"
+description = "Faultline: cross-repo dependency drift verification (HACKTOPIA 2026 PS07)"
+requires-python = "==3.12.*"
+dependencies = [
+  "fastapi==0.141.1",
+  "uvicorn==0.52.3",
+  "pydantic==2.13.4",
+  "pyyaml==6.0.3",
+  "packaging==26.3",
+  "jsonschema==4.26.0",
+  "defusedxml==0.7.1",
+]
+
+[dependency-groups]
+dev = [
+  "pytest==9.1.1",
+  "httpx2==2.13.0",
+  "ruff==0.16.3",
+  "uv==0.13.0",
+]
+
+[build-system]
+requires = ["hatchling==1.28.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend/faultline"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["backend"]
+markers = [
+  "docker: needs a running Docker daemon",
+  "slow: takes more than a few seconds",
+]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+src = ["backend", "tests", "tools", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's Depends(...) in argument defaults is the framework's documented pattern.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Header"]
+
+[tool.ruff.lint.per-file-ignores]
+"tools/track.py" = ["E702"]   # compact argparse setup lines

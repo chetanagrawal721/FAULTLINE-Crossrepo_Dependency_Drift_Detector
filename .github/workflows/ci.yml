@@ -1,0 +1,25 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-24.04
+    steps:
+      # Action major versions are pinned by tag. [VERIFY] each tag exists when this file first runs;
+      # replace with commit SHAs before the release candidate (Gate E).
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.15"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install pinned tools
+        run: |
+          python -m pip install uv==0.13.0
+          uv sync --frozen
+          npm ci --prefix frontend --no-audit --no-fund
+      - name: Faultline CI (lint, pins, tests, type drift, build, boot)
+        run: python tools/fl.py ci

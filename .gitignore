@@ -1,0 +1,18 @@
+.venv/
+var/
+node_modules/
+frontend/dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.env
+.env.*
+!.env.example
+# machine-specific: the execution image id differs on every build; created by scripts/build_images.py
+docker/images.lock.json
+
+# local assistant/working files, not part of the submission
+CLAUDE.md
+.claude/
