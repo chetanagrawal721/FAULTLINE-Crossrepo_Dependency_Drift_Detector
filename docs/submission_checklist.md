@@ -23,9 +23,10 @@ Tick an item only when you have checked it yourself. Each claim must trace to a 
 Forbidden wording in all materials: "proof", "guarantee", "compatible" (except in "not a statement that they are compatible"), "AI detected".
 
 ## Honest limits to state on the limits slide
-- Docker Desktop isolation (shared kernel), fetch zone without an egress allowlist.
+- Docker Desktop isolation (shared kernel); the fetch zone is limited to GitHub and PyPI by a proxy allowlist.
 - Python verified end to end; npm and Maven are inventory only.
-- Scenarios needing call-site binding, contract replay or static API analysis are registered but not evaluated.
+- O-bind is bind-level only (calls are not executed; star, dynamic and instance-method call sites are not checked).
+- Scenarios needing contract replay or static API analysis are registered but not evaluated.
 - Small fixture set: no claim about real-world accuracy.
 
 ## Materials

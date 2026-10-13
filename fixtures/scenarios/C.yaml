@@ -1,9 +1,32 @@
-# Scenario C (signature changed) is REGISTERED but NOT EVALUATED by the MVP: seeing it needs the call-site extractor and O-bind (M4.6).
-# No ground-truth label is committed until the third-party behaviour (urllib3 2.x dropping Retry(method_whitelist=...)) is verified by hand.
+# Scenario C: signature changed. urllib3 2.x removed Retry(method_whitelist=...). The artifact imports Retry fine in both worlds and only
+# a call-shape check (O-bind) sees the change. Verified by scripts/verify_fixture_facts.py (C); a second plain-environment check and the
+# expected outcome are in fixtures/verification/C-expected-outcome.md. The artifact is a separate small fixture (docs/adr/0004).
 id: C
 title: Signature changed (urllib3 Retry keyword)
-evaluated: false
-not_evaluated_reason: needs O-bind call-site checking (M4.6); import-only checks cannot see a changed keyword
-artifact: {repo: acme-models, path: fixtures/repos/acme-models, import_package: acme_models}
-consumers: []
-expect: {relationships: [], cells: []}
+truth: break
+verified_by: C
+artifact:
+  repo: acme-http
+  path: fixtures/repos/acme-http
+  import_package: acme_http
+consumers:
+  - repo: orders-svc
+    path: fixtures/repos/orders-svc/C
+    imports: [acme_http.retry]
+expect:
+  relationships:
+    - {producer: acme-http, consumer: orders-svc, level: L2}
+  cells:
+    - consumer: orders-svc
+      delta: [urllib3]
+      state: ANALYZED
+      verdict: BREAK_WITNESSED
+      witness: true
+      oracle: o_bind
+      entry_point: "bind:src/acme_http/retry.py:7:11"
+      signature:
+        exc_type: TypeError
+        message_contains: "got an unexpected keyword argument 'method_whitelist'"
+      attribution:
+        minimal_set: [urllib3]
+        sidedness: two_sided

@@ -1,0 +1,11 @@
+tests/unit/test_callsites.py::test_tc_4_6_1_records_match_the_golden_file_including_line_and_column PASSED [ 10%]
+tests/unit/test_callsites.py::test_only_calls_into_divergent_packages_are_recorded_as_resolved PASSED [ 20%]
+tests/unit/test_callsites.py::test_tc_4_6_3_dynamic_and_unresolved_forms_are_recorded_and_never_treated_as_absent PASSED [ 30%]
+tests/unit/test_callsites.py::test_extraction_reads_source_and_never_runs_it PASSED [ 40%]
+tests/unit/test_callsites.py::test_a_file_that_does_not_parse_yields_no_records_and_no_error PASSED [ 50%]
+tests/unit/test_callsites.py::test_a_source_tree_reads_only_python_files_in_a_stable_order PASSED [ 60%]
+tests/unit/test_callsites.py::test_records_are_persisted_per_file_hash_and_call_site PASSED [ 70%]
+tests/unit/test_callsites.py::test_module_names_follow_the_source_root PASSED [ 80%]
+tests/unit/test_callsites.py::test_reachable_modules_follow_the_artifacts_own_imports_and_parent_packages PASSED [ 90%]
+tests/unit/test_callsites.py::test_sites_in_modules_the_consumer_never_loads_are_not_planned PASSED [100%]
+============================= 10 passed in 0.20s ==============================

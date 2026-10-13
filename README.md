@@ -50,8 +50,9 @@ python tools/fl.py up               # API + worker + sandbox + UI at http://127.
 
 ## Honest limits
 
-- The sandbox is Docker Desktop (shared kernel), not gVisor; the fetch zone has no egress allowlist yet.
+- The sandbox is Docker Desktop (shared kernel), not gVisor. The fetch zone can reach only GitHub and PyPI over HTTPS, through an allowlisting proxy.
 - Python is verified end to end. npm and Maven are inventory only.
-- Scenarios C, E, F, I and J are registered with reasons but are not detectable by the MVP oracles (they need call-site binding,
-  contract replay or static API analysis).
+- O-bind checks that call shapes found in the artifact still bind to the current signatures (scenario C). It does not execute the calls, and call
+  sites with star arguments, dynamic targets or instance methods are not checked.
+- Scenarios E, F, I and J are registered with reasons but are not detectable by the MVP oracles (they need contract replay or static API analysis).
 - Numbers come from scripts, against committed labels, on a small fixture set: they are not an estimate of real-world accuracy.

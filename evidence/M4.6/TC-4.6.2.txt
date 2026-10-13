@@ -1,0 +1,20 @@
+tests/integration/test_o_bind.py::test_tc_4_6_2_a_call_that_no_longer_binds_is_witnessed_under_the_three_plus_three_rule PASSED [ 20%]
+tests/integration/test_o_bind.py::test_a_call_that_still_binds_is_exercised_and_not_reported_and_import_alone_passes PASSED [ 40%]
+tests/integration/test_o_bind.py::test_the_break_is_attributed_to_urllib3_two_sided_with_the_bind_oracle PASSED [ 60%]
+tests/integration/test_o_bind.py::test_call_sites_were_extracted_and_stored_with_their_shapes PASSED [ 80%]
+tests/integration/test_o_bind.py::test_the_call_is_bound_never_executed PASSED [100%]
+======================== 5 passed in 94.07s (0:01:34) =========================
+A: OK  label=no_break verdicts=['NO_DRIFT']
+B: OK  label=break verdicts=['BREAK_WITNESSED']
+C: OK  label=break verdicts=['BREAK_WITNESSED']
+D: OK  label=break verdicts=['BREAK_WITNESSED', 'NO_DRIFT']
+E: NOT EVALUATED - needs data-contract replay (M7.1); the MVP only imports and runs the artifact's own code
+F: NOT EVALUATED - needs static API and usage analysis (M6.2 to M6.4)
+G: OK  label=not_a_finding verdicts=['NO_DRIFT']
+H: OK  label=no_break verdicts=['NO_DIVERGENCE_OBSERVED']
+I: NOT EVALUATED - needs the usage index and ApiDelta (M6.3); without them the MVP reports INCONCLUSIVE at best
+J: NOT EVALUATED - needs data-contract replay (M7.1)
+L: OK  label=not_a_finding verdicts=['(no cells)']
+REAL1: NOT RUN HERE - real-world case, see tests/integration/test_real1.py
+REAL2: NOT RUN HERE - real-world case, see tests/integration/test_real1.py
+samples: 7 evaluated of 13 registered; labelled: 7; TP=3 FP=0 FN=0 TN=4

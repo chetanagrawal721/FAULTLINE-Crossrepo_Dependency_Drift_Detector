@@ -933,3 +933,25 @@ Format: `### <UTC time> | <EVENT> | <id> | by <name>` followed by details.
 ### 2026-10-13 18:05 UTC | DONE | M5.4 | by Chetan Agrawal
 - Observability and retention (minimal)
 - test cases passed: 2/2
+
+### 2026-10-13 18:23 UTC | START | M4.6 | by Chetan Agrawal
+- Targeted call-site extractor and O-bind (PC-1, MUST for Gate D)
+
+### 2026-10-13 19:06 UTC | TC PASS | TC-4.6.1 | by Chetan Agrawal
+- Extraction fixture
+- evidence: evidence/M4.6/TC-4.6.1.txt
+
+### 2026-10-13 19:06 UTC | TC PASS | TC-4.6.2 | by Chetan Agrawal
+- Bind failure witnessed
+- evidence: evidence/M4.6/TC-4.6.2.txt
+
+### 2026-10-13 19:06 UTC | TC PASS | TC-4.6.3 | by Chetan Agrawal
+- Dynamic stays dynamic
+- evidence: evidence/M4.6/TC-4.6.3.txt
+
+### 2026-10-13 19:06 UTC | NOTE | - | by Chetan Agrawal
+- M4.6: O-bind is bind-level (inspect.signature(...).bind with placeholders); calls are not executed. First full-scenario run found a false positive on H (a package absent from the consumer world, plus a module the consumer never loads, was reported as a break). Fixed: an absent package is NOT_APPLICABLE and only call sites in modules the consumer loads (following the artifact's own imports) are planned. Scenario C uses its own artifact (docs/adr/0004). Final: 7 evaluated scenarios TP=3 FP=0 FN=0 TN=4.
+
+### 2026-10-13 19:06 UTC | DONE | M4.6 | by Chetan Agrawal
+- Targeted call-site extractor and O-bind (PC-1, MUST for Gate D)
+- test cases passed: 3/3

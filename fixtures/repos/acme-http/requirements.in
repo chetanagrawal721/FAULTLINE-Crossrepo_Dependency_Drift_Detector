@@ -1,0 +1,2 @@
+# Reference world of scenario C: the urllib3 the artifact was written against.
+urllib3==1.26.20

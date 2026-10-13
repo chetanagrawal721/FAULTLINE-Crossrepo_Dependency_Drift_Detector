@@ -1,0 +1,5 @@
+# Resolved by: uv pip compile --generate-hashes --python-version 3.12 --python-platform x86_64-unknown-linux-gnu --exclude-newer 2024-10-30T00:00:00Z --only-binary :all:
+# Source: requirements.in
+urllib3==2.2.3 \
+    --hash=sha256:ca899ca043dcb1bafa3e262d73aa25c465bfb49e0bd9dd5d59f1d0acba2f8fac \
+    --hash=sha256:e7d814a81dad81e6caf2ec9fdedb284ecc9c73076b62654547cc64ccdcae26e9

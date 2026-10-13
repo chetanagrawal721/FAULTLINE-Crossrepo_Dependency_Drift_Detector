@@ -194,6 +194,62 @@ class CustomerRequest(BaseModel):
 ''')
 
 
+# ----------------------------------------------------------------------------- scenario C: a signature change that only call-site checking sees
+# A separate small artifact: adding urllib3 to the shared acme-models reference world would change every other scenario (see docs/adr/0004).
+put("acme-http/pyproject.toml", '''
+[project]
+name = "acme-http"
+version = "0.1.0"
+description = "HTTP retry policies shared by the demo services (Faultline fixture, scenario C)"
+requires-python = ">=3.9"
+dependencies = ["urllib3>=1.26"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/acme_http"]
+''')
+put("acme-http/src/acme_http/__init__.py", '''
+"""HTTP retry policies. Pure Python."""
+__version__ = "0.1.0"
+''')
+put("acme-http/src/acme_http/retry.py", '''
+"""Retry policies. Importing this module works with every urllib3; one of the calls below does not."""
+from urllib3.util.retry import Retry
+
+
+def make_retry():
+    """Retry GET three times. method_whitelist was renamed allowed_methods in urllib3 1.26 and removed in urllib3 2.0."""
+    return Retry(total=3, method_whitelist=["GET"])
+
+
+def make_quick_retry():
+    """Uses only keywords that exist in every urllib3 version: it must never be reported."""
+    return Retry(total=2, backoff_factor=0.1)
+''')
+put("acme-http/requirements.in", """
+# Reference world of scenario C: the urllib3 the artifact was written against.
+urllib3==1.26.20
+""")
+put("acme-http/README.md", """
+# acme-http (Faultline fixture, scenario C)
+
+`requirements.lock.txt` is the reference world. Hand verification: fixtures/verification/C.md.
+""")
+put("orders-svc/C/requirements.in", "urllib3==2.2.3\n")
+put("orders-svc/C/requirements.txt", "urllib3==2.2.3\nacme-http @ git+https://github.com/faultline-demo/acme-http@scenario-C\n")
+put("orders-svc/C/app/main.py", '''
+"""orders-svc (Faultline fixture, scenario C). Uses the shared HTTP retry policies."""
+import acme_http.retry as shared
+
+print("loaded", shared.__name__)
+''')
+put("orders-svc/C/README.md", "# orders-svc (Faultline fixture, scenario C)\n\n`requirements.lock.txt` is the resolved world (urllib3 2.x).\n")
+C_KEYS = ("acme-http", "orders-svc/C")
+
+
 def compile_lock(src: Path, out: Path, extra: list[str] | None = None) -> None:
     cmd = [sys.executable, "-m", "uv", "pip", "compile", str(src), "--generate-hashes", "--no-header",
            "--python-version", "3.12", "--python-platform", "x86_64-unknown-linux-gnu",
@@ -208,10 +264,17 @@ def compile_lock(src: Path, out: Path, extra: list[str] | None = None) -> None:
 
 
 def main() -> int:
-    for rel, text in FILES.items():
+    only_c = "--only-c" in sys.argv[1:]            # write just scenario C and leave every other fixture byte untouched
+    wanted = {k: v for k, v in FILES.items() if k.startswith(C_KEYS)} if only_c else FILES
+    for rel, text in wanted.items():
         p = REPOS / rel
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(text, encoding="utf-8", newline="\n")
+    compile_lock(REPOS / "acme-http" / "requirements.in", REPOS / "acme-http" / "requirements.lock.txt")
+    compile_lock(REPOS / "orders-svc" / "C" / "requirements.in", REPOS / "orders-svc" / "C" / "requirements.lock.txt")
+    if only_c:
+        print(f"wrote scenario C: {len(wanted)} files and 2 lock files")
+        return 0
     art = REPOS / "acme-models"
     compile_lock(art / "requirements.in", art / "requirements.lock.txt")
     compile_lock(art / "requirements.test.in", art / "requirements.test.lock.txt")
