@@ -129,6 +129,7 @@ def write_bundle(conn: sqlite3.Connection, witness_id: str, out_path: Path, stor
     for p in sorted(x for x in src.rglob("*") if x.is_file()):
         files[f"artifact/tree/{p.relative_to(src).as_posix()}"] = p.read_bytes()
     files["artifact/SOURCE.txt"] = (f"content_hash: {artifact_hash}\nThe tree under artifact/tree is the exact source that was tested.\n").encode()
+    files.update(_provenance_files(conn, store, wit, cell, mode))
     files["README.md"] = _readme(wit, body, ref_w, test_w, artifact_hash).encode()
     files["REPRODUCE.md"] = _reproduce().encode()
 
@@ -159,6 +160,46 @@ def write_bundle(conn: sqlite3.Connection, witness_id: str, out_path: Path, stor
             z.writestr(zi, data)
     raw = out_path.read_bytes()
     return BundleInfo(out_path, manifest["bundle_id"], content_hash(raw), len(raw), len(files) + 1)
+
+
+def _provenance_files(conn: sqlite3.Connection, store: Store, wit, cell, mode: str) -> dict[str, bytes]:
+    """Pinned SHAs, the manifests and lockfiles that were read, the verdict predicate with its policy version, and the attribution
+    attempts. Everything here comes from persisted rows and from the immutable snapshots; nothing is fetched."""
+    out: dict[str, bytes] = {}
+    projects = [cell["artifact_project_id"]] + [r[0] for r in conn.execute("SELECT consumer_project_id FROM cell_consumer WHERE cell_id=?", (cell["id"],))]
+    repos, copied = [], 0
+    for pid in dict.fromkeys(projects):
+        row = conn.execute("SELECT p.id, p.rel_path, s.sha, s.store_path, r.owner, r.name FROM project p JOIN snapshot s ON s.id=p.snapshot_id "
+                           "JOIN repository r ON r.id=s.repository_id WHERE p.id=?", (pid,)).fetchone()
+        if row is None:
+            continue
+        role = "artifact" if pid == cell["artifact_project_id"] else "consumer"
+        slug = f"{row['owner']}/{row['name']}"
+        repos.append({"role": role, "repository": slug, "commit": row["sha"], "project_path": row["rel_path"]})
+        snap = store.snapshot_dir(row["store_path"]) if row["store_path"] and row["store_path"].replace("_", "").isalnum() else None
+        if snap is not None and snap.exists():
+            for m in conn.execute("SELECT path FROM manifest WHERE project_id=? ORDER BY path", (pid,)):
+                f = snap / m["path"]
+                if f.is_file() and f.stat().st_size < 1_000_000 and copied < 60:
+                    out[f"sources/{slug}@{row['sha'][:10]}/{m['path']}"] = f.read_bytes()
+                    copied += 1
+    out["provenance/pinned.json"] = _jdump(scrub_obj({"mode": mode, "repositories": repos,
+                                                       "note": "every file under sources/ was read at exactly this commit"}))
+    fnd = conn.execute("SELECT verdict, headline, scope_json FROM finding WHERE cell_id=? ORDER BY created_at DESC LIMIT 1", (cell["id"],)).fetchone()
+    scope = json.loads(fnd["scope_json"]) if fnd else {}
+    out["provenance/verdict.json"] = _jdump(scrub_obj({
+        "verdict": fnd["verdict"] if fnd else None, "headline": fnd["headline"] if fnd else None,
+        "policy_version": scope.get("policy"), "oracle_plan": scope.get("oracle_plan"), "delta": scope.get("delta"),
+        "not_checked": scope.get("not_checked"),
+        "predicate": "3 fresh reference passes AND 3 fresh consumer failures, classified ARTIFACT_FAILURE, with one identical normalised signature"}))
+    att = conn.execute("SELECT * FROM attribution WHERE witness_id=?", (wit["id"],)).fetchone()
+    if att:
+        attempts = [dict(a) for a in conn.execute("SELECT direction, subset_json, world_hash, outcome, note FROM attribution_attempt WHERE attribution_id=? ORDER BY seq", (att["id"],))]
+        out["attribution/attribution.json"] = _jdump(scrub_obj({
+            "status": att["status"], "sidedness": att["sidedness"], "minimal_set": json.loads(att["minimal_set_json"]), "runs": att["runs"],
+            "notes": json.loads(att["notes_json"]), "attempts": attempts,
+            "label": "attribution experiment (forced world): these worlds are experiments, not observed environments"}))
+    return out
 
 
 def _readme(wit, body, ref_w, test_w, artifact_hash) -> str:
@@ -192,9 +233,9 @@ def _reproduce() -> str:
 3. Put `artifact/tree/src` on `PYTHONPATH` and run the oracle in `plan/oracle_plan.json` in each world, three times,
    with network access disabled. Expect the reference to pass and the consumer to fail with the signature in `witness.json`.
 
-Automated replay (milestone M5.2) will do these steps and report EXACT_REPRODUCTION, ENVIRONMENT_LIMITED or
-NON_REPRODUCIBLE. Until then this bundle proves what was observed and on exactly which inputs; it does not itself
-re-execute anything.
+Automated replay does these steps: `python -m faultline.witnesses.replay bundle.zip` (needs Docker and the Faultline sandbox).
+It reports exactly one of EXACT_REPRODUCTION, ENVIRONMENT_LIMITED or NON_REPRODUCIBLE, with reasons. Wheels are fetched only by
+sha256 from the lock files; nothing is ever fetched by branch or tag.
 """
 
 
