@@ -5,7 +5,7 @@ Output is the compiled, hash-pinned requirement text. Failure classification hap
 import os
 import subprocess
 
-from common import emit, read_spec
+from common import emit, proxy_env, read_spec
 
 PLATFORM = "x86_64-unknown-linux-gnu"
 
@@ -29,7 +29,7 @@ def main() -> None:
     for fl in a.get("find_links", []):
         cmd += ["--find-links", fl]
     env = {"PATH": os.environ.get("PATH", "/usr/local/bin:/usr/bin:/bin"), "HOME": "/tmp", "UV_CACHE_DIR": "/tmp/uvcache",
-           "LC_ALL": "C.UTF-8"}
+           "LC_ALL": "C.UTF-8", **proxy_env()}
     r = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=240)
     ver = subprocess.run(["uv", "--version"], capture_output=True, text=True, env=env).stdout.strip()
     out = ""

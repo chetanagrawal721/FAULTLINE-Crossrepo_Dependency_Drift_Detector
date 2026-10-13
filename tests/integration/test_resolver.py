@@ -36,7 +36,7 @@ def test_tc_3_3_1_reproducible_world(tmp_path, sbx, image):
     fs, prj = project_of(tmp_path / "s", {"pyproject.toml": '[project]\nname = "demo"\nversion = "0"\ndependencies = ["flask==2.2.2"]\n'})
     a = resolve_project(sbx, image, fs, prj, cutoff=CUTOFF)
     b = resolve_project(sbx, image, fs, prj, cutoff=CUTOFF)
-    assert a.status == "OK" and a.source == "resolver" and a.failure is None
+    assert a.status == "OK" and a.source == "resolver" and a.failure is None, a.failure
     assert a.lock_text == b.lock_text and {p.name for p in a.pinned} >= {"flask", "werkzeug", "jinja2"}
     assert all(p.hashes for p in a.pinned)
     prov = a.provenance

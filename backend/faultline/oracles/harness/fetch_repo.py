@@ -18,7 +18,7 @@ import re
 import subprocess
 import sys
 
-from common import emit, read_spec
+from common import emit, proxy_env, read_spec
 
 SNAP = "/snapshot"
 INVENTORY = ".faultline-inventory.json"
@@ -30,7 +30,7 @@ SHA = re.compile(r"^[0-9a-f]{40}$")
 def git_env(local: bool) -> dict:
     return {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "HOME": "/tmp/home", "GIT_CONFIG_NOSYSTEM": "1",
             "GIT_CONFIG_GLOBAL": "/dev/null", "GIT_TERMINAL_PROMPT": "0", "GIT_LFS_SKIP_SMUDGE": "1",
-            "GIT_ALLOW_PROTOCOL": "file" if local else "https", "LC_ALL": "C.UTF-8", "GIT_OPTIONAL_LOCKS": "0"}
+            "GIT_ALLOW_PROTOCOL": "file" if local else "https", "LC_ALL": "C.UTF-8", "GIT_OPTIONAL_LOCKS": "0", **proxy_env()}
 
 
 CFG = ["-c", "core.symlinks=false", "-c", "core.hooksPath=/dev/null", "-c", "protocol.ext.allow=never",
