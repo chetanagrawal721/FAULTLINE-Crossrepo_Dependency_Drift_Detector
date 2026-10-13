@@ -49,7 +49,7 @@ def docker_available() -> bool:
 def labelled_containers() -> list[str]:
     r = subprocess.run(["docker", "ps", "-a", "--filter", "label=faultline=1", "--format", "{{.Names}}"],
                        capture_output=True, text=True, timeout=30)
-    return [n for n in r.stdout.split() if n]
+    return [n for n in r.stdout.split() if n and n != "faultline-egress"]      # job containers only: the egress proxy is long-lived by design
 
 
 @pytest.fixture(scope="session")
