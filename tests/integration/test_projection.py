@@ -50,7 +50,7 @@ def test_tc_4_2_2_consumer_import_scan_lists_exactly_the_modules_imported(tmp_pa
     prod = fixture_repo("acme-models")
     entries = [{"path": k, "kind": "file", "size": len(v)} for k, v in prod.items()]
     known = artifact_modules(tmp_path, entries, "src", "acme_models")
-    assert known == {"acme_models", "acme_models.customer", "acme_models.web"}
+    assert known == {"acme_models", "acme_models.customer", "acme_models.settings", "acme_models.web"}   # settings was added to the shared fixture for scenario B
     consumer = {"app/a.py": "import acme_models.customer as c\nfrom acme_models.web import make_app\n",
                 "app/b.py": "from acme_models import customer\nimport json\n", "app/c.py": "import importlib\nimportlib.import_module(name)\nimportlib.import_module('acme_models.customer')\n",
                 "node_modules/x/y.py": "import acme_models.web\n", "tests/test_x.py": "import acme_models\n"}
