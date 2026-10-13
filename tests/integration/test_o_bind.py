@@ -104,3 +104,12 @@ def test_the_call_is_bound_never_executed(daemon, image):
     assert by["bind:x.py:5:0"].not_applicable and by["bind:x.py:5:0"].failure_class.value == "NONE"           # a package this world does not contain is not a break
     assert not any("the call was made" in (e.message or "") for e in r.entries)
     assert r.failure_class.value == "ARTIFACT_FAILURE"
+
+
+def test_the_analysis_view_serves_each_cells_oracle_plan_for_the_world_matrix(scenario_c):
+    from faultline.analysis.read import analysis_view
+    conn, res = scenario_c
+    cell = analysis_view(conn, res.analysis_id).cells[0]
+    plan = {p.oracle: p for p in cell.oracle_plan}
+    assert plan["o_import"].status == "RAN" and plan["o_bind"].status == "RAN" and len(plan["o_bind"].entries) == 2
+    assert plan["o_tests"].status == "NOT_PLANNED" and plan["o_tests"].reason                  # an oracle that did not run says why

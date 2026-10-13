@@ -11,6 +11,7 @@ from ..core.views import (
     DeltaLine,
     EvidenceLine,
     FailedConsumer,
+    OraclePlanStep,
     RelationshipView,
 )
 from ..verdicts.stats import funnel
@@ -52,12 +53,14 @@ def analysis_view(conn: sqlite3.Connection, analysis_id: str) -> AnalysisView:
         mods = sorted({m for x in cons for m in json.loads(x["imported_modules_json"] or "[]")})
         delta = [DeltaLine(name=d["name"], reference=d["v_ref"], consumer=d["v_test"], kind=d["kind"])
                  for d in conn.execute("SELECT * FROM delta_entry WHERE cell_id=? ORDER BY name", (c["id"],))]
-        f = conn.execute("SELECT id, verdict, headline FROM finding WHERE cell_id=?", (c["id"],)).fetchone()
+        f = conn.execute("SELECT id, verdict, headline, scope_json FROM finding WHERE cell_id=?", (c["id"],)).fetchone()
+        plan = [OraclePlanStep(oracle=p["oracle"], status=p["status"], reason=p.get("reason", ""), entries=list(p.get("entries", [])))
+                for p in (json.loads(f["scope_json"] or "{}").get("oracle_plan", []) if f else [])]
         att = _attribution(conn, c["id"])
         cells.append(CellView(id=c["id"], state=c["state"], ref_world_hash=c["ref_world_hash"], test_world_hash=c["test_world_hash"],
                               consumers=[_label(conn, x["consumer_project_id"]) for x in cons], imported_modules=mods, delta=delta,
                               finding_id=f["id"] if f else None, verdict=f["verdict"] if f else None, headline=f["headline"] if f else None,
-                              attribution=att))
+                              attribution=att, oracle_plan=plan))
     stats = json.loads(a["stats_json"] or "{}")
     failed = [FailedConsumer(consumer=_label(conn, x["consumer"]), producer=_label(conn, x["producer"]), side=x["side"], reason=x["reason"], text=x["text"])
               for x in stats.get("failed_consumers", [])]

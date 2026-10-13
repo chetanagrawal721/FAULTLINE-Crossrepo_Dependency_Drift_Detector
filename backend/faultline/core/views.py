@@ -277,6 +277,13 @@ class AttributionView(View):
     attempts: list[AttemptView]
 
 
+class OraclePlanStep(View):
+    oracle: str
+    status: str          # RAN | PLANNED | BLOCKED | NOT_PLANNED
+    reason: str = ""
+    entries: list[str] = []
+
+
 class CellView(View):
     id: str
     state: str
@@ -289,6 +296,7 @@ class CellView(View):
     verdict: str | None
     headline: str | None
     attribution: AttributionView | None = None
+    oracle_plan: list[OraclePlanStep] = []      # what was planned and run for this cell, from the stored finding
     runtime: str = "cpython 3.12.15"
     platform: str = "linux/amd64 (x86_64-unknown-linux-gnu)"
     visibility: str = "flat site-packages: the importer sees the resolved version"

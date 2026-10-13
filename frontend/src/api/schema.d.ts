@@ -464,6 +464,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/witnesses/{witness_id}/bundle/manifest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Witness Bundle Manifest
+         * @description What a witness's evidence bundle contains and whether it verifies: the manifest, every file with its SHA-256, and the verifier's verdict.
+         */
+        get: operations["witness_bundle_manifest_api_witnesses__witness_id__bundle_manifest_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/witnesses/{witness_id}/rerun": {
         parameters: {
             query?: never;
@@ -590,6 +610,11 @@ export interface components {
             id: string;
             /** Imported Modules */
             imported_modules: string[];
+            /**
+             * Oracle Plan
+             * @default []
+             */
+            oracle_plan: components["schemas"]["OraclePlanStep"][];
             /**
              * Platform
              * @default linux/amd64 (x86_64-unknown-linux-gnu)
@@ -960,6 +985,23 @@ export interface components {
          * @enum {string}
          */
         Mode: "LIVE" | "FIXTURE" | "REPLAY";
+        /** OraclePlanStep */
+        OraclePlanStep: {
+            /**
+             * Entries
+             * @default []
+             */
+            entries: string[];
+            /** Oracle */
+            oracle: string;
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
+            /** Status */
+            status: string;
+        };
         /** PackageView */
         PackageView: {
             /** Artifact Sha256 */
@@ -2116,6 +2158,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    witness_bundle_manifest_api_witnesses__witness_id__bundle_manifest_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                witness_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */

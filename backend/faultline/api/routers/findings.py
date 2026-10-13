@@ -58,6 +58,29 @@ def get_finding(finding_id: str, conn=Depends(fresh_conn)) -> FindingDetail:
     return finding_store.get_finding(conn, finding_id, bundle_url=None)
 
 
+@router.get("/witnesses/{witness_id}/bundle/manifest")
+def witness_bundle_manifest(witness_id: str, conn=Depends(get_conn), settings: Settings = Depends(get_settings)) -> dict:
+    """What a witness's evidence bundle contains and whether it verifies: the manifest, every file with its SHA-256, and the verifier's verdict."""
+    from ...witnesses.bundle import verify_bundle
+    row = conn.execute("SELECT w.id, a.mode FROM witness w JOIN analysis a ON a.id = w.analysis_id WHERE w.id=?", (witness_id,)).fetchone()
+    if row is None:
+        raise NotFoundError(f"witness {witness_id} not found")
+    if settings.mode.value == "REPLAY":
+        path = Path(settings.store_path) / "bundles" / f"{witness_id}.zip"
+        if not path.is_file():
+            raise NotFoundError(f"no recorded bundle for witness {witness_id}")
+        check = verify_bundle(path)
+    else:
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "bundle.zip"
+            write_bundle(conn, witness_id, path, Store(settings.store_path), mode=row["mode"])
+            check = verify_bundle(path)
+    m = check.manifest or {}
+    return {"witness_id": witness_id, "verified": check.ok, "errors": check.errors, "schema_version": m.get("schema_version"), "bundle_id": m.get("bundle_id"),
+            "created_at": m.get("created_at"), "mode": m.get("mode"), "oracle": m.get("oracle"), "worlds": m.get("worlds"), "artifact": m.get("artifact"),
+            "run_summary": m.get("run_summary"), "claim": m.get("claim"), "files": m.get("files", [])}
+
+
 @router.get("/witnesses/{witness_id}/bundle")
 def witness_bundle(witness_id: str, conn=Depends(get_conn), settings: Settings = Depends(get_settings)) -> Response:
     """The evidence bundle for a witness, generated from the stored records and verified before it is served."""

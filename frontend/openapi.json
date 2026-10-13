@@ -350,6 +350,14 @@
             "title": "Imported Modules",
             "type": "array"
           },
+          "oracle_plan": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/OraclePlanStep"
+            },
+            "title": "Oracle Plan",
+            "type": "array"
+          },
           "platform": {
             "default": "linux/amd64 (x86_64-unknown-linux-gnu)",
             "title": "Platform",
@@ -1498,6 +1506,38 @@
         ],
         "title": "Mode",
         "type": "string"
+      },
+      "OraclePlanStep": {
+        "additionalProperties": false,
+        "properties": {
+          "entries": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "oracle": {
+            "title": "Oracle",
+            "type": "string"
+          },
+          "reason": {
+            "default": "",
+            "title": "Reason",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "oracle",
+          "status"
+        ],
+        "title": "OraclePlanStep",
+        "type": "object"
       },
       "PackageView": {
         "additionalProperties": false,
@@ -3865,6 +3905,51 @@
           }
         },
         "summary": "Witness Bundle",
+        "tags": [
+          "findings"
+        ]
+      }
+    },
+    "/api/witnesses/{witness_id}/bundle/manifest": {
+      "get": {
+        "description": "What a witness's evidence bundle contains and whether it verifies: the manifest, every file with its SHA-256, and the verifier's verdict.",
+        "operationId": "witness_bundle_manifest_api_witnesses__witness_id__bundle_manifest_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "witness_id",
+            "required": true,
+            "schema": {
+              "title": "Witness Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Witness Bundle Manifest Api Witnesses  Witness Id  Bundle Manifest Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Witness Bundle Manifest",
         "tags": [
           "findings"
         ]
