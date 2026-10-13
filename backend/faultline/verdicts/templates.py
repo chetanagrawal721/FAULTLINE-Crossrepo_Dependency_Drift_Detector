@@ -63,3 +63,20 @@ def live_headline(outcome: str, *, artifact: str, consumers: list[str], entry: s
         return f"{outcome.replace('_', ' ').title()}: see the scoped evidence for {artifact} with {who}."
     why = "; ".join(reasons) or "insufficient evidence"
     return f"Could not check {artifact} against the dependencies of {who}: {why}."
+
+
+def static_headline(outcome: str, *, artifact: str, symbol: str | None = None, change_kind: str | None = None, v0: str = "", v1: str = "",
+                    reason: str = "", package: str = "", n_breaking: int = 0, n_dynamic: int = 0, examples: tuple[str, ...] = (),
+                    resolved: int = 0, total: int = 0) -> str:
+    """EXPOSED, POTENTIAL and NOT_EXPOSED wording (master 30.4). It states what the source and the API delta say; it never says anything failed."""
+    pct = f"{(resolved / total * 100) if total else 100.0:.1f}"
+    cov = f"Coverage {resolved}/{total} ({pct}%)."
+    if outcome == "EXPOSED":
+        return f"{artifact} uses `{symbol}`, which changed ({change_kind}) between {v0} and {v1}. Not executed because {reason}."
+    if outcome == "POTENTIAL":
+        ex = f" ({', '.join(examples[:3])})" if examples else ""
+        return f"{package} {v0}→{v1} contains {n_breaking} breaking change(s). {n_dynamic} reference(s) could not be resolved{ex}. {cov}"
+    if outcome == "NOT_EXPOSED":
+        ex = f" Unresolved: {', '.join(examples[:3])}." if examples else ""
+        return f"Changed APIs aren't used by resolved references. {cov}{ex} This is not a statement that nothing can fail."
+    raise ValueError(f"not a static verdict: {outcome}")

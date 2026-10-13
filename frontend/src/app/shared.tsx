@@ -22,8 +22,33 @@ export function verdictTone(verdict: string): Tone {
   }
 }
 
+/** WITNESSED verdicts were reproduced by running code (3 + 3); STATIC ones were read from source and API changes and nothing was run for the claim. */
+export function evidenceKind(verdict: string): "WITNESSED" | "STATIC" | "OTHER" {
+  switch (verdict) {
+    case "BREAK_WITNESSED":
+    case "SILENT_DIVERGENCE_WITNESSED":
+      return "WITNESSED";
+    case "EXPOSED":
+    case "POTENTIAL":
+    case "NOT_EXPOSED":
+      return "STATIC";
+    default:
+      return "OTHER";
+  }
+}
+
 export function VerdictStatus({ verdict }: { verdict: string }) {
-  return <Status tone={verdictTone(verdict)}>{words(verdict)}</Status>;
+  const kind = evidenceKind(verdict);
+  return (
+    <span className="verdict-with-kind">
+      <Status tone={verdictTone(verdict)}>{words(verdict)}</Status>
+      {kind === "STATIC" && (
+        <span className="evidence-kind static" data-testid="evidence-kind" title="Static analysis: read from source and API changes. Nothing was executed for this claim.">
+          static
+        </span>
+      )}
+    </span>
+  );
 }
 
 export function ModeStatus({ mode }: { mode: string }) {

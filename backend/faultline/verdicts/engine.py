@@ -48,6 +48,13 @@ OUTCOMES = ("HYGIENE", "NO_DRIFT", "NOT_APPLICABLE", *(v.value for v in Verdict)
 LIVE_PRIORITY = {Verdict.BREAK_WITNESSED: 1, Verdict.SILENT_DIVERGENCE_WITNESSED: 2, Verdict.EXPOSED: 3, Verdict.POTENTIAL: 4,
                  Verdict.INCONCLUSIVE: 6, Verdict.NO_DIVERGENCE_OBSERVED: 7, Verdict.NOT_EXPOSED: 8, Verdict.HYGIENE: 9}
 ACTIONABLE_LEVELS = ("L2", "L3", "L4", "L5")
+WITNESSED_VERDICTS = frozenset({"BREAK_WITNESSED", "SILENT_DIVERGENCE_WITNESSED"})      # an execution reproduced it, 3 + 3
+STATIC_VERDICTS = frozenset({"EXPOSED", "POTENTIAL", "NOT_EXPOSED"})                    # read from source and API deltas; nothing was executed for the claim
+
+
+def evidence_kind(outcome: str) -> str:
+    """WITNESSED, STATIC or OTHER. The UI shows the first two differently; a static verdict is never worded like a witness."""
+    return "WITNESSED" if outcome in WITNESSED_VERDICTS else "STATIC" if outcome in STATIC_VERDICTS else "OTHER"
 
 
 @dataclass(frozen=True)
@@ -65,7 +72,8 @@ class Evidence:
     api_delta_breaking: bool | None = None            # None = ApiDelta was not computed
     dynamic_refs: bool | None = None
     coverage: float | None = None
-    coverage_threshold: float = 0.8
+    coverage_threshold: float = 0.9                   # master 21.3; configurable and always displayed with the verdict
+    static_limits: tuple[str, ...] = ()               # what the static API delta could not read (compiled modules, runtime exports, missing deltas)
 
 
 @dataclass(frozen=True)
@@ -109,11 +117,13 @@ def decide(ev: Evidence) -> Outcome:
             return Outcome("NO_DIVERGENCE_OBSERVED", 5, (), **common)
         return Outcome("EXPOSED", 6, problems or ("exposed interactions were not all exercised",),
                        sub_label="static-confirmed" if ev.static_confirmed else None, **common)
-    if ev.api_delta_breaking and ev.dynamic_refs:                                                    # 7
-        return Outcome("POTENTIAL", 7, ("breaking API changes exist and dynamic references could not be resolved",), **common)
-    if ev.api_delta_breaking is not None and ev.exposures is not None and not ev.exposures \
-            and ev.coverage is not None and ev.coverage >= ev.coverage_threshold:                    # 8
+    low_coverage = ev.coverage is not None and ev.coverage < ev.coverage_threshold
+    if ev.api_delta_breaking and (ev.dynamic_refs or low_coverage):                                  # 7 (below the threshold, unresolved references exist)
+        return Outcome("POTENTIAL", 7, ("breaking API changes exist and references to them could not all be resolved",), coverage=ev.coverage, **common)
+    if ev.api_delta_breaking is not None and ev.exposures is not None and not ev.exposures and not ev.static_limits             and ev.coverage is not None and not low_coverage:                                        # 8
         return Outcome("NOT_EXPOSED", 8, (), coverage=ev.coverage, **common)
     if ev.exposures is None and exercised and not problems and not ev.run_problem:                   # MVP: rules 5-8 are not reachable
         return Outcome("NO_DIVERGENCE_OBSERVED", 5, (), sub_label="oracle-only", **common)
-    return Outcome("INCONCLUSIVE", 9, problems or ("no interaction could be exercised",), **common)  # 9
+    extra = (f"insufficient_coverage: {ev.coverage:.2f} is below the threshold {ev.coverage_threshold:.2f}",) if ev.exposures is not None and low_coverage else ()
+    extra += tuple(f"static analysis is limited: {x}" for x in ev.static_limits) if ev.exposures is not None else ()
+    return Outcome("INCONCLUSIVE", 9, problems + extra or ("no interaction could be exercised",), coverage=ev.coverage if extra else None, **common)  # 9

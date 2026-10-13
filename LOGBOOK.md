@@ -955,3 +955,59 @@ Format: `### <UTC time> | <EVENT> | <id> | by <name>` followed by details.
 ### 2026-10-13 19:06 UTC | DONE | M4.6 | by Chetan Agrawal
 - Targeted call-site extractor and O-bind (PC-1, MUST for Gate D)
 - test cases passed: 3/3
+
+### 2026-10-13 22:03 UTC | START | M6.2 | by Chetan Agrawal
+- Static API surface and ApiDelta (griffe)
+
+### 2026-10-13 22:03 UTC | START | M6.3 | by Chetan Agrawal
+- Full usage index and exposure
+
+### 2026-10-13 22:03 UTC | START | M6.4 | by Chetan Agrawal
+- EXPOSED, POTENTIAL and NOT EXPOSED verdicts
+
+### 2026-10-13 22:03 UTC | TC PASS | TC-6.2.1 | by Chetan Agrawal
+- Known removal is reported
+- evidence: evidence/M6.2/TC-6.2.1.txt
+
+### 2026-10-13 22:03 UTC | TC PASS | TC-6.2.2 | by Chetan Agrawal
+- No import of target code
+- evidence: evidence/M6.2/TC-6.2.2.txt
+
+### 2026-10-13 22:03 UTC | TC PASS | TC-6.2.3 | by Chetan Agrawal
+- Limits are flagged
+- evidence: evidence/M6.2/TC-6.2.3.txt
+
+### 2026-10-13 22:03 UTC | DONE | M6.2 | by Chetan Agrawal
+- Static API surface and ApiDelta (griffe)
+- test cases passed: 3/3
+
+### 2026-10-13 22:03 UTC | TC PASS | TC-6.3.1 | by Chetan Agrawal
+- Resolution fixtures
+- evidence: evidence/M6.3/TC-6.3.1.txt
+
+### 2026-10-13 22:03 UTC | TC PASS | TC-6.3.2 | by Chetan Agrawal
+- Coverage is computed
+- evidence: evidence/M6.3/TC-6.3.2.txt
+
+### 2026-10-13 22:03 UTC | TC PASS | TC-6.3.3 | by Chetan Agrawal
+- Cache invalidation
+- evidence: evidence/M6.3/TC-6.3.3.txt
+
+### 2026-10-13 22:03 UTC | DONE | M6.3 | by Chetan Agrawal
+- Full usage index and exposure
+- test cases passed: 3/3
+
+### 2026-10-13 22:03 UTC | TC PASS | TC-6.4.1 | by Chetan Agrawal
+- Coverage gate
+- evidence: evidence/M6.4/TC-6.4.1.txt
+
+### 2026-10-13 22:03 UTC | TC PASS | TC-6.4.2 | by Chetan Agrawal
+- Static cannot witness
+- evidence: evidence/M6.4/TC-6.4.2.txt
+
+### 2026-10-13 22:03 UTC | DONE | M6.4 | by Chetan Agrawal
+- EXPOSED, POTENTIAL and NOT EXPOSED verdicts
+- test cases passed: 2/2
+
+### 2026-10-13 22:03 UTC | NOTE | - | by Chetan Agrawal
+- M6.2: the static API surface uses the standard-library ast, not griffe (ADR 0005). On the real urllib3 1.26.18 and 2.2.3 wheels it reads 430 and 382 symbols in 0.14 s and reports Retry(method_whitelist) removed. With the acme-http sources it marks retry.py:7 as not binding and retry.py:12 as still binding (evidence/M6.2/real-urllib3-static.txt). The static verdict there is EXPOSED (static-confirmed): nothing was executed. The static path is a library and a script (scripts/static_exposure.py); it is not yet wired into the live analysis, because the wheels sit in the sandbox wheelhouse.
