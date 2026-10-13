@@ -1,7 +1,7 @@
-# Ground-truth label for scenario C. Written before any benchmark result exists; results never edit this file.
+# Ground-truth label for scenario C. Written before any benchmark result that includes it exists; results never edit this file.
 id: scenario-C
 scenario: C
 kind: fixture
-truth: unlabelled
-evaluated: false
-note: "signature change: needs O-bind; truth not committed until verified by hand"
+truth: break
+evaluated: true
+note: "urllib3 2.x removed Retry(method_whitelist=...): import succeeds in both worlds, the call no longer binds. Verified by hand (fixtures/verification/C.md, fixtures/verification/C-expected-outcome.md) before O-bind existed."
