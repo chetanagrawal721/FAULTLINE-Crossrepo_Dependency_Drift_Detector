@@ -1,0 +1,15 @@
+TC-12.2.2 Docker stopped, open REPLAY (method and observations, 2026-10-14)
+
+Method (honest scope): the REPLAY pack was exported with scripts/export_replay.py from var/faultline.db and served on port 8011 with
+  FAULTLINE_MODE=REPLAY DOCKER_HOST=tcp://127.0.0.1:1 HTTPS_PROXY=http://127.0.0.1:1 HTTP_PROXY=http://127.0.0.1:1
+Docker was made unreachable for this process and every outbound proxy points at a closed port; the Docker service itself was not stopped and
+the network adapter was not disconnected. A manual run on a machine with Docker stopped and the network off is still the stronger check.
+
+Observed:
+- GET /api/health -> mode REPLAY, db ok
+- GET /api/findings -> 8 recorded findings, each with mode REPLAY
+- POST /api/projects/x/analyze -> HTTP 409 INVALID_TRANSITION "REPLAY mode shows recorded evidence only: nothing can be started or re-run"
+- UI findings view: badge RECORDED, banner "RECORDED EVIDENCE: NOTHING CAN BE STARTED OR RE-RUN IN THIS MODE", every row shows RECORDED
+- UI finding view: "Re-run" section reads "Recorded results: re-run is disabled."
+- tests/integration/test_replay_mode.py (DOCKER_HOST unreachable, a finished job with an attempt in the database): 3 passed
+Also fixed while doing this: scripts/export_replay.py failed on a database with job attempts (FOREIGN KEY); attempts are now deleted first, with a regression test.
