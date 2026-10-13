@@ -865,3 +865,15 @@ Format: `### <UTC time> | <EVENT> | <id> | by <name>` followed by details.
 ### 2026-10-13 16:09 UTC | TC PASS | TC-12.1.2 | by Chetan Agrawal
 - Faultline reproduces it
 - evidence: evidence/M12.1/TC-12.1.2.txt
+
+### 2026-10-13 16:31 UTC | TC PASS | TC-0.6.1 | by Chetan Agrawal
+- CI is green on main
+- evidence: evidence/M0.6/TC-0.6.1.txt
+
+### 2026-10-13 16:44 UTC | TC PASS | TC-0.6.2 | by Chetan Agrawal
+- Schema drift is caught
+- evidence: evidence/M0.6/TC-0.6.2.txt
+
+### 2026-10-13 16:44 UTC | DONE | M0.6 | by Chetan Agrawal
+- CI gate
+- test cases passed: 2/2

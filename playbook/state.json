@@ -27,8 +27,9 @@
       "status": "done"
     },
     "M0.6": {
+      "done": "2026-10-13 16:44 UTC",
       "started": "2026-10-12 18:53 UTC",
-      "status": "in_progress"
+      "status": "done"
     },
     "M1.0": {
       "done": "2026-10-12 19:34 UTC",
@@ -298,6 +299,18 @@
       "date": "2026-10-12 18:53 UTC",
       "evidence": "evidence/M0.5/TC-0.5.2.txt",
       "note": "viewed in the in-app browser; screenshot saved",
+      "status": "pass"
+    },
+    "TC-0.6.1": {
+      "date": "2026-10-13 16:31 UTC",
+      "evidence": "evidence/M0.6/TC-0.6.1.txt",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-0.6.2": {
+      "date": "2026-10-13 16:44 UTC",
+      "evidence": "evidence/M0.6/TC-0.6.2.txt",
+      "note": "",
       "status": "pass"
     },
     "TC-1.0.1": {

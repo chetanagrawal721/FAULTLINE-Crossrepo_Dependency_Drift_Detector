@@ -1,0 +1,6 @@
+Branch ci-drift-check (an API field added without regenerating types), run 38431262416: failure at the type-drift step
+https://github.com/chetanagrawal721/FAULTLINE-Crossrepo_Dependency_Drift_Detector/actions/runs/38431262416
+tests before it: 456 passed, 2 skipped, 2 xfailed
+=== openapi/types current ===
+frontend/openapi.json is stale: run `python tools/fl.py gen-types`
+CI step failed: openapi/types current
