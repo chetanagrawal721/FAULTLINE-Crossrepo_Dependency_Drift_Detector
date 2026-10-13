@@ -1,0 +1,2 @@
+pydantic==2.7.4
+acme-contracts @ git+https://github.com/faultline-demo/acme-contracts@scenario-E

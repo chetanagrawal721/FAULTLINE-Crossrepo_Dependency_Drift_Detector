@@ -1,0 +1,2 @@
+# Reference world of scenarios J and E: the pydantic the models were written against.
+pydantic==1.10.13

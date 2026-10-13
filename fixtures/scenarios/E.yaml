@@ -1,8 +1,9 @@
-# Scenario E (silent divergence in serialisation) is REGISTERED but NOT EVALUATED: it needs contract replay (Phase 7, M7.1).
+# Scenario E (silent divergence in serialisation). Contract replay (M7.1) reproduces it: tests/integration/test_o_contract.py runs it against
+# fixtures/repos/acme-contracts and billing-svc/E (docs/adr/0006). It is kept out of the benchmark denominator, which was fixed before it existed.
 id: E
 title: Silent divergence (Union[int, str] parsed differently by pydantic 1 and 2)
 evaluated: false
-not_evaluated_reason: needs data-contract replay (M7.1); the MVP only imports and runs the artifact's own code
+not_evaluated_reason: contract replay is built and tested on its own; not yet part of the committed benchmark labels
 artifact: {repo: acme-models, path: fixtures/repos/acme-models, import_package: acme_models}
 consumers: []
 expect: {relationships: [], cells: []}

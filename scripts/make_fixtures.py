@@ -249,6 +249,78 @@ print("loaded", shared.__name__)
 put("orders-svc/C/README.md", "# orders-svc (Faultline fixture, scenario C)\n\n`requirements.lock.txt` is the resolved world (urllib3 2.x).\n")
 C_KEYS = ("acme-http", "orders-svc/C")
 
+# ----------------------------------------------------------------------------- scenarios J and E: data contracts (pydantic 1 produces, pydantic 2 parses)
+# A separate artifact for the same reason as acme-http: pydantic is already in the acme-models reference world, and its models there
+# must stay as they are (docs/adr/0006).
+put("acme-contracts/pyproject.toml", '''
+[project]
+name = "acme-contracts"
+version = "0.1.0"
+description = "Wire models shared by the demo services (Faultline fixture, scenarios J and E)"
+requires-python = ">=3.9"
+dependencies = ["pydantic>=1.10,<3"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/acme_contracts"]
+''')
+put("acme-contracts/src/acme_contracts/__init__.py", '''
+"""Wire models. Importing them works with pydantic 1 and 2; what they accept on the wire is not the same."""
+__version__ = "0.1.0"
+''')
+put("acme-contracts/src/acme_contracts/customer.py", '''
+"""The customer request that orders-svc sends and billing-svc parses (scenario J)."""
+from typing import Optional
+
+from pydantic import BaseModel
+
+
+class CustomerRequest(BaseModel):
+    customer_id: int
+    email: str
+    middle_name: Optional[str]         # no default: optional in pydantic 1, required in pydantic 2
+
+
+class LoyaltyNote(BaseModel):
+    """Negative control: every field has a default, so both pydantic versions accept the same payloads."""
+    note: Optional[str] = None
+    points: int = 0
+''')
+put("acme-contracts/src/acme_contracts/ids.py", '''
+"""A reference that may be a number or text (scenario E)."""
+from typing import Union
+
+from pydantic import BaseModel
+
+
+class Ref(BaseModel):
+    value: Union[int, str]             # pydantic 1 tries int first, so "42" becomes 42; pydantic 2 keeps "42" as text
+''')
+put("acme-contracts/fixtures/ref_example.json", '{"value": "42"}\n')
+put("acme-contracts/requirements.in", """
+# Reference world of scenarios J and E: the pydantic the models were written against.
+pydantic==1.10.13
+""")
+put("acme-contracts/README.md", """
+# acme-contracts (Faultline fixture, scenarios J and E)
+
+`requirements.lock.txt` is the reference world. Hand verification: fixtures/verification/J.md and E.md.
+""")
+for _sc, _mod in (("J", "customer"), ("E", "ids")):
+    put(f"billing-svc/{_sc}/requirements.in", "pydantic==2.7.4\n")
+    put(f"billing-svc/{_sc}/requirements.txt", f"pydantic==2.7.4\nacme-contracts @ git+https://github.com/faultline-demo/acme-contracts@scenario-{_sc}\n")
+    put(f"billing-svc/{_sc}/app/main.py", f'''
+"""billing-svc (Faultline fixture, scenario {_sc}). Parses the wire models the other services send."""
+import acme_contracts.{_mod} as models
+
+print("loaded", models.__name__)
+''')
+    put(f"billing-svc/{_sc}/README.md", f"# billing-svc (Faultline fixture, scenario {_sc})\n\n`requirements.lock.txt` is the resolved world (pydantic 2.x).\n")
+CONTRACT_KEYS = ("acme-contracts", "billing-svc/J", "billing-svc/E")
+
 
 def compile_lock(src: Path, out: Path, extra: list[str] | None = None) -> None:
     cmd = [sys.executable, "-m", "uv", "pip", "compile", str(src), "--generate-hashes", "--no-header",
@@ -265,11 +337,17 @@ def compile_lock(src: Path, out: Path, extra: list[str] | None = None) -> None:
 
 def main() -> int:
     only_c = "--only-c" in sys.argv[1:]            # write just scenario C and leave every other fixture byte untouched
-    wanted = {k: v for k, v in FILES.items() if k.startswith(C_KEYS)} if only_c else FILES
+    only_contracts = "--only-contracts" in sys.argv[1:]      # likewise for scenarios J and E
+    wanted = {k: v for k, v in FILES.items() if k.startswith(C_KEYS)} if only_c else         {k: v for k, v in FILES.items() if k.startswith(CONTRACT_KEYS)} if only_contracts else FILES
     for rel, text in wanted.items():
         p = REPOS / rel
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(text, encoding="utf-8", newline="\n")
+    if only_contracts:
+        for d in ("acme-contracts", "billing-svc/J", "billing-svc/E"):
+            compile_lock(REPOS / d / "requirements.in", REPOS / d / "requirements.lock.txt")
+        print(f"wrote scenarios J and E: {len(wanted)} files and 3 lock files")
+        return 0
     compile_lock(REPOS / "acme-http" / "requirements.in", REPOS / "acme-http" / "requirements.lock.txt")
     compile_lock(REPOS / "orders-svc" / "C" / "requirements.in", REPOS / "orders-svc" / "C" / "requirements.lock.txt")
     if only_c:
