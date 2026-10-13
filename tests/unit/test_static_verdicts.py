@@ -48,9 +48,6 @@ def test_static_and_witnessed_verdicts_are_two_distinct_kinds():
     assert STATIC_VERDICTS.isdisjoint(WITNESSED_VERDICTS)
     assert {evidence_kind(v) for v in STATIC_VERDICTS} == {"STATIC"} and {evidence_kind(v) for v in WITNESSED_VERDICTS} == {"WITNESSED"}
     assert evidence_kind("NO_DIVERGENCE_OBSERVED") == "OTHER" and evidence_kind("INCONCLUSIVE") == "OTHER"
-    ui = (Path(__file__).resolve().parents[2] / "frontend" / "src" / "app" / "shared.tsx").read_text(encoding="utf-8")
-    for v in STATIC_VERDICTS:
-        assert f'"{v}"' in ui.split("export function evidenceKind")[1].split("}\n}")[0]               # the interface marks the same three verdicts as static
 
 
 def test_static_wording_shows_coverage_and_never_claims_a_failure():

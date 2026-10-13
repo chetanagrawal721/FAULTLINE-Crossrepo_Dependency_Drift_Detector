@@ -78,6 +78,3 @@ a.app-action { display: inline-flex; align-items: center; text-decoration: none;
 /* identifiers (commits, hashes, run ids, paths) are shown exactly as stored so they can be copied and compared */
 .review-inputs code, .data-table code, .key-values code, .manifest-grid code, .repository-title code, .dependency-node code, .run-board code,
 .review-inputs span[data-testid="pinned-sha"], .evidence-row code, .why-items code { text-transform: none; letter-spacing: normal; }
-
-.verdict-with-kind { display: inline-flex; align-items: center; gap: 6px; }
-.evidence-kind { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 1px 6px; border: 1px dashed currentColor; border-radius: 3px; opacity: 0.75; }

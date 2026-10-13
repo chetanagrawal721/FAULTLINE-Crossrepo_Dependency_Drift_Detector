@@ -27,8 +27,6 @@ function describe(e: unknown): { title: string; body: string; retryable: boolean
       return { title: "Not a GitHub repository URL", body, retryable: false };
     case "FETCH_FAILED":
       return { title: "Could not reach GitHub", body, retryable: true };
-    case "SERVER_UNREACHABLE":
-      return { title: "The FAULTLINE server could not be reached", body, retryable: true };
     case "UNAUTHORIZED":
       return { title: "An access token is required", body: "This server requires an admin token to start work. Add it in Settings, then try again.", retryable: false };
     default:

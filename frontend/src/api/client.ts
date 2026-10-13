@@ -78,13 +78,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const t = token.get();
   const headers: Record<string, string> = { Accept: "application/json", ...((init?.headers as Record<string, string>) ?? {}) };
   if (t && init?.method && init.method !== "GET") headers.Authorization = `Bearer ${t}`;
-  let r: Response;
-  try {
-    r = await fetch(path, { ...init, headers });
-  } catch {
-    // the browser could not reach the server at all: not a GitHub or input problem, and worth retrying once the server is back
-    throw new ApiError("The FAULTLINE server could not be reached. Check that it is running (python tools/fl.py up), then try again.", "SERVER_UNREACHABLE", true, 0);
-  }
+  const r = await fetch(path, { ...init, headers });
   if (!r.ok) {
     let msg = `${r.status} ${r.statusText}`;
     let code: string | null = null;
