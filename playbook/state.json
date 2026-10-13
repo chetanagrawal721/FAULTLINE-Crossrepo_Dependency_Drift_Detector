@@ -169,7 +169,8 @@
       "status": "done"
     },
     "M4.G": {
-      "status": "in_progress"
+      "done": "2026-10-13 15:31 UTC",
+      "status": "done"
     },
     "M5.1": {
       "done": "2026-10-13 10:15 UTC",
@@ -775,9 +776,21 @@
       "note": "",
       "status": "pass"
     },
+    "TC-4.G.1": {
+      "date": "2026-10-13 15:31 UTC",
+      "evidence": "evidence/M4.G/TC-4.G.1.txt",
+      "note": "",
+      "status": "pass"
+    },
     "TC-4.G.2": {
       "date": "2026-10-13 14:40 UTC",
       "evidence": "evidence/M4.G/TC-4.G.2.txt",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-4.G.3": {
+      "date": "2026-10-13 15:02 UTC",
+      "evidence": "evidence/M4.G/TC-4.G.3.txt",
       "note": "",
       "status": "pass"
     },

@@ -1,0 +1,11 @@
+TC-4.G.1 live run, 2026-10-13, through the running app's HTTP API (mode LIVE)
+submitted: https://github.com/chetanagrawal721/faultline-fixture-acme-models
+submitted: https://github.com/chetanagrawal721/faultline-fixture-notify-svc
+pinned: chetanagrawal721/faultline-fixture-acme-models 2e072e64e4ed0cba0127fd9e457274823febe8a6
+pinned: chetanagrawal721/faultline-fixture-notify-svc 4b09e96aa467a3538e5be65a7ea40312ac2a7368
+analysis mode: LIVE | funnel: {"relationships_discovered": 1, "relationships_actionable": 1, "suspected": 0, "consumers_discovered": 1, "consumers_analysed": 1, "consumers_failed": [], "cells": 1, "cells_by_state": {"ANALYZED": 1}}
+FINDING BREAK_WITNESSED | Reproduced: importing `acme_models.web` fails with `ImportError: cannot import name 'url_quote' from 'werkzeug.urls' (<site>/werkzeug/urls.py)` when acme-models runs with the dependencies of chetanagrawal721/faultline-fixture-notify-svc. It passes with acme-models's own dependencies. 3 of 3 fresh runs on each side.
+runs: ref FRESH_EXECUTION NONE 3
+runs: test FRESH_EXECUTION ARTIFACT_FAILURE 3
+NOT DONE: the 'fresh clone, make up' part was not exercised; this ran on the existing checkout and running stack.
+Note: the published notify-svc copy points its git dependency at the published acme-models repo (the local fixture points at faultline-demo/acme-models).

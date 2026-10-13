@@ -1,0 +1,14 @@
+Capability banner as served by the running app (2026-10-13)
+sandbox: verified - boundary checks passed (8 checks) on the running deployment
+oracle o_import : enabled - 3 + 3 fresh runs of the modules the consumer imports, in the sandbox
+oracle o_tests : partial - implemented (M1.5) but not part of the live pipeline: reported NOT_PLANNED per cell
+oracle o_bind : unavailable - not built (M4.6 call-site binding)
+oracle o_contract : unavailable - not built (M7.1 contract replay)
+oracle o_typecheck : unavailable - not built (M7.2 type checking)
+feature repository_ingestion : enabled - public GitHub repositories at a pinned commit, fetched in the sandbox into immutable hashed snapshots
+feature relationship_discovery : enabled - evidence-based L2 (published name, git dependency) for Python projects; look-alikes go to the suspected tray
+feature witness_verification : enabled - O-import witnesses under the 3 + 3 rule; O-bind and O-tests are not in the live pipeline yet
+feature attribution_ddmin : enabled - two-sided ddmin over the world delta; forced worlds are labelled experiments
+feature remediation_minimal : enabled - constraint diff, native re-resolution and a 3 + 3 re-run; the result is a diff and nothing is pushed
+feature evidence_bundle : enabled - verified evidence bundles with provenance; replaying one needs the sandbox. Replay on a different computer is not yet confirmed
+feature llm_assistance : unavailable - off by design: the LLM is never in the decision path

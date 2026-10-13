@@ -836,3 +836,18 @@ Format: `### <UTC time> | <EVENT> | <id> | by <name>` followed by details.
 
 ### 2026-10-13 14:40 UTC | NOTE | - | by Chetan Agrawal
 - Intermittent wheel-fetch failures (empty stderr, infra class) hit full test runs and the fixture runner on 2026-10-13; cause not proven. fetch_wheels now retries once on an infrastructure failure with no pip output and records failure_class in the error details. A hash mismatch or pip error is never retried.
+
+### 2026-10-13 15:02 UTC | TC PASS | TC-4.G.3 | by Chetan Agrawal
+- Unfinished MUSTs are visible as unavailable
+- evidence: evidence/M4.G/TC-4.G.3.txt
+
+### 2026-10-13 15:31 UTC | TC PASS | TC-4.G.1 | by Chetan Agrawal
+- Clean checkout live run
+- evidence: evidence/M4.G/TC-4.G.1.txt
+
+### 2026-10-13 15:31 UTC | NOTE | - | by Chetan Agrawal
+- TC-4.G.1: the first run through the app's HTTP flow found 0 relationships because the analyze job never discovered projects or built worlds for ingested repositories (tests did that step by hand). live_analysis now runs analyze_repository for any ingested repository without projects. Published fixtures: chetanagrawal721/faultline-fixture-acme-models and -notify-svc. A fresh-clone bootstrap was not exercised; CI (M0.6) is the intended proof.
+
+### 2026-10-13 15:31 UTC | DONE | M4.G | by Chetan Agrawal
+- Gate C acceptance: first live finding
+- test cases passed: 3/3
