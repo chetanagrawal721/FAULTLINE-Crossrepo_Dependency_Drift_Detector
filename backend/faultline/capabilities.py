@@ -21,7 +21,7 @@ def build_capabilities(mode: Mode, sandbox: SandboxStatus) -> Capabilities:
 
     def eco(e: Ecosystem, phase: str) -> EcosystemCapability:
         if e == Ecosystem.PYPI:
-            runtime = (CapabilityStatus(state=CapabilityState.PARTIAL, reason="FIXTURE scenarios only")
+            runtime = (on("O-import witnesses in the sandbox (live repositories and fixtures)")
                        if sandbox.verified else _off(needs_sandbox))
             needs = None if sandbox.verified else "sandbox not verified: resolving and building use the sandbox"
             return EcosystemCapability(
@@ -47,23 +47,24 @@ def build_capabilities(mode: Mode, sandbox: SandboxStatus) -> Capabilities:
 
     oracles = {name: _off(needs_sandbox) for name in
                ("o_import", "o_tests", "o_bind", "o_contract", "o_typecheck")}
-    fixture_only = "FIXTURE scenarios only: committed fixture repositories, not live ingestion"
     features = {
-        "repository_ingestion": _off(f"{not_built} (phase 2)"),
-        "relationship_discovery": _off(f"{not_built} (phase 4)"),
-        "witness_verification": _off("sandbox not verified" if not sandbox.verified else f"{not_built}"),
-        "attribution_ddmin": _off(f"{not_built} (phase 5)"),
-        "evidence_bundle": _off(f"{not_built}"),
+        "repository_ingestion": _off("sandbox not verified: repositories are fetched inside the sandbox"),
+        "relationship_discovery": on("evidence-based L2 (published name, git dependency) for Python projects; look-alikes go to the suspected tray"),
+        "witness_verification": _off("sandbox not verified"),
+        "attribution_ddmin": _off("sandbox not verified"),
+        "remediation_minimal": _off("sandbox not verified"),
+        "evidence_bundle": on("verified evidence bundles with provenance; replaying one needs the sandbox. Replay on a different computer is not yet confirmed"),
         "llm_assistance": _off("off by design: the LLM is never in the decision path"),
     }
     if sandbox.verified:
-        # what is genuinely built and tested at this point (milestones M1.4 to M1.7), and only what is
-        oracles["o_import"] = CapabilityStatus(state=CapabilityState.PARTIAL, reason=fixture_only)
-        oracles["o_tests"] = _off("implemented (M1.5) but not part of the scenario pipeline yet", CapabilityState.PARTIAL)
-        features["repository_ingestion"] = CapabilityStatus(
-            state=CapabilityState.ENABLED, reason="public GitHub repositories at a pinned commit; snapshot and inventory only")
-        features["witness_verification"] = CapabilityStatus(state=CapabilityState.PARTIAL, reason=fixture_only)
-        features["evidence_bundle"] = CapabilityStatus(state=CapabilityState.PARTIAL, reason=fixture_only + "; replay not built (M5.2)")
+        oracles["o_import"] = on("3 + 3 fresh runs of the modules the consumer imports, in the sandbox")
+        oracles["o_tests"] = _off("implemented (M1.5) but not part of the live pipeline: reported NOT_PLANNED per cell", CapabilityState.PARTIAL)
+        for name, phase in (("o_bind", "M4.6 call-site binding"), ("o_contract", "M7.1 contract replay"), ("o_typecheck", "M7.2 type checking")):
+            oracles[name] = _off(f"not built ({phase})")
+        features["repository_ingestion"] = on("public GitHub repositories at a pinned commit, fetched in the sandbox into immutable hashed snapshots")
+        features["witness_verification"] = on("O-import witnesses under the 3 + 3 rule; O-bind and O-tests are not in the live pipeline yet")
+        features["attribution_ddmin"] = on("two-sided ddmin over the world delta; forced worlds are labelled experiments")
+        features["remediation_minimal"] = on("constraint diff, native re-resolution and a 3 + 3 re-run; the result is a diff and nothing is pushed")
     return Capabilities(
         capability_version=CAPABILITY_VERSION,
         api_version=API_VERSION,

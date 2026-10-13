@@ -22,34 +22,36 @@ def enabled_ecosystem_dimensions(c):
             if getattr(e, d).state == CapabilityState.ENABLED}
 
 
+STATIC_FEATURES = {"relationship_discovery", "evidence_bundle"}              # read files and records; no execution
+
+
 def test_without_a_verified_sandbox_nothing_that_executes_is_available():
     c = build_capabilities(Mode.FIXTURE, UNVERIFIED)
-    assert not any(s.state == CapabilityState.ENABLED for s in [*c.oracles.values(), *c.features.values()])
+    assert not any(s.state == CapabilityState.ENABLED for s in c.oracles.values())
+    assert {n for n, s in c.features.items() if s.state == CapabilityState.ENABLED} == STATIC_FEATURES
     assert enabled_ecosystem_dimensions(c) == STATIC_ONLY                      # only what reads files: no resolving, building or running
     pypi = next(e for e in c.ecosystems if e.ecosystem.value == "pypi")
     assert pypi.resolve.state == CapabilityState.UNAVAILABLE and "sandbox not verified" in pypi.resolve.reason
-    assert pypi.world.state == CapabilityState.UNAVAILABLE
+    assert pypi.world.state == CapabilityState.UNAVAILABLE and pypi.runtime_witness.state == CapabilityState.UNAVAILABLE
     assert c.oracles["o_import"].state == CapabilityState.UNAVAILABLE and c.oracles["o_import"].reason == "sandbox not verified"
-    assert c.features["witness_verification"].state == CapabilityState.UNAVAILABLE
-    assert c.features["evidence_bundle"].state == CapabilityState.UNAVAILABLE
-    assert c.features["repository_ingestion"].state == CapabilityState.UNAVAILABLE      # needs the sandboxed fetch zone
+    for name in ("witness_verification", "attribution_ddmin", "remediation_minimal", "repository_ingestion"):
+        assert c.features[name].state == CapabilityState.UNAVAILABLE, name     # all need the sandbox
 
 
-def test_with_a_verified_sandbox_only_fixture_scoped_partial_capabilities_appear():
+def test_with_a_verified_sandbox_exactly_what_is_built_is_enabled_and_the_rest_says_so():
     c = build_capabilities(Mode.FIXTURE, VERIFIED)
-    assert c.oracles["o_import"].state == CapabilityState.PARTIAL and "FIXTURE" in c.oracles["o_import"].reason
-    assert c.features["witness_verification"].state == CapabilityState.PARTIAL
-    assert "replay not built" in c.features["evidence_bundle"].reason
-    pypi = next(e for e in c.ecosystems if e.ecosystem.value == "pypi")
-    assert pypi.runtime_witness.state == CapabilityState.PARTIAL and "FIXTURE" in pypi.runtime_witness.reason
+    assert {n for n, s in c.oracles.items() if s.state == CapabilityState.ENABLED} == {"o_import"}
+    assert c.oracles["o_tests"].state == CapabilityState.PARTIAL and "NOT_PLANNED" in c.oracles["o_tests"].reason     # exists, not in the pipeline
     enabled = {n for n, s in c.features.items() if s.state == CapabilityState.ENABLED}
-    assert enabled == {"repository_ingestion"}                                        # the only fully built feature so far
-    assert not any(s.state == CapabilityState.ENABLED for s in c.oracles.values())
-    assert enabled_ecosystem_dimensions(c) == STATIC_ONLY | {("pypi", "resolve"), ("pypi", "world")}   # runtime witnesses stay off
+    assert enabled == {"repository_ingestion", "relationship_discovery", "witness_verification", "attribution_ddmin", "remediation_minimal", "evidence_bundle"}
+    assert c.features["llm_assistance"].state == CapabilityState.UNAVAILABLE
+    assert "Replay on a different computer is not yet confirmed" in c.features["evidence_bundle"].reason      # an unfinished claim is stated
+    assert "O-bind and O-tests are not in the live pipeline" in c.features["witness_verification"].reason
+    pypi = next(e for e in c.ecosystems if e.ecosystem.value == "pypi")
+    assert pypi.runtime_witness.state == CapabilityState.ENABLED
+    assert enabled_ecosystem_dimensions(c) == STATIC_ONLY | {("pypi", "resolve"), ("pypi", "world"), ("pypi", "runtime_witness")}
     for name in ("o_bind", "o_contract", "o_typecheck"):
-        assert c.oracles[name].state == CapabilityState.UNAVAILABLE
-    for name in ("relationship_discovery", "attribution_ddmin"):
-        assert c.features[name].state == CapabilityState.UNAVAILABLE
+        assert c.oracles[name].state == CapabilityState.UNAVAILABLE and "not built" in c.oracles[name].reason     # unfinished MUSTs are visible, not hidden
     npm = next(e for e in c.ecosystems if e.ecosystem.value == "npm")
     assert npm.runtime_witness.state == CapabilityState.UNSUPPORTED
     maven = next(e for e in c.ecosystems if e.ecosystem.value == "maven")

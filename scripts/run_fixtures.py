@@ -17,6 +17,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "backend"), str(ROOT)]
 
+from tests.liveenv import ingest_all  # noqa: E402
+from tests.livefix import read_tree  # noqa: E402
+
 from faultline.analysis.live import run_live_analysis  # noqa: E402
 from faultline.analysis.read import analysis_view  # noqa: E402
 from faultline.core.scenario import Scenario, load_scenario  # noqa: E402
@@ -26,8 +29,6 @@ from faultline.sandbox.sandboxd import Daemon, serve  # noqa: E402
 from faultline.storage.db import connect  # noqa: E402
 from faultline.storage.migrate import migrate  # noqa: E402
 from faultline.storage.store import Store  # noqa: E402
-from tests.liveenv import ingest_all  # noqa: E402
-from tests.livefix import read_tree  # noqa: E402
 
 TOKEN = "fixture-run-token-not-secret"
 SCOPE = ("Measured only on the committed fixture scenarios, against their committed ground-truth labels. This is NOT an estimate of "
@@ -54,7 +55,15 @@ def run_scenario(sc: Scenario, sbx: SandboxClient, image: str, store: Store) -> 
         repos[f"rm_{sc.id.lower()}_{b.repo.replace('-', '')}"] = (f"faultline-demo/{b.repo}", read_tree(ROOT / b.path))
     apid, _ids = ingest_all(conn, sbx, image, store, repos)
     res = run_live_analysis(conn, sbx, image, store, apid)
-    return analysis_view(conn, res.analysis_id).model_dump()
+    view = analysis_view(conn, res.analysis_id).model_dump()
+    # per cell: did the FIRST consumer-side run already fail with an artifact failure? (used only by the benchmark ablation)
+    first = {}
+    for c in view["cells"]:
+        row = conn.execute("SELECT r.failure_class FROM oracle_run r JOIN oracle_job j ON j.id=r.oracle_job_id WHERE j.cell_id=? AND j.side='test' "
+                           "ORDER BY r.created_at, r.run_index LIMIT 1", (c["id"],)).fetchone()
+        first[c["id"]] = bool(row and row[0] == "ARTIFACT_FAILURE")
+    view["_first_run_failed"] = first
+    return view
 
 
 def check(sc: Scenario, a: dict) -> list[str]:
@@ -116,6 +125,10 @@ def main() -> int:
     image = images.default_image()
     rows, tp = [], dict(TP=0, FP=0, FN=0, TN=0)
     for sc in scenarios:
+        if sc.kind == "real_world":
+            rows.append({"id": sc.id, "title": sc.title, "evaluated": False, "reason": "real-world case: run by tests/integration/test_real1.py (needs network)", "label": sc.truth})
+            print(f"{sc.id}: NOT RUN HERE - real-world case, see tests/integration/test_real1.py")
+            continue
         if not sc.evaluated:
             rows.append({"id": sc.id, "title": sc.title, "evaluated": False, "reason": sc.not_evaluated_reason, "label": sc.truth})
             print(f"{sc.id}: NOT EVALUATED - {sc.not_evaluated_reason}")

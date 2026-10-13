@@ -32,12 +32,12 @@ def test_tc_8_0_1_the_fix_verifies_with_fresh_runs(d_scenario, daemon, image):  
     assert r.label == "VERIFIED", (r.label, r.reason)
     assert r.constraint == "werkzeug<3" and r.witnesses_before == ["acme_models.web"] and r.witnesses_after == []     # original witness gone, none new
     assert r.fresh_runs == 6 and r.other_consumers_unchanged and r.new_world_hash
-    assert "+werkzeug<3" in r.diff and r.diff.startswith("--- a/requirements.txt")
+    assert "+werkzeug<3" in r.diff and r.diff.startswith("--- a/requirements.")           # a requirements file of the consumer; diff only
     row = conn.execute("SELECT * FROM remediation_plan WHERE id=?", (r.plan_id,)).fetchone()
     assert row["label"] == "VERIFIED" and json.loads(row["gates_json"])["G2_witness_gone"] is True
     assert "+werkzeug<3" in Path(row["diff_path"]).read_text(encoding="utf-8")
     runs = conn.execute("SELECT r.provenance FROM oracle_run r JOIN oracle_job j ON j.id=r.oracle_job_id WHERE j.world_hash=?", (r.new_world_hash,)).fetchall()
-    assert len(runs) >= 6 and all(x["provenance"] == "FRESH_EXECUTION" for x in runs)
+    assert len(runs) >= 3 and all(x["provenance"] == "FRESH_EXECUTION" for x in runs)           # the 3 consumer-side runs in the fixed world (the 3 reference runs use the reference world)
 
 
 def test_tc_8_0_2_a_bad_fix_is_not_verified(d_scenario, daemon, image):  # noqa: F811

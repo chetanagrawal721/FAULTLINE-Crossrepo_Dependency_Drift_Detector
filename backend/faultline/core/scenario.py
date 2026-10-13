@@ -82,6 +82,16 @@ class SuspectedExpectation(Strict):
     kind: str = "SUSPECTED_TWIN"
 
 
+class TimeMachine(Strict):
+    reference_cutoff: str           # RFC 3339: the world is resolved as of this time (before the dependency's release)
+    consumer_cutoff: str            # RFC 3339: and as of this time (after it)
+
+
+class RealSource(Strict):
+    url: str
+    ref: str
+
+
 class Bystander(Strict):
     """A repository that must NOT be related to the artifact (hygiene control or look-alike)."""
     repo: str
@@ -106,12 +116,17 @@ class Scenario(Strict):
     consumers: list[ConsumerSpec]
     bystanders: list[Bystander] = Field(default_factory=list)
     truth: Literal["break", "silent_divergence", "no_break", "not_a_finding"] | None = None   # the committed ground-truth label
+    real_source: RealSource | None = None                       # real_world scenarios: the public repository and the tag it is pinned at
+    time_machine: TimeMachine | None = None
+    public_evidence: list[str] = Field(default_factory=list)    # public issue or changelog links that describe the break
     evaluated: bool = True                                    # False: registered with its label, but the MVP cannot observe it
     not_evaluated_reason: str | None = None
     expect: Expect
 
     @model_validator(mode="after")
     def _consumers_match(self):
+        if self.kind == "real_world":
+            return self
         names = {c.repo for c in self.consumers}
         for cell in self.expect.cells:
             if cell.consumer not in names:

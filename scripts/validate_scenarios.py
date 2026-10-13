@@ -20,6 +20,12 @@ def validate(path: Path, root: Path = ROOT) -> list[str]:
         return [f"{path.name}: {exc}"]
     if path.stem != sc.id:
         errors.append(f"{path.name}: id {sc.id!r} does not match the file name")
+    if sc.kind == "real_world":                       # no local lock files: the world is resolved from public registries at the recorded cutoffs
+        if not (sc.real_source and sc.time_machine and sc.public_evidence):
+            errors.append(f"{path.name}: a real_world scenario needs real_source, time_machine and at least one public_evidence link")
+        elif not (sc.time_machine.reference_cutoff < sc.time_machine.consumer_cutoff):
+            errors.append(f"{path.name}: the reference cutoff must be earlier than the consumer cutoff")
+        return errors
     art_dir = root / sc.artifact.path
     try:
         ref = parse_pinned_lock((art_dir / sc.artifact.runtime_lock).read_text(encoding="utf-8"))

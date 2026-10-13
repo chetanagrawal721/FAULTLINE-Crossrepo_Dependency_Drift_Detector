@@ -70,7 +70,7 @@ def inventory_graph(conn: sqlite3.Connection, project_id: str) -> InventoryGraph
             unsupported = p["ecosystem"] == "maven" or p["origin"] == "setup_py"
             status = "unsupported" if unsupported else ("failed" if p["wstatus"] == "FAILED" else "ok")
             note = ("Maven: declared-dependency inventory only, no resolution" if p["ecosystem"] == "maven" else
-                    "dependencies are declared in setup.py, which is never executed" if p["origin"] == "setup_py" else
+                    "setup.py is read statically and never executed; only literal dependencies are used" if p["origin"] == "setup_py" else
                     (f"world {p['wstatus']}" if p["wstatus"] else None))
             where = "" if p["rel_path"] == "." else f" ({p['rel_path']})"
             nodes[pid] = GraphNode(id=pid, kind="project", label=(p["display_name"] or p["published_name"] or p["rel_path"]) + where,

@@ -65,15 +65,20 @@ def site(full_run):
 
 
 @pytest.fixture(scope="module")
-def page(site):
+def chromium():
+    """Launched first, so a machine without Chromium skips before the expensive real analysis is built."""
     with sync_api.sync_playwright() as p:
         try:
             browser = p.chromium.launch()
         except Exception as e:  # noqa: BLE001
             pytest.skip(f"Chromium is not installed: {e}")
-        pg = browser.new_context(viewport={"width": 1400, "height": 1000}).new_page()
-        yield pg
+        yield browser
         browser.close()
+
+
+@pytest.fixture(scope="module")
+def page(chromium, site):
+    yield chromium.new_context(viewport={"width": 1400, "height": 1000}).new_page()
 
 
 def api_json(site, path):
@@ -192,7 +197,7 @@ def test_tc_5_6_6_inventory_graph_covers_ecosystems_edges_levels_and_unsupported
     assert page.get_by_test_id("edge-suspected").count() == 1 and "L3P suspected" in g.inner_text()
     unsupported = [n.text_content() or "" for n in page.locator("[data-testid=node-project][data-status=unsupported]").all()]
     assert unsupported and any("Maven: declared-dependency inventory only" in t or "unsupported" in t for t in unsupported)
-    assert "dependencies are declared in setup.py, which is never executed" in page.get_by_test_id("inventory-legend").inner_text()
+    assert "setup.py is read statically and never executed" in page.get_by_test_id("inventory-legend").inner_text()
     ecos = {n.get_attribute("data-status") for n in page.locator("[data-testid=node-project]").all()}
     assert "unsupported" in ecos and "ok" in ecos
     assert "package-lock.json" in (g.text_content() or "") and "pom.xml" in (g.text_content() or "")                   # npm and Maven manifests are present
