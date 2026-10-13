@@ -42,6 +42,7 @@ markers = [
 line-length = 110
 target-version = "py312"
 src = ["backend", "tests", "tools", "scripts"]
+extend-exclude = ["tests/data"]   # data files whose exact lines and columns are asserted by tests
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]

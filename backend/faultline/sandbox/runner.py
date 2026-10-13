@@ -109,7 +109,7 @@ def extract_frame(text: str) -> dict | None:
         return None
 
 
-HARNESS_SCRIPTS = {"probe.py", "fetch_wheels.py", "build_world.py", "world_info.py", "o_import.py", "fetch_repo.py",
+HARNESS_SCRIPTS = {"probe.py", "bind_sites.py", "fetch_wheels.py", "build_world.py", "world_info.py", "o_import.py", "fetch_repo.py",
                    "resolve_uv.py", "wheel_metadata.py"}
 
 
