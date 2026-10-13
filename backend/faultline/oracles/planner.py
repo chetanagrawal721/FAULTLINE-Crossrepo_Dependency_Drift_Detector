@@ -13,7 +13,8 @@ class Step:
     entries: tuple[str, ...] = ()
 
 
-def plan(top_level: str, modules: list[str], *, has_tests: bool, test_lock: bool, bind_sites: int = 0) -> list[Step]:
+def plan(top_level: str, modules: list[str], *, has_tests: bool, test_lock: bool, bind_sites: int = 0, contract_types: int = 0,
+         contract_reason: str = "") -> list[Step]:
     steps = [Step("o_import", "PLANNED", "", tuple(modules))]
     if not has_tests:
         steps.append(Step("o_tests", "NOT_PLANNED", "the artifact has no tests directory"))
@@ -25,6 +26,10 @@ def plan(top_level: str, modules: list[str], *, has_tests: bool, test_lock: bool
         steps.append(Step("o_bind", "PLANNED", f"{bind_sites} call site(s) into the differing packages", ()))
     else:
         steps.append(Step("o_bind", "NOT_PLANNED", "no call site in the artifact calls into a package that differs between the worlds"))
+    if contract_types:
+        steps.append(Step("o_contract", "PLANNED", f"{contract_types} pydantic model(s) in the modules the consumer imports", ()))
+    else:
+        steps.append(Step("o_contract", "NOT_PLANNED", contract_reason or "no pydantic model in the modules the consumer imports"))
     return steps
 
 

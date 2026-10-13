@@ -112,17 +112,20 @@ def decide_entry(name: str, ref: list[RunRecord], test: list[RunRecord]) -> Entr
     return d(Decision.WITNESS, "reference passed 3/3, consumer failed 3/3 with an identical signature", sigs[0])
 
 
-def witness_key(cell: FixtureCell, oracle: str, version: str, entry: str, env_profile_id: str) -> str:
-    return "wk_" + object_hash({"artifact": cell.artifact_hash, "entry": entry, "input": None,
+def witness_key(cell: FixtureCell, oracle: str, version: str, entry: str, env_profile_id: str, input_hash: str | None = None) -> str:
+    return "wk_" + object_hash({"artifact": cell.artifact_hash, "entry": entry, "input": input_hash,
                                 "world_ref": cell.ref_world_hash, "world_test": cell.test_world_hash,
                                 "env": env_profile_id, "oracle": f"{oracle}@{version}"})[:40]
 
 
-DIVERGENCE = {"o_import": "IMPORT_ERROR", "o_tests": "TEST_FAIL", "o_bind": "BIND_FAIL"}
+DIVERGENCE = {"o_import": "IMPORT_ERROR", "o_tests": "TEST_FAIL", "o_bind": "BIND_FAIL", "o_contract": "CONTRACT_REJECTED"}
+SILENT_EXC = "ValueDivergence"
 
 
-def _save_witness(conn: sqlite3.Connection, cell: FixtureCell, oracle: str, version: str, dec: EntryDecision) -> str:
-    key = witness_key(cell, oracle, version, dec.entry, cell.env_profile_id)
+def _save_witness(conn: sqlite3.Connection, cell: FixtureCell, oracle: str, version: str, dec: EntryDecision, meta: dict | None = None) -> str:
+    meta = meta or {}
+    key = witness_key(cell, oracle, version, dec.entry, cell.env_profile_id, meta.get("sha256"))
+    silent = oracle == "o_contract" and dec.signature is not None and dec.signature.exc_type == SILENT_EXC
     existing = conn.execute("SELECT id, body_json FROM witness WHERE witness_key=?", (key,)).fetchone()
     if existing:                                             # already witnessed: record the re-verification
         body = json.loads(existing["body_json"])
@@ -131,19 +134,22 @@ def _save_witness(conn: sqlite3.Connection, cell: FixtureCell, oracle: str, vers
         conn.execute("UPDATE witness SET body_json=? WHERE id=?", (json.dumps(body, sort_keys=True), existing["id"]))
         return existing["id"]
     wid = new_id("wit")
-    w = Witness(witness_id=wid, witness_class=WitnessClass.BREAK, cell_id=cell.cell_id, oracle=oracle,
+    w = Witness(witness_id=wid, witness_class=WitnessClass.SILENT_DIVERGENCE if silent else WitnessClass.BREAK, cell_id=cell.cell_id, oracle=oracle,
                 oracle_version=version, entry_point=dec.entry, witness_key=key, signature=dec.signature,
-                ref_run_ids=dec.ref_run_ids, test_run_ids=dec.test_run_ids)
-    conn.execute("INSERT INTO witness(id, analysis_id, cell_id, class, divergence, oracle, oracle_version, entry_point, "
-                 "witness_key, signature_json, ref_pass, test_fail, body_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                 (wid, cell.analysis_id, cell.cell_id, "BREAK", DIVERGENCE.get(oracle, "UNKNOWN"), oracle, version,
-                  dec.entry, key, dec.signature.model_dump_json(), len(dec.ref_run_ids), len(dec.test_run_ids),
-                  w.model_dump_json()))
+                ref_run_ids=dec.ref_run_ids, test_run_ids=dec.test_run_ids, input_tier=meta.get("tier"))
+    body = w.model_dump(mode="json")
+    if meta:
+        body["input"] = meta                                     # the exact bytes (base64), their hash, the tier and the options
+    conn.execute("INSERT INTO witness(id, analysis_id, cell_id, class, divergence, oracle, oracle_version, entry_point, input_tier, input_hash, "
+                 "witness_key, signature_json, ref_pass, test_fail, body_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                 (wid, cell.analysis_id, cell.cell_id, "SILENT_DIVERGENCE" if silent else "BREAK", "VALUE_DIVERGENCE" if silent else DIVERGENCE.get(oracle, "UNKNOWN"),
+                  oracle, version, dec.entry, meta.get("tier"), meta.get("sha256"), key, dec.signature.model_dump_json(), len(dec.ref_run_ids),
+                  len(dec.test_run_ids), json.dumps(body, sort_keys=True)))
     return wid
 
 
 def verify_cell(conn: sqlite3.Connection, cell: FixtureCell, *, oracle: str, version: str,
-                run_in_world: Callable[[str], OracleRunResult], args: dict, force: bool = False) -> Verification:
+                run_in_world: Callable[[str], OracleRunResult], args: dict, force: bool = False, entry_meta: dict[str, dict] | None = None) -> Verification:
     """Run the oracle K times in each world, decide every entry, and record witnesses."""
     ref = [execute_run(conn, cell, oracle=oracle, version=version, side="ref", world_hash=cell.ref_world_hash,
                        run_index=i, args=args, runner=lambda: run_in_world(cell.ref_world_hash), force=force)
@@ -165,9 +171,9 @@ def verify_cell(conn: sqlite3.Connection, cell: FixtureCell, *, oracle: str, ver
         dec = decide_entry(name, ref, test)
         if dec.decision == Decision.WITNESS:
             dec = EntryDecision(dec.entry, dec.decision, dec.reason, dec.signature, dec.ref_run_ids, dec.test_run_ids,
-                                _save_witness(conn, cell, oracle, version, dec))
+                                _save_witness(conn, cell, oracle, version, dec, (entry_meta or {}).get(name)))
         elif dec.decision == Decision.REUSED_ONLY:
-            key = witness_key(cell, oracle, version, name, cell.env_profile_id)
+            key = witness_key(cell, oracle, version, name, cell.env_profile_id, ((entry_meta or {}).get(name) or {}).get("sha256"))
             row = conn.execute("SELECT id FROM witness WHERE witness_key=?", (key,)).fetchone()
             if row:                                           # shown, not re-counted
                 dec = EntryDecision(dec.entry, dec.decision, dec.reason + "; the earlier witness stands", None,

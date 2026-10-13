@@ -110,7 +110,7 @@ def extract_frame(text: str) -> dict | None:
 
 
 HARNESS_SCRIPTS = {"probe.py", "bind_sites.py", "fetch_wheels.py", "build_world.py", "world_info.py", "o_import.py", "fetch_repo.py",
-                   "resolve_uv.py", "wheel_metadata.py"}
+                   "resolve_uv.py", "wheel_metadata.py", "contract_producer.py", "contract_consumer.py"}
 
 
 def mount_arg(m: dict) -> str:
