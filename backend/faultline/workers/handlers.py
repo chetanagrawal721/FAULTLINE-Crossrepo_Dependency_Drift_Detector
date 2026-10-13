@@ -139,7 +139,17 @@ def live_analysis(ctx: JobContext) -> dict:
         def progress(fraction: float, message: str) -> None:
             ctx.check_cancel()
             ctx.progress(fraction, message)
-        res = run_live_analysis(conn, SandboxClient(), default_image(), Store(settings.store_path), ctx.payload["analysis_project_id"], progress=progress)
+        from ..analysis.repository import analyze_repository as discover
+        sbx, image, store = SandboxClient(), default_image(), Store(settings.store_path)
+        pending = [r["id"] for r in conn.execute(           # ingested repositories whose projects and worlds were not built yet
+            "SELECT r.id FROM repository r WHERE r.analysis_project_id=? AND r.status='INGESTED' AND NOT EXISTS "
+            "(SELECT 1 FROM project p JOIN snapshot s ON s.id=p.snapshot_id WHERE s.repository_id=r.id AND s.sha=r.pinned_sha)",
+            (ctx.payload["analysis_project_id"],))]
+        for n, rid in enumerate(pending):
+            ctx.check_cancel()
+            ctx.progress(0.05 + 0.25 * n / max(len(pending), 1), f"discovering projects and building worlds ({n + 1} of {len(pending)})")
+            discover(conn, sbx, image, store, rid)
+        res = run_live_analysis(conn, sbx, image, store, ctx.payload["analysis_project_id"], progress=progress)
         return {"analysis_id": res.analysis_id, "cells": res.cells, "funnel": res.funnel}
     finally:
         conn.close()
