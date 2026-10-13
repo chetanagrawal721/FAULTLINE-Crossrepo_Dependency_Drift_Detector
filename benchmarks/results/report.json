@@ -1,0 +1,151 @@
+{
+  "denominators": {
+    "labelled_evaluated_scenarios": 6,
+    "scenarios_registered": 12
+  },
+  "environment_measurements": {
+    "latency_seconds_per_scenario": {
+      "p50": 56.5,
+      "p95": 171.6,
+      "samples": 12
+    },
+    "peak_rss_mb_of_this_process": 0.0,
+    "store_disk_mb": 0.8
+  },
+  "limitations": [
+    "A small set of fixture scenarios written by the same team that built the tool; not a sample of real-world repositories.",
+    "Labels cover only the scenarios the MVP oracles can observe; C, E, F, I and J are registered but not evaluated, so recall on silent divergence, signature change and dynamic usage is unknown.",
+    "Configurations B and C (API diff, API diff + usage) are not computed because static API analysis is not built.",
+    "Producer CI worlds are detected heuristically from workflow text and are labelled as such.",
+    "Latency was measured on one developer machine under Docker Desktop with warm caches and says nothing about other environments."
+  ],
+  "metrics": {
+    "ablation": {
+      "A": {
+        "FN": 0,
+        "FP": 1,
+        "TN": 3,
+        "TP": 2,
+        "computed": true,
+        "name": "version-only",
+        "samples": 6
+      },
+      "B": {
+        "computed": false,
+        "name": "API diff",
+        "reason": "static API analysis is not built (M6.2)"
+      },
+      "C": {
+        "computed": false,
+        "name": "API diff + usage",
+        "reason": "the usage index is not built (M6.3)"
+      },
+      "D": {
+        "FN": 2,
+        "FP": 0,
+        "TN": 4,
+        "TP": 0,
+        "computed": true,
+        "name": "author-selected matrix",
+        "samples": 6
+      },
+      "E": {
+        "FN": 0,
+        "FP": 0,
+        "TN": 4,
+        "TP": 2,
+        "computed": true,
+        "name": "consumer-derived worlds",
+        "samples": 6
+      },
+      "F": {
+        "FN": 0,
+        "FP": 0,
+        "TN": 4,
+        "TP": 2,
+        "computed": true,
+        "name": "+ witness discipline",
+        "samples": 6
+      },
+      "G": {
+        "FN": 0,
+        "FP": 0,
+        "TN": 4,
+        "TP": 2,
+        "computed": true,
+        "name": "+ ddmin attribution",
+        "samples": 6
+      }
+    },
+    "all_match_expectations": true,
+    "consumer_derived_vs_author_selected": {
+      "count": 2,
+      "denominator": 2,
+      "meaning": "labelled breaks found only by running the artifact in consumer-derived worlds",
+      "scenarios": [
+        "B",
+        "D"
+      ]
+    },
+    "inconclusive_rate": {
+      "findings": 3,
+      "inconclusive_findings": 0
+    },
+    "scenarios_evaluated": 6,
+    "scenarios_not_evaluated": [
+      "C",
+      "E",
+      "F",
+      "I",
+      "J",
+      "REAL1"
+    ],
+    "scenarios_registered": 12,
+    "verdicts": {
+      "A": [
+        "NO_DRIFT"
+      ],
+      "B": [
+        "BREAK_WITNESSED"
+      ],
+      "D": [
+        "BREAK_WITNESSED",
+        "NO_DRIFT"
+      ],
+      "G": [
+        "NO_DRIFT"
+      ],
+      "H": [
+        "NO_DIVERGENCE_OBSERVED"
+      ],
+      "L": [
+        "(no cells)"
+      ]
+    },
+    "witness_reproducibility": {
+      "each_has_3_plus_3_fresh_runs": true,
+      "witnesses": 2
+    },
+    "world_coverage": {
+      "consumers_analysed": 7,
+      "consumers_discovered": 7
+    }
+  },
+  "no_accuracy_target": "No accuracy target is stated: this establishes a baseline.",
+  "producer_ci_worlds": {
+    "heuristic": true,
+    "limitation": "derived from workflow text only; CI is not executed and unlisted worlds are unknown",
+    "pinned_installs": [],
+    "python_versions": [],
+    "workflows": [],
+    "worlds_always_included": [
+      "the artifact's own reference world"
+    ]
+  },
+  "reproducibility": {
+    "identical_metrics": true,
+    "metrics_sha256": "e6c7f92d507dbfd90e8ddca6e6feaf0b1b2106f0a236eacfe74eecdd9efb8a4f",
+    "passes": 2,
+    "timings_excluded": true
+  }
+}
