@@ -1,0 +1,8 @@
+# Scenario I (dynamic usage) is REGISTERED but NOT EVALUATED: it needs the usage index (M6.3).
+id: I
+title: Dynamic usage (getattr on a dependency)
+evaluated: false
+not_evaluated_reason: needs the usage index and ApiDelta (M6.3); without them the MVP reports INCONCLUSIVE at best
+artifact: {repo: acme-models, path: fixtures/repos/acme-models, import_package: acme_models}
+consumers: []
+expect: {relationships: [], cells: []}

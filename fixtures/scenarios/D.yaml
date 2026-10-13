@@ -2,6 +2,7 @@
 # which removed werkzeug.urls.url_quote that Flask 2.2.2 imports. Verified by scripts/verify_fixture_facts.py (D).
 id: D
 title: Transitive dependency drift (Werkzeug 3 under Flask 2.2.2)
+truth: break
 verified_by: D
 artifact:
   repo: acme-models

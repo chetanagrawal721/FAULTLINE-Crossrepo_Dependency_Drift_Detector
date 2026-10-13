@@ -1,0 +1,8 @@
+# Scenario F (static exposure, runtime inconclusive) is REGISTERED but NOT EVALUATED: it needs static API analysis (Phase 6).
+id: F
+title: Static exposure, runtime inconclusive (PyJWT decode without algorithms)
+evaluated: false
+not_evaluated_reason: needs static API and usage analysis (M6.2 to M6.4)
+artifact: {repo: acme-models, path: fixtures/repos/acme-models, import_package: acme_models}
+consumers: []
+expect: {relationships: [], cells: []}

@@ -1,6 +1,7 @@
 # Scenario A: no drift. Negative control: every consumer resolves exactly the reference world.
 id: A
 title: No drift (control)
+truth: no_break
 verified_by: D
 artifact:
   repo: acme-models

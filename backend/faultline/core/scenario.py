@@ -76,9 +76,24 @@ class RelationshipExpectation(Strict):
     level: Literal["L2", "L3", "L4"]
 
 
+class SuspectedExpectation(Strict):
+    producer: str
+    consumer: str
+    kind: str = "SUSPECTED_TWIN"
+
+
+class Bystander(Strict):
+    """A repository that must NOT be related to the artifact (hygiene control or look-alike)."""
+    repo: str
+    path: str
+    kind: Literal["unrelated", "lookalike"]
+
+
 class Expect(Strict):
     relationships: list[RelationshipExpectation]
     cells: list[CellExpectation]
+    suspected: list[SuspectedExpectation] = Field(default_factory=list)
+    unrelated: list[str] = Field(default_factory=list)         # repos that must have no relationship with the artifact at all
 
 
 class Scenario(Strict):
@@ -89,6 +104,10 @@ class Scenario(Strict):
     runtime: str = "3.12"
     artifact: ArtifactSpec
     consumers: list[ConsumerSpec]
+    bystanders: list[Bystander] = Field(default_factory=list)
+    truth: Literal["break", "silent_divergence", "no_break", "not_a_finding"] | None = None   # the committed ground-truth label
+    evaluated: bool = True                                    # False: registered with its label, but the MVP cannot observe it
+    not_evaluated_reason: str | None = None
     expect: Expect
 
     @model_validator(mode="after")

@@ -1,0 +1,18 @@
+# Scenario L: suspected twin. legacy-web defines its own CustomerRequest with the same fields. Same name and similar fields is not
+# evidence of a relationship: it may appear only in the suspected tray and must never produce a finding.
+id: L
+title: Look-alike model (suspected twin control)
+truth: not_a_finding
+artifact:
+  repo: acme-models
+  path: fixtures/repos/acme-models
+  import_package: acme_models
+consumers: []
+bystanders:
+  - {repo: legacy-web, path: fixtures/repos/legacy-web/L, kind: lookalike}
+expect:
+  relationships: []
+  suspected:
+    - {producer: acme-models, consumer: legacy-web}
+  unrelated: [legacy-web]
+  cells: []

@@ -1,0 +1,2 @@
+pydantic==2.7.4
+acme-models[web] @ git+https://github.com/faultline-demo/acme-models@scenario-B

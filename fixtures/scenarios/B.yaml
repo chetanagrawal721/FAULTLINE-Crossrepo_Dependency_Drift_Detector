@@ -1,0 +1,28 @@
+# Scenario B: API removed. acme_models.settings imports BaseSettings from pydantic (the pydantic 1 location). pydantic 2 moved it
+# to the separate pydantic-settings package and raises PydanticImportError. Verified by tests/integration/test_scenarios_live.py.
+id: B
+title: API removed (BaseSettings moved out of pydantic 2)
+truth: break
+verified_by: B
+artifact:
+  repo: acme-models
+  path: fixtures/repos/acme-models
+  import_package: acme_models
+consumers:
+  - repo: billing-svc
+    path: fixtures/repos/billing-svc/B
+    imports: [acme_models.settings]
+expect:
+  relationships:
+    - {producer: acme-models, consumer: billing-svc, level: L2}
+  cells:
+    - consumer: billing-svc
+      delta: [annotated-types, click, flask, itsdangerous, jinja2, markupsafe, pydantic, pydantic-core, werkzeug]
+      state: ANALYZED
+      verdict: BREAK_WITNESSED
+      witness: true
+      oracle: o_import
+      entry_point: acme_models.settings
+      signature:
+        exc_type: PydanticImportError
+        message_contains: "BaseSettings"

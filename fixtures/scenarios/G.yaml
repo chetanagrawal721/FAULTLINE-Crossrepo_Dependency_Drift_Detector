@@ -1,0 +1,32 @@
+# Scenario G: unrelated drift. The two consumers differ only in `requests`, which is NOT in acme-models' dependency closure, and
+# marketing-site has no relationship with the artifact at all. Nothing may be reported.
+id: G
+title: Unrelated drift (requests is outside the artifact's closure)
+truth: not_a_finding
+artifact:
+  repo: acme-models
+  path: fixtures/repos/acme-models
+  import_package: acme_models
+consumers:
+  - repo: orders-svc
+    path: fixtures/repos/orders-svc/G
+    imports: [acme_models.customer]
+  - repo: billing-svc
+    path: fixtures/repos/billing-svc/G
+    imports: [acme_models.customer]
+bystanders:
+  - {repo: marketing-site, path: fixtures/repos/marketing-site/G, kind: unrelated}
+expect:
+  relationships:
+    - {producer: acme-models, consumer: orders-svc, level: L2}
+    - {producer: acme-models, consumer: billing-svc, level: L2}
+  unrelated: [marketing-site]
+  cells:
+    - consumer: orders-svc
+      state: NO_DRIFT
+      witness: false
+      control: {kind: unrelated_drift, reason: "requests differs but is not reachable from acme-models"}
+    - consumer: billing-svc
+      state: NO_DRIFT
+      witness: false
+      control: {kind: unrelated_drift, reason: "requests differs but is not reachable from acme-models"}

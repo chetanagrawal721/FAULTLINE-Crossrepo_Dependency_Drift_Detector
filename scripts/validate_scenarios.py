@@ -36,6 +36,12 @@ def validate(path: Path, root: Path = ROOT) -> list[str]:
             errors.append(f"{path.name}: {cell.consumer} lock: {exc}")
             continue
         actual = sorted(diff_locks(ref, lock))
+        if cell.control and cell.control.kind == "unrelated_drift":
+            # the locks differ only in packages the artifact cannot reach: its closure is unchanged, so there is no drift
+            outside = [n for n in actual if n not in {r.name for r in ref}]
+            if outside != actual or cell.state != "NO_DRIFT":
+                errors.append(f"{path.name}: {cell.consumer} claims unrelated drift but the locks differ inside the artifact closure: {actual}")
+            continue
         if actual != sorted(cell.delta):
             errors.append(f"{path.name}: {cell.consumer} expected delta {sorted(cell.delta)} but the locks differ in {actual}")
         if (cell.state == "NO_DRIFT") != (not actual):
@@ -44,7 +50,7 @@ def validate(path: Path, root: Path = ROOT) -> list[str]:
             missing = [p for p in cell.attribution.minimal_set if p not in actual]
             if missing:
                 errors.append(f"{path.name}: attribution names packages that do not differ: {missing}")
-    if not sc.breaks and not any(c.control for c in sc.expect.cells):
+    if not sc.breaks and not any(c.control for c in sc.expect.cells) and not sc.expect.suspected and sc.evaluated:
         errors.append(f"{path.name}: a scenario without a witness must declare a control with a reason")
     return errors
 

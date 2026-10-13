@@ -1,0 +1,9 @@
+# Scenario C (signature changed) is REGISTERED but NOT EVALUATED by the MVP: seeing it needs the call-site extractor and O-bind (M4.6).
+# No ground-truth label is committed until the third-party behaviour (urllib3 2.x dropping Retry(method_whitelist=...)) is verified by hand.
+id: C
+title: Signature changed (urllib3 Retry keyword)
+evaluated: false
+not_evaluated_reason: needs O-bind call-site checking (M4.6); import-only checks cannot see a changed keyword
+artifact: {repo: acme-models, path: fixtures/repos/acme-models, import_package: acme_models}
+consumers: []
+expect: {relationships: [], cells: []}

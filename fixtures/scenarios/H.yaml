@@ -3,6 +3,7 @@
 # Negative control: no witness may be produced. Verified by scripts/verify_fixture_facts.py (H).
 id: H
 title: Harmless drift (pydantic 2, only deprecated .dict() used)
+truth: no_break
 verified_by: H
 artifact:
   repo: acme-models

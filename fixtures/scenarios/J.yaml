@@ -1,0 +1,8 @@
+# Scenario J (data contract drift) is REGISTERED but NOT EVALUATED: it needs contract replay (M7.1).
+id: J
+title: Data contract drift (Optional field without default, pydantic 1 vs 2)
+evaluated: false
+not_evaluated_reason: needs data-contract replay (M7.1)
+artifact: {repo: acme-models, path: fixtures/repos/acme-models, import_package: acme_models}
+consumers: []
+expect: {relationships: [], cells: []}

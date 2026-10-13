@@ -1,0 +1,8 @@
+# Scenario E (silent divergence in serialisation) is REGISTERED but NOT EVALUATED: it needs contract replay (Phase 7, M7.1).
+id: E
+title: Silent divergence (Union[int, str] parsed differently by pydantic 1 and 2)
+evaluated: false
+not_evaluated_reason: needs data-contract replay (M7.1); the MVP only imports and runs the artifact's own code
+artifact: {repo: acme-models, path: fixtures/repos/acme-models, import_package: acme_models}
+consumers: []
+expect: {relationships: [], cells: []}

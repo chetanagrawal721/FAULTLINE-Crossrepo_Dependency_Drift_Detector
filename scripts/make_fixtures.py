@@ -83,6 +83,14 @@ def make_app() -> Flask:
 
     return app
 ''')
+put("acme-models/src/acme_models/settings.py", '''
+"""Scenario B: uses the pydantic 1 location of BaseSettings, which pydantic 2 moved to pydantic-settings."""
+from pydantic import BaseSettings
+
+
+class Settings(BaseSettings):
+    environment: str = "dev"
+''')
 put("acme-models/tests/test_customer.py", '''
 from acme_models.customer import CustomerRequest, to_payload
 
@@ -138,6 +146,16 @@ CONSUMERS = {
     "notify-svc/D": ("pydantic==1.10.13\nflask==2.2.2\nclick==8.1.7\nitsdangerous==2.1.2\n", "acme_models.web"),
     # H: a newer pydantic; this service never imports the web module
     "billing-svc/H": ("pydantic==2.7.4\n", "acme_models.customer"),
+    # B: a newer pydantic, and this service imports the settings module that needs the removed pydantic 1 API
+    "billing-svc/B": ("pydantic==2.7.4\n", "acme_models.settings"),
+    # G: the two consumers differ only in `requests`, which is not in the artifact's closure
+    "orders-svc/G": ("pydantic==1.10.13\nflask==2.2.2\nwerkzeug==2.2.3\nrequests==2.31.0\n", "acme_models.customer"),
+    "billing-svc/G": ("pydantic==1.10.13\nflask==2.2.2\nwerkzeug==2.2.3\nrequests==2.32.3\n", "acme_models.customer"),
+}
+# Projects that must NOT be related to the artifact: they never depend on acme-models.
+BYSTANDERS = {
+    "marketing-site/G": ("pydantic==2.7.4\nrequests==2.32.3\n", "unrelated project (hygiene control)"),
+    "legacy-web/L": ("pydantic==2.7.4\n", "has its own look-alike CustomerRequest (suspected twin control)"),
 }
 for key, (reqs, mod) in CONSUMERS.items():
     name, sc = key.split("/")
@@ -150,6 +168,30 @@ import {mod} as shared
 print("loaded", shared.__name__)
 ''')
     put(f"{key}/README.md", f"# {name} (Faultline fixture, scenario {sc})\n\n`requirements.lock.txt` is the resolved world.\n")
+
+
+for key, (reqs, note) in BYSTANDERS.items():
+    name, sc = key.split("/")
+    put(f"{key}/requirements.txt", reqs)
+    put(f"{key}/requirements.in", reqs)
+    put(f"{key}/README.md", f"# {name} (Faultline fixture, scenario {sc})" + chr(10) + chr(10) + f"{note}." + chr(10))
+    put(f"{key}/app/__init__.py", "")
+put("legacy-web/L/pyproject.toml", '''
+[project]
+name = "legacy-web"
+version = "0.4.0"
+dependencies = ["pydantic>=2"]
+''')
+put("legacy-web/L/app/models.py", '''
+from pydantic import BaseModel
+
+
+class CustomerRequest(BaseModel):
+    """A look-alike: same name and similar fields, but NOT the shared artifact."""
+    customer_id: int
+    email: str
+    loyalty_points: int = 0
+''')
 
 
 def compile_lock(src: Path, out: Path, extra: list[str] | None = None) -> None:
@@ -173,7 +215,7 @@ def main() -> int:
     art = REPOS / "acme-models"
     compile_lock(art / "requirements.in", art / "requirements.lock.txt")
     compile_lock(art / "requirements.test.in", art / "requirements.test.lock.txt")
-    for key in CONSUMERS:
+    for key in (*CONSUMERS, *BYSTANDERS):
         d = REPOS / key
         compile_lock(d / "requirements.in", d / "requirements.lock.txt")
     # the .in files are inputs for locking only; keep them next to the locks for reproducibility
