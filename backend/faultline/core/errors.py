@@ -37,6 +37,14 @@ class ErrorCode(StrEnum):
     INSUFFICIENT_COVERAGE = "INSUFFICIENT_COVERAGE"
 
 
+class Cancelled(Exception):
+    """Raised inside a running job when cancellation was requested or the worker lost its lease. Not a failure."""
+
+
+class LeaseLost(Cancelled):
+    """The worker no longer owns the job (its lease expired and another worker took it). Evidence it wrote is labelled INTERRUPTED."""
+
+
 class FaultlineError(Exception):
     code: ErrorCode = ErrorCode.VALIDATION_ERROR
     http_status: int = 400

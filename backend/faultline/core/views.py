@@ -306,6 +306,8 @@ class AnalysisView(View):
     id: str
     project_id: str
     status: str
+    outcome: str | None = None          # for an analysis that did not finish: CANCELLED, INTERRUPTED or ERROR (partial evidence is kept)
+    partial_note: str | None = None
     mode: str
     started_at: str | None
     finished_at: str | None

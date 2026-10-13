@@ -13,6 +13,19 @@ def get_settings(request: Request) -> Settings:
     return request.app.state.settings
 
 
+def fresh_conn(request: Request) -> Iterator:
+    """A connection whose findings are current: any finding decided under an older verdict policy is recomputed from its stored evidence first.
+    REPLAY serves the recorded database untouched."""
+    conn = connect(request.app.state.settings.db_path, check_same_thread=False)
+    try:
+        if request.app.state.settings.mode.value != "REPLAY":
+            from ..verdicts.recompute import recompute_all_stale
+            recompute_all_stale(conn)
+        yield conn
+    finally:
+        conn.close()
+
+
 def get_conn(request: Request) -> Iterator:
     # FastAPI runs sync dependencies in a thread pool, so setup and teardown can land on different threads.
     # Each request still owns its connection exclusively, so sharing it across those two threads is safe.

@@ -1,4 +1,6 @@
 """SandboxClient: how the rest of Faultline asks for execution. Nothing else may start containers."""
+import contextlib
+import contextvars
 import json
 import os
 import socket
@@ -14,6 +16,19 @@ class SandboxUnavailable(FaultlineError):
 
     def __init__(self, message: str, *, code: ErrorCode | None = None, details: dict | None = None):
         super().__init__(message, code=code, details={"retryable": True, **(details or {})})
+
+
+CURRENT_GROUP: contextvars.ContextVar[str | None] = contextvars.ContextVar("faultline_sandbox_group", default=None)
+
+
+@contextlib.contextmanager
+def job_group(group: str):
+    """Everything submitted inside this block is labelled with the worker job, so cancelling the job can stop its containers."""
+    token = CURRENT_GROUP.set(group)
+    try:
+        yield
+    finally:
+        CURRENT_GROUP.reset(token)
 
 
 class SandboxClient:
@@ -55,6 +70,9 @@ class SandboxClient:
 
     def submit(self, job: dict) -> dict:
         """Run one structured job. Raises SandboxUnavailable when execution is not possible (fail closed)."""
+        group = CURRENT_GROUP.get()
+        if group and "group" not in job:
+            job = {**job, "group": group}
         reply = self._call({"cmd": "run", "job": job})
         if reply.get("error") and "failure_class" not in reply:      # protocol-level error, not a job result
             raise SandboxUnavailable(reply["error"])
@@ -69,6 +87,13 @@ class SandboxClient:
 
     def volume_rm(self, world: str) -> bool:
         return bool(self._call({"cmd": "volume_rm", "world": world}, timeout=60).get("removed"))
+
+    def cancel(self, group: str) -> list[str]:
+        """Kill the running containers of one worker job. Returns the container ids."""
+        return self._call({"cmd": "cancel", "group": group}, timeout=60).get("killed", [])
+
+    def groups(self) -> list[str]:
+        return self._call({"cmd": "groups"}, timeout=30).get("groups", [])
 
     def sweep(self) -> list[str]:
         return self._call({"cmd": "sweep"}, timeout=120).get("removed", [])

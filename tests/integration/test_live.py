@@ -145,3 +145,49 @@ def test_tc_5_1_4_the_ui_labels_every_forced_world_in_the_why_path(d_scenario, t
     assert "werkzeug" in text and "COMPLETE" in text and "two-sided" in text and "minimal" in text.lower()
     assert text.count("attribution experiment (forced world)") >= 3                       # every attempt carries the label
     assert "None of them is an environment a repository actually uses" in text
+
+
+# ----------------------------------------------------------------------------- M5.3 TC-5.3.3 stale verdicts after a rule change (keep this test last: it edits and restores the module's findings)
+
+def test_tc_5_3_3_a_policy_change_recomputes_findings_from_stored_evidence_without_running_anything(d_scenario, monkeypatch):
+    from types import SimpleNamespace
+
+    from faultline.api.deps import fresh_conn
+    from faultline.verdicts import recompute
+    from faultline.witnesses import verify
+    conn, res, ids = d_scenario
+    db = conn.execute("PRAGMA database_list").fetchone()["file"]
+
+    def finding():
+        return conn.execute("SELECT id, verdict, scope_json FROM finding WHERE verdict IN ('BREAK_WITNESSED','INCONCLUSIVE') ORDER BY rowid DESC LIMIT 1").fetchone()
+    runs_before = conn.execute("SELECT COUNT(*) FROM oracle_run").fetchone()[0]
+    first = finding()
+    assert first["verdict"] == "BREAK_WITNESSED" and json.loads(first["scope_json"])["policy"] == "verdict-policy/1"
+    assert recompute.recompute_all_stale(conn) == 0                          # nothing is stale while the policy is unchanged
+
+    # the rules change: a new policy version, and a witness now needs 4 fresh repeats per side (only 3 were ever run)
+    monkeypatch.setattr(recompute, "LIVE_POLICY_VERSION", "verdict-policy/2")
+    monkeypatch.setattr(verify, "K", 4)
+    replay_req = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(settings=SimpleNamespace(db_path=db, mode=SimpleNamespace(value="REPLAY")))))
+    live_req = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(settings=SimpleNamespace(db_path=db, mode=SimpleNamespace(value="LIVE")))))
+
+    g = fresh_conn(replay_req)                                               # REPLAY serves the recorded database untouched
+    c = next(g)
+    assert c.execute("SELECT verdict FROM finding WHERE id=?", (first["id"],)).fetchone()[0] == "BREAK_WITNESSED"
+    g.close()
+
+    g = fresh_conn(live_req)                                                 # serving a request recomputes first: no stale verdict is returned
+    c = next(g)
+    now = c.execute("SELECT verdict, headline, scope_json FROM finding WHERE id=?", (first["id"],)).fetchone()
+    g.close()
+    assert now["verdict"] == "INCONCLUSIVE" and json.loads(now["scope_json"])["policy"] == "verdict-policy/2"
+    assert json.loads(now["scope_json"])["recomputed_from_stored_evidence"] is True
+    assert conn.execute("SELECT COUNT(*) FROM oracle_run").fetchone()[0] == runs_before          # recomputed from evidence: no run was executed or added
+
+    # and back: the earlier rules decide the same stored runs the same way again
+    monkeypatch.undo()
+    assert recompute.recompute_all_stale(conn) >= 1
+    back = conn.execute("SELECT verdict, headline, scope_json FROM finding WHERE id=?", (first["id"],)).fetchone()
+    assert back["verdict"] == "BREAK_WITNESSED" and json.loads(back["scope_json"])["policy"] == "verdict-policy/1"
+    assert back["headline"] == conn.execute("SELECT headline FROM finding WHERE id=?", (first["id"],)).fetchone()[0]
+    assert conn.execute("SELECT COUNT(*) FROM oracle_run").fetchone()[0] == runs_before

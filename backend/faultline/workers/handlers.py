@@ -6,9 +6,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
-
-class Cancelled(Exception):
-    """Raised inside a handler when cancellation was requested."""
+from ..core.errors import Cancelled  # noqa: F401  (re-exported: handlers and the worker import it from here)
 
 
 class TransientError(Exception):
@@ -149,7 +147,7 @@ def live_analysis(ctx: JobContext) -> dict:
             ctx.check_cancel()
             ctx.progress(0.05 + 0.25 * n / max(len(pending), 1), f"discovering projects and building worlds ({n + 1} of {len(pending)})")
             discover(conn, sbx, image, store, rid)
-        res = run_live_analysis(conn, sbx, image, store, ctx.payload["analysis_project_id"], progress=progress)
+        res = run_live_analysis(conn, sbx, image, store, ctx.payload["analysis_project_id"], progress=progress, job_id=ctx.job_id)
         return {"analysis_id": res.analysis_id, "cells": res.cells, "funnel": res.funnel}
     finally:
         conn.close()

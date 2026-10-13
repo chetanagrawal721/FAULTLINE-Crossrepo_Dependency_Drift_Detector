@@ -13,7 +13,7 @@ from ...storage import findings as finding_store
 from ...storage import jobs
 from ...storage.store import Store
 from ...witnesses.bundle import write_bundle
-from ..deps import get_conn, get_settings, require_token
+from ..deps import fresh_conn, get_conn, get_settings, require_token
 
 router = APIRouter(prefix="/api", tags=["findings"])
 
@@ -48,13 +48,13 @@ def run_scenario(scenario_id: str, conn=Depends(get_conn)) -> Job:
 
 
 @router.get("/findings", response_model=list[FindingSummary])
-def list_findings(verdict: str | None = None, mode: str | None = None, conn=Depends(get_conn)) -> list[FindingSummary]:
+def list_findings(verdict: str | None = None, mode: str | None = None, conn=Depends(fresh_conn)) -> list[FindingSummary]:
     """All findings, newest first. Optional filters: ?verdict=BREAK_WITNESSED&mode=LIVE."""
     return [f for f in finding_store.list_findings(conn) if (not verdict or f.verdict == verdict) and (not mode or f.mode == mode)]
 
 
 @router.get("/findings/{finding_id}", response_model=FindingDetail)
-def get_finding(finding_id: str, conn=Depends(get_conn)) -> FindingDetail:
+def get_finding(finding_id: str, conn=Depends(fresh_conn)) -> FindingDetail:
     return finding_store.get_finding(conn, finding_id, bundle_url=None)
 
 

@@ -19,6 +19,7 @@ import time
 from pathlib import Path
 
 from ..core.config import Settings, repo_root
+from ..core.logging import configure as configure_logging
 from ..storage.store import Store
 from . import egress, images, profiles, runner
 
@@ -211,6 +212,10 @@ class Handler(socketserver.StreamRequestHandler):
                 self._send({"exists": d.volume_exists(world_volume(req["world"]) if "world" in req else WHEELHOUSE_VOLUME)})
             elif cmd == "volume_rm":
                 self._send({"removed": runner.volume_rm(world_volume(req["world"]), d.docker_host)})
+            elif cmd == "cancel":
+                self._send({"killed": runner.kill_group(str(req["group"]), d.docker_host)})
+            elif cmd == "groups":
+                self._send({"groups": runner.running_groups(d.docker_host)})
             elif cmd == "sweep":
                 self._send({"removed": runner.sweep_orphans(d.docker_host)})
             else:
@@ -244,7 +249,7 @@ def main() -> None:
     ap.add_argument("--port", type=int, default=int(os.environ.get("FAULTLINE_SANDBOX_PORT", "8787")))
     ap.add_argument("--no-verify", action="store_true")
     a = ap.parse_args()
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
+    configure_logging()
     daemon = Daemon(load_token(create=True) or "", docker_host=os.environ.get("FAULTLINE_DOCKER_HOST"))
     if runner.docker_ok(daemon.docker_host):
         removed = runner.sweep_orphans(daemon.docker_host)

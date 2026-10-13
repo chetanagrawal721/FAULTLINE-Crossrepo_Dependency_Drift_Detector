@@ -61,7 +61,7 @@ def analysis_view(conn: sqlite3.Connection, analysis_id: str) -> AnalysisView:
     stats = json.loads(a["stats_json"] or "{}")
     failed = [FailedConsumer(consumer=_label(conn, x["consumer"]), producer=_label(conn, x["producer"]), side=x["side"], reason=x["reason"], text=x["text"])
               for x in stats.get("failed_consumers", [])]
-    return AnalysisView(id=a["id"], project_id=a["analysis_project_id"], status=a["status"], mode=a["mode"], started_at=a["started_at"],
+    return AnalysisView(id=a["id"], project_id=a["analysis_project_id"], status=a["status"], outcome=stats.get("outcome"), partial_note=stats.get("reason"), mode=a["mode"], started_at=a["started_at"],
                         finished_at=a["finished_at"], funnel=funnel(conn, analysis_id), failed=failed, relationships=rels, cells=cells)
 
 

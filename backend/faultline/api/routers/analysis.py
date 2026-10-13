@@ -8,18 +8,18 @@ from ...core.models import Job
 from ...core.views import AnalysisView, InventoryGraph, WhyPath
 from ...ingestion import service
 from ...storage import jobs
-from ..deps import get_conn, require_token
+from ..deps import fresh_conn, get_conn, require_token
 
 router = APIRouter(prefix="/api", tags=["analysis"])
 
 
 @router.get("/analyses/{analysis_id}", response_model=AnalysisView)
-def get_analysis(analysis_id: str, conn=Depends(get_conn)) -> AnalysisView:
+def get_analysis(analysis_id: str, conn=Depends(fresh_conn)) -> AnalysisView:
     return analysis_view(conn, analysis_id)
 
 
 @router.get("/projects/{project_id}/analysis", response_model=AnalysisView)
-def latest_for_project(project_id: str, conn=Depends(get_conn)) -> AnalysisView:
+def latest_for_project(project_id: str, conn=Depends(fresh_conn)) -> AnalysisView:
     """The most recent live analysis of a project, straight from the database."""
     service.get_project(conn, project_id)
     aid = latest_analysis_id(conn, project_id)
@@ -29,7 +29,7 @@ def latest_for_project(project_id: str, conn=Depends(get_conn)) -> AnalysisView:
 
 
 @router.get("/findings/{finding_id}/why-path", response_model=WhyPath)
-def finding_why_path(finding_id: str, conn=Depends(get_conn)) -> WhyPath:
+def finding_why_path(finding_id: str, conn=Depends(fresh_conn)) -> WhyPath:
     return why_path(conn, finding_id)
 
 

@@ -358,3 +358,38 @@ def test_tc_11_3_2_a_broken_egress_control_fails_the_inspector(daemon, monkeypat
     assert res["verified"] is False and "egress proxy running" in res["reason"]
     monkeypatch.undo()
     assert daemon.verify_boundary()["verified"] is True
+
+
+# ----------------------------------------------------------------------------- M5.3 cancellation reaches the running container
+
+def test_cancelling_a_job_group_kills_its_running_container_and_removes_it(daemon, image):
+    import threading
+    import time
+
+    from faultline.sandbox.client import SandboxClient, job_group
+    sbx = SandboxClient(port=daemon.port, token=TOKEN, timeout=120)
+    group = "job_cancel_test_1"
+    box: dict = {}
+
+    def long_job():
+        with job_group(group):
+            box["r"] = sbx.submit({"image": image, "zone": "exec", "probe": "sleep", "args": {"seconds": 60}, "limits": {"timeout_s": 120}})
+    t = threading.Thread(target=long_job)
+    t0 = time.monotonic()
+    t.start()
+    for _ in range(40):                                                          # wait until the container exists
+        if group in sbx.groups():
+            break
+        time.sleep(0.5)
+    assert group in sbx.groups()
+    assert sbx.cancel(group), "a running container should have been killed"
+    t.join(timeout=30)
+    assert not t.is_alive() and time.monotonic() - t0 < 50                      # it did not run for its full 60 seconds
+    assert box["r"]["failure_class"] in ("SANDBOX_FAILURE", "TIMEOUT", "HARNESS_FAILURE") or box["r"]["exit_code"] != 0
+    assert sbx.groups() == [] or group not in sbx.groups()
+    assert [n for n in labelled_containers() if group in n] == []                # removed, not just stopped
+
+
+def test_a_group_name_cannot_inject_anything(sbx, image):
+    r = sbx.submit({"image": image, "zone": "exec", "probe": "echo", "args": {}, "group": "x --privileged", "limits": {"timeout_s": 20}})
+    assert r["failure_class"] == "SANDBOX_FAILURE" and "group must be" in r["error"]

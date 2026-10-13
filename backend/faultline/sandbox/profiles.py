@@ -32,11 +32,12 @@ class Profile:
     network: str                 # "none" or the internal fetch network
     extra_env: tuple = ()        # fixed (name, value) pairs; never taken from a request
 
-    def docker_args(self, limits: dict, container_name: str, job_id: str) -> list[str]:
+    def docker_args(self, limits: dict, container_name: str, job_id: str, group: str | None = None) -> list[str]:
         mem = f"{int(limits['memory_mb'])}m"
         args = [
             "--name", container_name,
             "--label", "faultline=1", "--label", f"faultline.job={job_id}", "--label", f"faultline.zone={self.name}",
+            *(["--label", f"faultline.group={group}"] if group else []),
             "--network", self.network,
             "--read-only",
             "--tmpfs", f"/tmp:rw,noexec,nosuid,mode=1777,size={int(limits['tmpfs_mb'])}m",

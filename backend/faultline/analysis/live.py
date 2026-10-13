@@ -10,7 +10,9 @@ from pathlib import Path
 
 from ..attribution.runner import attribute, persist
 from ..core.enums import FailureClass, WorldKind
+from ..core.errors import Cancelled, LeaseLost
 from ..core.ids import new_id
+from ..core.logging import phase
 from ..core.models import OracleRunResult
 from ..ingestion.clone import load_inventory
 from ..oracles import planner
@@ -28,6 +30,7 @@ from ..witnesses.verify import INFRA_CLASSES, Verification, verify_cell
 from ..worlds.builder import WorldBuilder, WorldBuildError
 from ..worlds.cells import CellPlan, persist_cell, plan_cells
 from .fixture import FixtureCell
+from .lifecycle import mark_partial, reconcile_abandoned
 
 RETRIES = 2
 
@@ -50,13 +53,15 @@ def _project_layout(conn: sqlite3.Connection, project_id: str) -> dict:
     return {"rel_path": p["rel_path"], "store_path": p["store_path"], "name": p["published_name"], **layout}
 
 
-def retrying(run: Callable[[], OracleRunResult]) -> Callable[[], OracleRunResult]:
-    """Infrastructure failures are retried; they are never evidence about the artifact."""
+def retrying(run: Callable[[], OracleRunResult], checkpoint: Callable[[], None] | None = None) -> Callable[[], OracleRunResult]:
+    """Infrastructure failures are retried; they are never evidence about the artifact. `checkpoint` raises Cancelled when the job was cancelled, so a killed container is not retried."""
     def go() -> OracleRunResult:
         last = run()
         for _ in range(RETRIES):
             if last.failure_class not in INFRA_CLASSES or last.entries:
                 break
+            if checkpoint:
+                checkpoint()
             last = run()
         return last
     return go
@@ -69,11 +74,29 @@ def _primary_package(layout: dict) -> str | None:
 
 
 def run_live_analysis(conn: sqlite3.Connection, sbx: SandboxClient, image: str, store: Store, analysis_project_id: str, *,
-                      progress: Callable[[float, str], None] | None = None) -> LiveResult:
+                      progress: Callable[[float, str], None] | None = None, job_id: str | None = None) -> LiveResult:
+    """Wraps the work so that a cancelled, interrupted or failed run is closed and labelled with its partial evidence kept."""
     say = progress or (lambda f, m: None)
-    aid = create_analysis(conn, analysis_project_id)
+    if job_id:
+        reconcile_abandoned(conn, job_id)
+    aid = create_analysis(conn, analysis_project_id, options={"job_id": job_id} if job_id else None)
+    try:
+        return _run_live(conn, sbx, image, store, analysis_project_id, aid, say)
+    except LeaseLost:
+        mark_partial(conn, aid, "INTERRUPTED", "the worker lost its lease while running; the job was taken over as a new analysis")
+        raise
+    except Cancelled:
+        mark_partial(conn, aid, "CANCELLED", "cancelled by the user; partial evidence is kept and no finding is claimed for unfinished cells")
+        raise
+    except Exception as exc:
+        mark_partial(conn, aid, "ERROR", f"{type(exc).__name__}: {str(exc)[:200]}")
+        raise
+
+
+def _run_live(conn, sbx, image, store, analysis_project_id, aid, say) -> LiveResult:
     say(0.05, "discovering relationships")
-    rels = discover(conn, store, aid, analysis_project_id)
+    with phase("discover relationships", analysis=aid):
+        rels = discover(conn, store, aid, analysis_project_id)
     builder = WorldBuilder(sbx, image, conn)
     edge_cache: dict[str, dict] = {}
 
@@ -160,15 +183,19 @@ def execute_cell(conn, sbx, image, store, builder, aid, cell_id, plan, layout, p
 
     def run(world_hash: str, modules=modules, artifact=artifact, pkg=pkg, pythonpath=pythonpath):
         return retrying(lambda: run_o_import(sbx, image, world_hash=world_hash, artifact_hash=artifact, top_level=pkg,
-                                             modules=modules, pythonpath=(pythonpath,)))()
+                                             modules=modules, pythonpath=(pythonpath,)),
+                        checkpoint=lambda: say(base + 0.05 / n, "checking whether the job was cancelled"))()
 
-    v = verify_cell(conn, cell, oracle=ORACLE, version=ORACLE_VERSION, run_in_world=run, args={"modules": modules, "pythonpath": pythonpath}, force=True)
+    with phase("verify (3 + 3 fresh runs)", cell=cell_id):
+        v = verify_cell(conn, cell, oracle=ORACLE, version=ORACLE_VERSION, run_in_world=run, args={"modules": modules, "pythonpath": pythonpath}, force=True)
+    say(base + 0.09 / n, "recording the verified result")                      # raises Cancelled here, before any finding is written for a killed run
     has_tests = any(e["path"].startswith(("tests/", "test/")) for e in prod_inv["entries"])
     for dec in v.witnesses:
         if dec.witness_id and dec.signature is not None:
             say(base + 0.1 / n, f"attributing the break in {dec.entry} (two-sided search)")
-            a = attribute(sbx, image, builder, artifact_hash=artifact, entry=dec.entry, top_level=pkg, pythonpath=pythonpath, signature=dec.signature,
-                          ref=list(plan.reference.pinned), consumer=list(plan.projection.pinned), delta=[d.name for d in plan.projection.delta])
+            with phase("attribute (two-sided ddmin)", cell=cell_id, entry=dec.entry):
+                a = attribute(sbx, image, builder, artifact_hash=artifact, entry=dec.entry, top_level=pkg, pythonpath=pythonpath, signature=dec.signature,
+                              ref=list(plan.reference.pinned), consumer=list(plan.projection.pinned), delta=[d.name for d in plan.projection.delta])
             persist(conn, dec.witness_id, a)
     steps = planner.after_import(planner.plan(pkg, modules, has_tests=has_tests, test_lock=False), pkg, v)
     fid = write_live_finding(conn, aid, cell, v, layout, plan, steps, rels)

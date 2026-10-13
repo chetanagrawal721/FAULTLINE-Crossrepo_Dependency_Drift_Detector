@@ -7,6 +7,7 @@ Security properties enforced here:
   * the container always has a wall-clock limit, is labelled, and is removed in a finally block.
 """
 import json
+import re
 import subprocess
 import threading
 import time
@@ -69,6 +70,22 @@ def sweep_orphans(docker_host: str | None = None) -> list[str]:
     return names
 
 
+def kill_group(group: str, docker_host: str | None = None) -> list[str]:
+    """Kill every running container started for one worker job (cancellation). The job's own run_job then reports the kill; nothing is retried."""
+    r = subprocess.run(docker_cmd(docker_host, "ps", "-q", "--filter", f"label=faultline.group={group}"), capture_output=True, text=True, timeout=30)
+    ids = [i for i in r.stdout.split() if i]
+    if ids:
+        subprocess.run(docker_cmd(docker_host, "kill", *ids), capture_output=True, timeout=60)
+    return ids
+
+
+def running_groups(docker_host: str | None = None) -> list[str]:
+    """The worker-job groups that currently have a container (used to find containers whose worker died)."""
+    r = subprocess.run(docker_cmd(docker_host, "ps", "--filter", f"label={LABEL}", "--format", '{{.Label "faultline.group"}}'),
+                       capture_output=True, text=True, timeout=30)
+    return sorted({g for g in r.stdout.split() if g})
+
+
 def _read_capped(stream, cap: int, sink: list, flag: dict) -> None:
     total = 0
     while True:
@@ -120,6 +137,9 @@ def run_job(job: dict, *, mounts: list[dict] | None = None, docker_host: str | N
         interpreter = job.get("interpreter", "system")
         if interpreter not in ("system", "world"):
             raise ValueError(f"unknown interpreter {interpreter!r}")
+        group = job.get("group")
+        if group is not None and not re.fullmatch(r"[A-Za-z0-9_.-]{1,80}", str(group)):
+            raise ValueError("group must be 1 to 80 letters, digits, dots, dashes or underscores")
         script = job.get("script", "probe.py")
         if script not in HARNESS_SCRIPTS and not (script.startswith("o_") and script.endswith(".py") and "/" not in script):
             raise ValueError(f"unknown harness script {script!r}")
@@ -131,7 +151,7 @@ def run_job(job: dict, *, mounts: list[dict] | None = None, docker_host: str | N
         return result
 
     name = f"fl-{job_id}-{run_id[-6:]}".lower().replace("_", "-")
-    args = profile.docker_args(limits, name, job_id)
+    args = profile.docker_args(limits, name, job_id, group)
     for m in mounts or []:
         args += ["--mount", mount_arg(m)]
     if interpreter == "world":
