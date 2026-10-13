@@ -1,0 +1,5 @@
+tests/unit/test_logging.py::test_every_line_is_json_with_a_correlation_id_and_a_phase_has_a_duration PASSED [ 25%]
+tests/unit/test_logging.py::test_phase_timings_can_be_collected_and_a_failed_phase_is_marked PASSED [ 50%]
+tests/unit/test_logging.py::test_secrets_are_redacted_by_value_by_shape_in_fields_and_in_tracebacks PASSED [ 75%]
+tests/unit/test_logging.py::test_tc_5_4_1_a_worker_process_never_writes_a_canary_to_its_logs PASSED [100%]
+============================== 4 passed in 2.72s ==============================

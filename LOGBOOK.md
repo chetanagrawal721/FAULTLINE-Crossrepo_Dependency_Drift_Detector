@@ -899,3 +899,37 @@ Format: `### <UTC time> | <EVENT> | <id> | by <name>` followed by details.
 ### 2026-10-13 17:40 UTC | DONE | M11.3 | by Chetan Agrawal
 - Deployment security release gate
 - test cases passed: 3/3
+
+### 2026-10-13 17:49 UTC | START | M5.3 | by Chetan Agrawal
+- Durable worker behaviour
+
+### 2026-10-13 18:04 UTC | TC PASS | TC-5.3.1 | by Chetan Agrawal
+- Worker crash mid-analysis
+- evidence: evidence/M5.3/TC-5.3.1.txt
+
+### 2026-10-13 18:04 UTC | TC PASS | TC-5.3.2 | by Chetan Agrawal
+- Cancellation cleans up
+- evidence: evidence/M5.3/TC-5.3.2.txt
+
+### 2026-10-13 18:04 UTC | TC PASS | TC-5.3.3 | by Chetan Agrawal
+- Stale cache after rule change
+- evidence: evidence/M5.3/TC-5.3.3.txt
+
+### 2026-10-13 18:04 UTC | DONE | M5.3 | by Chetan Agrawal
+- Durable worker behaviour
+- test cases passed: 3/3
+
+### 2026-10-13 18:04 UTC | START | M5.4 | by Chetan Agrawal
+- Observability and retention (minimal)
+
+### 2026-10-13 18:05 UTC | TC PASS | TC-5.4.1 | by Chetan Agrawal
+- Secrets redacted
+- evidence: evidence/M5.4/TC-5.4.1.txt
+
+### 2026-10-13 18:05 UTC | TC PASS | TC-5.4.2 | by Chetan Agrawal
+- Retention safety
+- evidence: evidence/M5.4/TC-5.4.2.txt
+
+### 2026-10-13 18:05 UTC | DONE | M5.4 | by Chetan Agrawal
+- Observability and retention (minimal)
+- test cases passed: 2/2

@@ -1,0 +1,7 @@
+tests/integration/test_durable.py::test_tc_5_3_1_a_killed_worker_is_replaced_and_nothing_is_duplicated PASSED [ 10%]
+tests/integration/test_durable.py::test_orphaned_containers_of_a_dead_worker_are_stopped_by_the_cleanup PASSED [ 30%]
+tests/unit/test_lifecycle.py::test_a_cancelled_analysis_is_closed_labelled_and_never_left_in_progress PASSED [ 40%]
+tests/unit/test_lifecycle.py::test_a_finished_analysis_is_never_relabelled PASSED [ 50%]
+tests/unit/test_lifecycle.py::test_a_retried_job_closes_the_attempt_it_abandoned_and_only_that_one PASSED [ 60%]
+tests/unit/test_lifecycle.py::test_unfinished_oracle_jobs_of_a_closed_analysis_are_not_left_running PASSED [ 70%]
+================ 10 passed, 36 deselected in 290.21s (0:04:50) ================

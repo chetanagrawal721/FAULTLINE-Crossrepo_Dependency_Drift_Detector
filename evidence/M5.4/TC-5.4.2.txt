@@ -1,0 +1,6 @@
+tests/unit/test_retention.py::test_what_a_finding_depends_on_is_identified PASSED [ 20%]
+tests/unit/test_retention.py::test_tc_5_4_2_aggressive_cleanup_removes_unreferenced_data_and_keeps_every_referenced_item PASSED [ 40%]
+tests/unit/test_retention.py::test_recent_data_is_kept_and_a_dry_run_deletes_nothing PASSED [ 60%]
+tests/unit/test_retention.py::test_the_wheelhouse_and_test_remotes_are_never_touched PASSED [ 80%]
+tests/unit/test_retention.py::test_old_log_files_are_pruned_and_newer_ones_kept PASSED [100%]
+============================== 5 passed in 0.25s ==============================

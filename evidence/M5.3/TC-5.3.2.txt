@@ -1,0 +1,4 @@
+tests/integration/test_durable.py::test_tc_5_3_2_cancelling_stops_the_container_keeps_partial_evidence_and_labels_it PASSED [ 20%]
+tests/security/test_sandbox.py::test_cancelling_a_job_group_kills_its_running_container_and_removes_it PASSED [ 90%]
+tests/security/test_sandbox.py::test_a_group_name_cannot_inject_anything PASSED [100%]
+================ 10 passed, 36 deselected in 290.21s (0:04:50) ================

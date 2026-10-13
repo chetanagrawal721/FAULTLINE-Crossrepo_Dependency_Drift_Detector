@@ -7,6 +7,7 @@ import { ModeBadge } from "./components/ModeBadge";
 import { Dashboard } from "./pages/Dashboard";
 import { Findings } from "./pages/Findings";
 import { Inventory } from "./pages/Inventory";
+import { Jobs } from "./pages/Jobs";
 import { RepositoriesPanel } from "./components/RepositoriesPanel";
 import { WorldInspector } from "./pages/WorldInspector";
 import { ScenarioPanel } from "./components/ScenarioPanel";
@@ -48,7 +49,7 @@ export default function App() {
     };
   }, [loadFindings]);
 
-  const page = route.startsWith("#/findings") ? "findings" : route.startsWith("#/inventory") ? "inventory" : "home";
+  const page = route.startsWith("#/findings") ? "findings" : route.startsWith("#/inventory") ? "inventory" : route.startsWith("#/jobs") ? "jobs" : "home";
   const repoId = route.startsWith("#/repo/") ? route.slice("#/repo/".length) : null;
   const findingId = route.startsWith("#/finding/") ? route.slice("#/finding/".length) : null;
 
@@ -74,7 +75,7 @@ export default function App() {
       </header>
 
       <nav className="row" aria-label="Views" data-testid="nav">
-        {[["#/", "Dashboard", "home"], ["#/findings", "Findings", "findings"], ["#/inventory", "Inventory graph", "inventory"]].map(([href, label, id]) => (
+        {[["#/", "Dashboard", "home"], ["#/findings", "Findings", "findings"], ["#/inventory", "Inventory graph", "inventory"], ["#/jobs", "Jobs", "jobs"]].map(([href, label, id]) => (
           <a key={id} href={href} className={page === id && !repoId && !findingId ? "btn" : "plain"} aria-current={page === id ? "page" : undefined}>
             {label}
           </a>
@@ -95,6 +96,8 @@ export default function App() {
         <Findings />
       ) : page === "inventory" ? (
         <Inventory />
+      ) : page === "jobs" ? (
+        <Jobs />
       ) : (
         <>
           <RepositoriesPanel replay={caps?.mode === "REPLAY"} />

@@ -62,6 +62,7 @@ export const api = {
   scenarios: () => request<ScenarioInfo[]>("/api/scenarios"),
   runScenario: (id: string) => request<Job>(`/api/scenarios/${encodeURIComponent(id)}/run`, { method: "POST" }),
   job: (id: string) => request<Job>(`/api/jobs/${encodeURIComponent(id)}`),
+  jobs: () => request<Job[]>("/api/jobs?limit=50"),
   findings: (verdict?: string) => request<FindingSummary[]>(`/api/findings${verdict ? `?verdict=${encodeURIComponent(verdict)}` : ""}`),
   inventory: (id: string) => request<InventoryGraph>(`/api/projects/${encodeURIComponent(id)}/inventory`),
   whyPath: (id: string) => request<WhyPath>(`/api/findings/${encodeURIComponent(id)}/why-path`),

@@ -191,6 +191,16 @@
       "started": "2026-10-13 10:28 UTC",
       "status": "in_progress"
     },
+    "M5.3": {
+      "done": "2026-10-13 18:04 UTC",
+      "started": "2026-10-13 17:49 UTC",
+      "status": "done"
+    },
+    "M5.4": {
+      "done": "2026-10-13 18:05 UTC",
+      "started": "2026-10-13 18:04 UTC",
+      "status": "done"
+    },
     "M5.5": {
       "done": "2026-10-13 10:48 UTC",
       "started": "2026-10-13 10:47 UTC",
@@ -886,6 +896,36 @@
       "date": "2026-10-13 10:28 UTC",
       "evidence": "evidence/M5.2/TC-5.2.3.txt",
       "note": "restored from bundle, hash verified; sandbox scripts recorded: no fetch_repo",
+      "status": "pass"
+    },
+    "TC-5.3.1": {
+      "date": "2026-10-13 18:04 UTC",
+      "evidence": "evidence/M5.3/TC-5.3.1.txt",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-5.3.2": {
+      "date": "2026-10-13 18:04 UTC",
+      "evidence": "evidence/M5.3/TC-5.3.2.txt",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-5.3.3": {
+      "date": "2026-10-13 18:04 UTC",
+      "evidence": "evidence/M5.3/TC-5.3.3.txt",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-5.4.1": {
+      "date": "2026-10-13 18:05 UTC",
+      "evidence": "evidence/M5.4/TC-5.4.1.txt",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-5.4.2": {
+      "date": "2026-10-13 18:05 UTC",
+      "evidence": "evidence/M5.4/TC-5.4.2.txt",
+      "note": "",
       "status": "pass"
     },
     "TC-5.5.1": {

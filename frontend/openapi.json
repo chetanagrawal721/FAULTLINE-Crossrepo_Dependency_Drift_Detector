@@ -42,6 +42,28 @@
             "title": "Mode",
             "type": "string"
           },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "partial_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partial Note"
+          },
           "project_id": {
             "title": "Project Id",
             "type": "string"
@@ -1257,6 +1279,17 @@
             "title": "Created At",
             "type": "string"
           },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
           "error": {
             "anyOf": [
               {
@@ -1268,6 +1301,17 @@
               }
             ],
             "title": "Error"
+          },
+          "failure_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Class"
           },
           "idempotency_key": {
             "anyOf": [
@@ -1307,6 +1351,17 @@
             "title": "Progress",
             "type": "number"
           },
+          "queue_wait_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue Wait Ms"
+          },
           "result": {
             "anyOf": [
               {
@@ -1318,6 +1373,17 @@
               }
             ],
             "title": "Result"
+          },
+          "retried_after": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retried After"
           },
           "status": {
             "$ref": "#/components/schemas/JobStatus"

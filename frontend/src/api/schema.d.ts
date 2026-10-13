@@ -504,6 +504,10 @@ export interface components {
             id: string;
             /** Mode */
             mode: string;
+            /** Outcome */
+            outcome?: string | null;
+            /** Partial Note */
+            partial_note?: string | null;
             /** Project Id */
             project_id: string;
             /** Relationships */
@@ -889,10 +893,14 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Duration Ms */
+            duration_ms?: number | null;
             /** Error */
             error: {
                 [key: string]: unknown;
             } | null;
+            /** Failure Class */
+            failure_class?: string | null;
             /** Idempotency Key */
             idempotency_key: string | null;
             /** Job Id */
@@ -905,10 +913,14 @@ export interface components {
             message: string | null;
             /** Progress */
             progress: number;
+            /** Queue Wait Ms */
+            queue_wait_ms?: number | null;
             /** Result */
             result: {
                 [key: string]: unknown;
             } | null;
+            /** Retried After */
+            retried_after?: string | null;
             status: components["schemas"]["JobStatus"];
             /**
              * Updated At

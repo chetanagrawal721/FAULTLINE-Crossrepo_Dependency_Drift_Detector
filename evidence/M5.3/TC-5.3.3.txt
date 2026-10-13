@@ -1,0 +1,2 @@
+tests/integration/test_live.py::test_tc_5_3_3_a_policy_change_recomputes_findings_from_stored_evidence_without_running_anything PASSED [ 80%]
+================ 10 passed, 36 deselected in 290.21s (0:04:50) ================
