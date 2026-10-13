@@ -4,6 +4,7 @@
     FAULTLINE_BASE_URL=http://127.0.0.1:8000 python -m pytest tests/e2e/test_ui_browser.py
 
 It needs network access to github.com. Skipped when the stack or Playwright is not available.
+The person's path through the workspace: New analysis -> two repository URLs -> pinned inputs -> run -> overview, relationships and world matrix.
 """
 import json
 import os
@@ -37,74 +38,71 @@ def page():
             browser = p.chromium.launch()
         except Exception as e:  # noqa: BLE001
             pytest.skip(f"Chromium is not installed: {e}")
-        ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+        ctx = browser.new_context(viewport={"width": 1400, "height": 1000})
         pg = ctx.new_page()
         yield pg
         browser.close()
 
 
-@pytest.fixture(scope="module")
-def fresh_project():
-    """A new project, so the UI (which shows the newest project) starts empty."""
-    return api("/api/projects", "POST", {"name": f"browser e2e {secrets.token_hex(3)}"})["id"]
+def newest_live_project():
+    return api("/api/projects?mode=LIVE")[0]["id"]
 
 
-def add_repo(page, url, ref):
-    page.get_by_label("GitHub repository URL").fill(url)
-    page.get_by_label("Ref").fill(ref)
-    page.get_by_role("button", name="Add repository").click()
-
-
-def test_tc_4_7_1_two_urls_end_to_end_in_a_real_browser(page, fresh_project):
-    page.goto(BASE + "/")
-    page.get_by_test_id("repositories-panel").wait_for()
-    add_repo(page, *PRODUCER)
-    page.get_by_test_id("pinned-sha").first.wait_for(timeout=60000)
-    page.get_by_text("INGESTED").first.wait_for(timeout=240000)
-    add_repo(page, *CONSUMER)
-    page.wait_for_function("document.querySelectorAll('[data-testid=repo-card]').length >= 2", timeout=60000)
-    page.wait_for_function("[...document.querySelectorAll('[data-testid=repo-card]')].every(c => c.innerText.includes('INGESTED'))", timeout=300000)
-    shas = page.get_by_test_id("pinned-sha").all_inner_texts()
-    assert len(shas) == 2 and all(re.fullmatch(r"[0-9a-f]{10}", s) for s in shas)
-
-    for card in page.get_by_test_id("repo-card").all():                     # worlds must be resolved before the cross-repo run
-        href = card.get_by_test_id("inspect-link").get_attribute("href")
-        rid = href.split("/")[-1]
-        api(f"/api/repositories/{rid}/analyze", "POST")
-    page.wait_for_timeout(1000)
-    for _ in range(90):
-        jobs = api("/api/jobs")
-        if not [j for j in jobs if j["kind"] == "analyze_repository" and j["status"] in ("QUEUED", "RUNNING")]:
-            break
-        page.wait_for_timeout(5000)
-
+def test_tc_4_7_1_two_urls_end_to_end_in_a_real_browser(page):
+    page.goto(BASE + "/#/app/new")
     page.reload()
+    page.get_by_label("Producer repository URL").fill(PRODUCER[0])
+    page.get_by_label("Producer ref").fill(PRODUCER[1])
+    page.get_by_label("Consumer repository URL").fill(CONSUMER[0])
+    page.get_by_role("button", name="Pin repositories").click()
+    page.get_by_test_id("review-inputs").wait_for(timeout=90000)
+    page.wait_for_function("document.querySelectorAll('[data-testid=repo-card]').length >= 2", timeout=60000)
+    shas = page.get_by_test_id("pinned-sha").all_inner_texts()
+    assert len(shas) == 2 and all(re.fullmatch(r"[0-9a-f]{10}", s) for s in shas)                      # a ref became one immutable commit before anything ran
+    page.wait_for_function("[...document.querySelectorAll('[data-testid=repo-card]')].every(c => c.innerText.toLowerCase().includes('pinned and fetched'))", timeout=300000)
+
+    page.get_by_role("checkbox").check()
     page.get_by_role("button", name="Run analysis").click()
-    page.get_by_test_id("analysis").wait_for(timeout=600000)
-    funnel = {k: page.get_by_test_id(f"funnel-{k}").inner_text() for k in ("relationships found", "actionable", "consumers discovered", "consumers analysed", "cells")}
-    assert funnel["actionable"] == "1" and funnel["consumers discovered"] == "1" and funnel["consumers analysed"] == "1" and funnel["cells"] == "1"
-    rel = page.get_by_test_id("relationship").first.inner_text()
-    assert "pallets/flask" in rel and "maxcountryman/flask-login" in rel and "L2" in rel and "pyproject.toml" in rel
-    row = page.get_by_test_id("matrix-row").first.inner_text()
-    assert "flask:" not in row or "→" in row                                                    # the exact delta is displayed
-    assert re.search(r"NO DIVERGENCE OBSERVED|BREAK WITNESSED|INCONCLUSIVE", row.upper().replace("_", " "))
-    # what the page shows equals what the API stored
-    pid = fresh_project
+    page.get_by_test_id("submitted").wait_for(timeout=60000)
+    page.get_by_role("button", name="Open the analysis run").click()
+    page.get_by_text("Result available").wait_for(timeout=900000)                                      # the run view follows the real job until it is DONE
+
+    pid = newest_live_project()
     stored = api(f"/api/projects/{pid}/analysis")
+    f = stored["funnel"]
+    assert f["relationships_actionable"] == 1 and f["consumers_discovered"] == 1 and f["consumers_analysed"] == 1 and f["cells"] == 1
+
+    page.goto(BASE + "/#/app")
+    page.get_by_test_id("analysis").wait_for(timeout=60000)
     assert page.get_by_test_id("analysis").get_attribute("data-analysis-id") == stored["id"]
-    assert page.get_by_test_id("world-hash").first.get_attribute("title") == stored["cells"][0]["test_world_hash"]
-    assert "compatible" not in page.get_by_test_id("dashboard").inner_text().lower().replace("not a statement that they are compatible", "")
+    assert page.get_by_test_id("funnel-relationships").locator("small").inner_text().startswith("1 ")
+    assert page.get_by_test_id("funnel-worlds").locator("small").inner_text().startswith("1 ")
+
+    page.goto(BASE + "/#/app/relationships")
+    rel = page.get_by_test_id("relationship").first
+    rel.wait_for(timeout=30000)
+    shown = rel.inner_text()
+    assert "pallets/flask" in shown and "maxcountryman/flask-login" in shown and "L2" in shown
+    assert "pyproject.toml" in page.locator(".workspace-content").inner_text()                           # file-level evidence for the relationship
+
+    page.goto(BASE + "/#/app/worlds")
+    row = page.get_by_test_id("matrix-row").first
+    row.wait_for(timeout=30000)
+    assert re.search(r"NO DIVERGENCE OBSERVED|BREAK WITNESSED|INCONCLUSIVE", row.inner_text().upper())
+    assert page.get_by_test_id("world-hash").first.get_attribute("title") == stored["cells"][0]["ref_world_hash"]   # what the page shows equals what the API stored
+    assert "compatible" not in page.locator(".workspace-content").inner_text().lower().replace("not a statement that they are compatible", "")
 
 
-def test_tc_4_7_2_the_ui_renders_exactly_the_value_the_api_returns(page, fresh_project):
+def test_tc_4_7_2_the_ui_renders_exactly_the_value_the_api_returns(page):
     """Intercept the analysis response and replace the world hash with a value nobody has seen: the UI must show that value."""
-    stored = api(f"/api/projects/{fresh_project}/analysis")
+    stored = api(f"/api/projects/{newest_live_project()}/analysis")
     unseen = "w_" + secrets.token_hex(20)
     mutated = json.loads(json.dumps(stored))
-    mutated["cells"][0]["test_world_hash"] = unseen
+    mutated["cells"][0]["ref_world_hash"] = unseen
 
     page.route(re.compile(r".*/api/projects/[^/]+/analysis$"), lambda route: route.fulfill(status=200, content_type="application/json", body=json.dumps(mutated)))
-    page.goto(BASE + "/")
+    page.goto(BASE + "/#/app/worlds")
+    page.reload()
     page.get_by_test_id("world-hash").first.wait_for(timeout=30000)
     shown = page.get_by_test_id("world-hash").first.get_attribute("title")
     assert shown == unseen and unseen[:14] in page.get_by_test_id("world-hash").first.inner_text()

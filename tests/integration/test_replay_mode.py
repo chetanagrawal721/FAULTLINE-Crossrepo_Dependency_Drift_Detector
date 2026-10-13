@@ -87,7 +87,7 @@ def test_tc_12_2_3_the_mode_shown_is_the_mode_stored_with_the_evidence_not_the_r
         except Exception as e:  # noqa: BLE001
             pytest.skip(f"Chromium is not installed: {e}")
         page = browser.new_page()
-        page.goto(base + "/?mode=LIVE")                                      # the URL asks for LIVE
+        page.goto(base + "/?mode=LIVE#/app")                                 # the URL asks for LIVE
         page.get_by_test_id("analysis").wait_for(timeout=30000)
         badges = [b.inner_text() for b in page.get_by_test_id("mode-badge").all()]
         assert "LIVE" not in badges and all(b == "RECORDED" for b in badges) and badges           # the record says REPLAY: the badge says RECORDED

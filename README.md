@@ -17,7 +17,7 @@ show a failure it says what it exercised and what it did not check.
 - Relationships need evidence on both sides (file and line); look-alikes go to a suspected tray and never become findings.
 - Cells deduplicate by projection onto the artifact's runtime closure; the oracle runs 3 + 3 fresh times; an ordered, deterministic
   verdict table decides; breaks are attributed two-sided (ddmin) and exported as an evidence bundle that can be replayed.
-- The UI shows the funnel, world matrix, witness detail, why-path, findings, suspected tray and inventory graph from persisted records.
+- The workspace (a React interface, `frontend/`) shows the funnel, world matrix, six-run witness board, why-path, findings, suspected tray, inventory graph, evidence bundle, jobs and capabilities from persisted records, and starts analyses. Routes are `#/` (product site) and `#/app/<view>` (workspace).
 
 See `docs/FAULTLINE_UNDERSTANDING_GUIDE.md` for the problem and the design in plain language.
 

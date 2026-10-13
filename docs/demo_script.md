@@ -3,25 +3,25 @@
 Rule for the whole demo: say the mode on the screen out loud. Every cached or recorded result is labelled; the re-run is live.
 
 ## 0. Before you start (not shown)
-- `python tools/fl.py up` is running; the header badge reads the mode you are about to claim (LIVE or REPRODUCIBLE FIXTURE).
+- `python tools/fl.py up` is running; the mode badge in the top bar reads the mode you are about to claim (LIVE or FIXTURE).
 - Warm caches done: `python scripts/warm_caches.py`. A REPLAY pack exists: `python scripts/export_replay.py` (backup).
-- Browser open at `http://127.0.0.1:8000/`. Capability banner visible.
+- Browser open at `http://127.0.0.1:8000/#/app`. The mode banner under the top bar and the mode badge show what you are about to claim; **Capabilities** lists what this deployment can and cannot do.
 
 ## 1. The problem in one sentence (20 s)
 "A shared library works in its own repository and breaks in a consumer's, because the two resolve different dependency versions. Existing
 tools show that versions differ. Faultline shows that something fails, reproduces it, and says which package caused it."
 
 ## 2. Detect (60 s)
-1. Paste the shared artifact URL and a consumer URL into **Repositories**. Point at the **pinned commit** next to each: "every claim from here on
-   is about these exact commits, not a branch".
-2. Press **Run analysis**. While it runs, say: "it related the repositories using evidence, built the consumer's dependency world offline in a
+1. Open **New analysis** and paste the shared artifact URL and a consumer URL, then **Pin repositories**. Point at the **pinned commit** next to each:
+   "every claim from here on is about these exact commits, not a branch".
+2. Tick the confirmation and press **Run analysis**; the **Analysis run** page follows the real job. While it runs, say: "it related the repositories using evidence, built the consumer's dependency world offline in a
    sandbox, and will run the artifact in both worlds three times each."
-3. Funnel: read the numbers. "N consumers discovered, M analysed; the rest are listed with the reason, not hidden."
+3. **Overview** funnel: read the numbers. "N consumers discovered, M analysed; the rest are listed with the reason, not hidden."
 4. Relationships: open one. "File and line in both manifests at the pinned commit. A look-alike class goes to the suspected tray and never becomes a finding."
 
 ## 3. Reproduce (60 s)
-1. World matrix: the **exact delta** (for example `werkzeug: 2.2.3 → 3.0.6`), the runtime and platform, the modules exercised.
-2. Open the finding: **BREAK WITNESSED**. Show six run rows, all "fresh execution", and the normalised signature.
+1. **World matrix**: select the row; the **exact delta** (for example `werkzeug: 2.2.3 → 3.0.6`), the runtime and platform, the modules exercised.
+2. Open the finding, then **Open witness**: **BREAK WITNESSED**. Show the six-run board, all "Fresh execution: Yes", and the normalised signature.
    Say: "reference passed 3 of 3, consumer failed 3 of 3 with the identical signature. That is what we call a witness."
 3. Open **raw output** of one failing run. This is the real exception.
 4. (Fixture mode) Press **Re-run** and say "this one is live, not cached".

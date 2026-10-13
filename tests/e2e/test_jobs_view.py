@@ -49,7 +49,7 @@ def page(site):
 
 def test_the_jobs_view_shows_status_duration_and_failure_class_for_every_job(page, site):
     base, ids = site
-    page.goto(base + "/#/jobs")
+    page.goto(base + "/#/app/jobs")
     page.reload()
     page.get_by_test_id("jobs").wait_for(timeout=20000)
     row = lambda k: page.get_by_test_id(f"job-{ids[k]}")  # noqa: E731
