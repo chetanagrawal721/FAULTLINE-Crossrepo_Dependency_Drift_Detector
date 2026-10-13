@@ -1,0 +1,14 @@
+A: OK  label=no_break verdicts=['NO_DRIFT']
+B: OK  label=break verdicts=['BREAK_WITNESSED']
+C: NOT EVALUATED - needs O-bind call-site checking (M4.6); import-only checks cannot see a changed keyword
+D: OK  label=break verdicts=['BREAK_WITNESSED', 'NO_DRIFT']
+E: NOT EVALUATED - needs data-contract replay (M7.1); the MVP only imports and runs the artifact's own code
+F: NOT EVALUATED - needs static API and usage analysis (M6.2 to M6.4)
+G: OK  label=not_a_finding verdicts=['NO_DRIFT']
+H: OK  label=no_break verdicts=['NO_DIVERGENCE_OBSERVED']
+I: NOT EVALUATED - needs the usage index and ApiDelta (M6.3); without them the MVP reports INCONCLUSIVE at best
+J: NOT EVALUATED - needs data-contract replay (M7.1)
+L: OK  label=not_a_finding verdicts=['(no cells)']
+REAL1: NOT RUN HERE - real-world case, see tests/integration/test_real1.py
+samples: 6 evaluated of 12 registered; labelled: 6; TP=2 FP=0 FN=0 TN=4
+exit 0

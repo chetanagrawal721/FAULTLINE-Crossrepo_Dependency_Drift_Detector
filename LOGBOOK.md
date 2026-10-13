@@ -829,3 +829,10 @@ Format: `### <UTC time> | <EVENT> | <id> | by <name>` followed by details.
 ### 2026-10-13 13:24 UTC | TC PASS | TC-5.7.2 | by Chetan Agrawal
 - Report fails when a row fails
 - evidence: evidence/M5.7/TC-5.7.2.txt
+
+### 2026-10-13 14:40 UTC | TC PASS | TC-4.G.2 | by Chetan Agrawal
+- Negative control clean
+- evidence: evidence/M4.G/TC-4.G.2.txt
+
+### 2026-10-13 14:40 UTC | NOTE | - | by Chetan Agrawal
+- Intermittent wheel-fetch failures (empty stderr, infra class) hit full test runs and the fixture runner on 2026-10-13; cause not proven. fetch_wheels now retries once on an infrastructure failure with no pip output and records failure_class in the error details. A hash mismatch or pip error is never retried.

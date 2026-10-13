@@ -168,6 +168,9 @@
       "started": "2026-10-13 08:01 UTC",
       "status": "done"
     },
+    "M4.G": {
+      "status": "in_progress"
+    },
     "M5.1": {
       "done": "2026-10-13 10:15 UTC",
       "started": "2026-10-13 10:15 UTC",
@@ -769,6 +772,12 @@
     "TC-4.7.2": {
       "date": "2026-10-13 08:01 UTC",
       "evidence": "evidence/M4.7/TC-4.7.2.txt",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-4.G.2": {
+      "date": "2026-10-13 14:40 UTC",
+      "evidence": "evidence/M4.G/TC-4.G.2.txt",
       "note": "",
       "status": "pass"
     },
