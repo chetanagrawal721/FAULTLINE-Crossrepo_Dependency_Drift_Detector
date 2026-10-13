@@ -1,0 +1,108 @@
+phase: 2
+name: "Pinned public repository ingestion"
+gate: C
+release_point: "Live input / first real-world path"
+goal: "Replace fixture-only inputs with real public GitHub snapshots; the downstream pipeline stays unchanged."
+entry: "Phase 1 works from fixture ids. The sandbox (M1.2) is operational."
+milestones:
+
+- id: M2.1
+  title: "URL and ref validation, SHA pinning"
+  gate: C
+  tier: MUST
+  hackathon: P0
+  goal: "Only well-formed GitHub inputs are accepted and every analysis uses an immutable SHA."
+  tasks:
+    - "Accept only https://github.com/<owner>/<repo> forms with an optional ref. Reject local paths, credentials in URLs, other schemes, malformed refs."
+    - "Resolve a branch, tag or default ref to a commit SHA once. Store requested ref and pinned SHA separately."
+    - "All later steps fetch the SHA, never the moving ref."
+  files: ["backend/faultline/ingestion/urls.py", "backend/faultline/ingestion/github.py"]
+  tcs:
+    - id: TC-2.1.1
+      title: "Validation table"
+      kind: auto
+      steps: "Feed 30 valid and invalid inputs (file://, ssh, userinfo, ports, .., unicode tricks, other hosts)."
+      expect: "Exactly the valid GitHub URLs are accepted; every other input returns INVALID_REPOSITORY."
+    - id: TC-2.1.2
+      title: "Moving tag creates a new snapshot"
+      kind: auto
+      steps: "Pin a tag; move the tag in a local test remote; resubmit."
+      expect: "A second snapshot with a new SHA. The first snapshot and its evidence are untouched."
+    - id: TC-2.1.3
+      title: "Retry keeps the SHA"
+      kind: auto
+      steps: "Simulate a rate limit mid-ingest; retry."
+      expect: "The retry fetches the same pinned SHA."
+
+- id: M2.2
+  title: "Restricted fetch"
+  gate: C
+  tier: MUST
+  hackathon: P0
+  goal: "Fetching a hostile repository cannot run code or escape its directory."
+  tasks:
+    - "Fetch inside the fetch zone: controlled HOME, no system/global Git config, hooks disabled, symlinks disabled, LFS smudge disabled, submodules not recursed."
+    - "Bound size, time, file count and path length."
+    - "No build step runs during ingestion."
+  files: ["backend/faultline/ingestion/clone.py", "docker/fetch/Dockerfile"]
+  tcs:
+    - id: TC-2.2.1
+      title: "Hostile repository"
+      kind: auto
+      steps: "Fetch a local repo containing a symlink to /etc, a ../ path, an LFS pointer, a submodule, a post-checkout hook and a .gitconfig include."
+      expect: "No hook runs; symlink stored as a plain file; submodule not fetched; no file outside the snapshot directory is written."
+    - id: TC-2.2.2
+      title: "Limits"
+      kind: auto
+      steps: "Fetch a repo over the size, file-count and path-length limits."
+      expect: "INGEST_LIMIT with a partial snapshot and a warning; no crash."
+
+- id: M2.3
+  title: "Immutable snapshot and inventory"
+  gate: C
+  tier: MUST
+  hackathon: P0
+  goal: "A content-hashed, read-only record of exactly what was analysed."
+  tasks:
+    - "Persist snapshot metadata and a file inventory with content hashes."
+    - "Represent LFS pointers, submodules, unavailable files and unsupported paths explicitly."
+    - "Cache by repository and SHA. A new SHA is a new snapshot."
+  files: ["backend/faultline/ingestion/classify.py", "backend/faultline/storage/snapshots.py"]
+  tcs:
+    - id: TC-2.3.1
+      title: "Inventory is complete and hashed"
+      kind: auto
+      steps: "Ingest a fixture repo; compare the inventory to git ls-tree."
+      expect: "Same file set; every file has a SHA-256; special entries carry an explicit type."
+    - id: TC-2.3.2
+      title: "Snapshot is read-only"
+      kind: auto
+      steps: "Attempt to modify a stored snapshot file through the API and the filesystem as the worker user."
+      expect: "Refused. Hash verification of the snapshot still passes."
+
+- id: M2.4
+  title: "Ingestion API and UI"
+  gate: C
+  tier: MUST
+  hackathon: P0
+  goal: "A user can submit a real public repository and see exactly what was pinned."
+  tasks:
+    - "Add repository submission and snapshot status to the UI; progress is persisted."
+    - "Show the pinned SHA and file inventory before resolving dependencies."
+  files: ["frontend/src/pages/Projects.tsx", "backend/faultline/api/routers/projects.py"]
+  tcs:
+    - id: TC-2.4.1
+      title: "Real public repository"
+      kind: manual
+      steps: "Submit a small real public GitHub repository."
+      expect: "Pinned SHA and inventory appear. The fixture pipeline still passes make e2e."
+    - id: TC-2.4.2
+      title: "Failure states"
+      kind: manual
+      steps: "Submit a deleted repo, a private repo, and trigger a rate limit."
+      expect: "Distinct, readable states: not found, not accessible, retryable."
+
+gate_exit:
+  id: C-input
+  statement: "A real public repository can be submitted and inspected at a pinned SHA, and the fixture pipeline still works unchanged."
+  must_not_claim: "Any dependency or compatibility result yet."

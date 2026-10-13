@@ -1,0 +1,206 @@
+phase: 3
+name: "Manifest parsing and native resolution (Python, npm inventory, Maven inventory)"
+gate: C
+release_point: "Real worlds / preparation for MVP"
+goal: "Provenance-rich dependency worlds are produced from real repositories, not supplied by hand."
+entry: "Phase 2 done. A supported Python project with a parseable manifest or lockfile."
+milestones:
+
+- id: M3.1
+  title: "Python project discovery"
+  gate: C
+  tier: MUST
+  hackathon: P0
+  goal: "Distinguish repository, project, distribution name, import package and source root."
+  tasks:
+    - "Discover one or more Python projects per repository (pyproject.toml, uv.lock, poetry.lock, requirements files)."
+    - "Never import project code or run setup.py to learn metadata."
+  files: ["backend/faultline/parsers/python/discover.py"]
+  tcs:
+    - id: TC-3.1.1
+      title: "Multi-project repository"
+      kind: auto
+      steps: "Discover projects in a monorepo fixture with three Python projects."
+      expect: "Three projects with correct names, source roots and import packages."
+    - id: TC-3.1.2
+      title: "No code execution"
+      kind: auto
+      steps: "Place a setup.py that writes a canary file; ingest and discover."
+      expect: "Canary file never created."
+
+- id: M3.2
+  title: "Python parsers with diagnostics"
+  gate: C
+  tier: MUST
+  hackathon: P0
+  goal: "Every dependency form is parsed or explicitly reported as unsupported."
+  tasks:
+    - "Parse direct dependencies, extras, markers, Python constraints, VCS/URL/local deps and -r/-c includes inside the snapshot root."
+    - "Normalise names per PEP 503, keep display name."
+    - "Unknown syntax, path escape, malformed lockfile, unsupported build dependency are explicit statuses."
+  files: ["backend/faultline/parsers/python/requirements.py", "backend/faultline/parsers/python/pyproject.py", "backend/faultline/parsers/python/uv_lock.py", "backend/faultline/parsers/python/poetry_lock.py"]
+  tcs:
+    - id: TC-3.2.1
+      title: "Golden files"
+      kind: auto
+      steps: "Parse the golden set (markers, extras, VCS URL, Poetry caret and tilde, nested -r)."
+      expect: "Output equals the committed golden JSON."
+    - id: TC-3.2.2
+      title: "Hostile inputs"
+      kind: auto
+      steps: "Parse an -r include of ../../outside, a 50 MB requirements file, a malformed lockfile."
+      expect: "Path escape refused; size limit hit with TOO_LARGE; malformed -> MANIFEST_PARSE_FAILED. No crash."
+    - id: TC-3.2.3
+      title: "Name normalisation"
+      kind: auto
+      steps: "Parse Foo_Bar, foo.bar and FOO-BAR."
+      expect: "All three share one canonical name; display names preserved."
+
+- id: M3.3
+  title: "Native resolution with provenance"
+  gate: C
+  tier: MUST
+  hackathon: P0
+  goal: "Worlds come from lockfiles or the pinned uv, never a home-made solver."
+  tasks:
+    - "Prefer a committed lockfile; otherwise resolve with pinned uv at a recorded cutoff time and index policy."
+    - "Record interpreter, OS, architecture, marker environment, resolver version, flags and artifact hashes."
+    - "Use wheels only. A package needing an sdist build is classified needs-build and not executed."
+    - "Note: --no-build is not a complete isolation guarantee. Resolution runs inside the fetch zone regardless."
+  files: ["backend/faultline/resolvers/python.py"]
+  tcs:
+    - id: TC-3.3.1
+      title: "Reproducible world"
+      kind: auto
+      steps: "Resolve the same project twice with the same cutoff."
+      expect: "Identical world hash."
+    - id: TC-3.3.2
+      title: "Needs-build is not executed"
+      kind: auto
+      steps: "Resolve a project depending on an sdist-only package whose build writes a canary."
+      expect: "RESOLUTION_FAILED(needs_build); canary absent."
+    - id: TC-3.3.3
+      title: "Custom index"
+      kind: auto
+      steps: "Resolve a project declaring a private index."
+      expect: "Private packages marked PRIVATE; never fetched from the public index."
+    - id: TC-3.3.4
+      title: "Artifact hash mismatch blocks use"
+      kind: auto
+      steps: "Alter a downloaded wheel."
+      expect: "World build refused."
+
+- id: M3.4
+  title: "Canonical world and deduplication"
+  gate: C
+  tier: MUST
+  hackathon: P0
+  goal: "Identical worlds share one identity; importer-specific differences are preserved."
+  tasks:
+    - "World identity includes package identity, version, source, artifact hash, relevant edges, runtime, platform, resolver context and visibility data."
+    - "Cache key includes manifest or lockfile hash, resolver version, platform, flags, index identity and cutoff."
+  files: ["backend/faultline/worlds/canonical.py"]
+  tcs:
+    - id: TC-3.4.1
+      title: "Equivalent worlds dedupe"
+      kind: auto
+      steps: "Resolve two projects that produce the same package set."
+      expect: "One world row, two project_world links."
+    - id: TC-3.4.2
+      title: "Cache invalidates on any input"
+      kind: auto
+      steps: "Change the cutoff, then the platform, then the resolver version."
+      expect: "A new world is resolved each time."
+
+- id: M3.5
+  title: "World inspector"
+  gate: C
+  tier: MUST
+  hackathon: P1
+  goal: "Declared ranges, resolved versions and importer-visible versions are shown separately."
+  tasks:
+    - "Expose normalised dependencies, resolution warnings and reproducibility metadata through the API and UI."
+  files: ["backend/faultline/api/routers/worlds.py", "frontend/src/pages/WorldInspector.tsx"]
+  tcs:
+    - id: TC-3.5.1
+      title: "Three views of a version"
+      kind: manual
+      steps: "Open a package whose range, resolved version and visible version differ."
+      expect: "All three are displayed and labelled distinctly."
+    - id: TC-3.5.2
+      title: "Failed resolution is not an empty world"
+      kind: manual
+      steps: "Open a project whose resolution failed."
+      expect: "Failure reason shown. No empty or clean world is rendered."
+
+- id: M3.6
+  title: "npm manifests and lockfile worlds (inventory, MUST for Gate D)"
+  gate: D
+  tier: MUST
+  hackathon: P1
+  goal: "npm projects appear with nested instances and importer-specific visibility. No npm runtime claim."
+  tasks:
+    - "Parse supported package.json and package-lock.json versions; keep nested package instances, integrity and source identity."
+    - "Compute per-importer visibility by simulating node_modules resolution. Do not flatten into a Python-like map."
+    - "Emit dependency and relationship inventory signals. Never run lifecycle scripts."
+    - "Unknown lockfile version is unsupported/inconclusive."
+  files: ["backend/faultline/parsers/npm/package_lock.py", "backend/faultline/resolvers/npm.py", "backend/faultline/resolvers/visibility.py"]
+  tcs:
+    - id: TC-3.6.1
+      title: "Nested versions preserved"
+      kind: auto
+      steps: "Parse a lockfile where two packages need different versions of the same dependency."
+      expect: "Two instances kept; visible(importer) returns the correct one for each importer."
+    - id: TC-3.6.2
+      title: "Workspace importer"
+      kind: auto
+      steps: "Parse an npm workspace fixture."
+      expect: "Each workspace has its own visibility; links to sibling workspaces recognised."
+    - id: TC-3.6.3
+      title: "Unsupported lockfile version"
+      kind: auto
+      steps: "Parse an unknown lockfileVersion."
+      expect: "Unsupported with a reason; no partial clean result."
+    - id: TC-3.6.4
+      title: "Capability honesty"
+      kind: manual
+      steps: "Check the capability banner for npm."
+      expect: "Inventory and world enabled; runtime witness shown unavailable."
+
+- id: M3.7
+  title: "Maven POM inventory (MUST for Gate D)"
+  gate: D
+  tier: MUST
+  hackathon: P2
+  goal: "Maven projects appear with coordinates and direct dependencies. No Maven resolution claim."
+  tasks:
+    - "Parse coordinates, direct dependencies, same-POM properties and supported in-repository parents with a hardened XML parser."
+    - "External parents, BOM imports and unsupported interpolation are explicit unsupported/inconclusive."
+    - "Never run Maven."
+  files: ["backend/faultline/parsers/maven/pom.py"]
+  tcs:
+    - id: TC-3.7.1
+      title: "Properties and in-repo parent"
+      kind: auto
+      steps: "Parse a multi-module fixture using ${properties} and an in-repo parent."
+      expect: "Coordinates and versions resolved correctly; module boundaries preserved."
+    - id: TC-3.7.2
+      title: "External parent and BOM"
+      kind: auto
+      steps: "Parse a POM importing an external BOM."
+      expect: "Marked unsupported with the reason; versions left unresolved, not guessed."
+    - id: TC-3.7.3
+      title: "Hostile XML"
+      kind: auto
+      steps: "Parse an XML bomb and an external-entity POM."
+      expect: "Rejected. No file read, no network call."
+    - id: TC-3.7.4
+      title: "No Maven process"
+      kind: auto
+      steps: "Run inventory under a process monitor."
+      expect: "No mvn process started."
+
+gate_exit:
+  id: C-worlds
+  statement: "At least one real Python repository resolves reproducibly and its world can be rebuilt from recorded inputs. npm and Maven inventory are labelled as inventory only."
+  must_not_claim: "npm or Maven runtime compatibility."

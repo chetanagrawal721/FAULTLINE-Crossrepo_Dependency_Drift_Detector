@@ -1,0 +1,230 @@
+phase: 5
+name: "Complete the MUST core: attribution, portable evidence, dashboard, reliability, conformance"
+gate: D
+release_point: "Gate D preparation. Declared only after every canonical MUST passes."
+goal: "Causal attribution, portable evidence, the complete MUST dashboard and the conformance report."
+entry: "Phase 4 passes end to end. No shortcut around repeatability or the sandbox."
+milestones:
+
+- id: M5.1
+  title: "Two-sided ddmin attribution"
+  gate: D
+  tier: MUST
+  hackathon: P0
+  goal: "Narrow a witnessed failure to the smallest dependency difference, in both directions."
+  tasks:
+    - "Group coupled packages only when resolver metadata justifies it (for example a package and its compiled core)."
+    - "Singleton pre-check, then ddmin over the world delta. Forced worlds are built with --no-deps and the witness signature must match exactly."
+    - "Two-sided confirmation: applying the cause to the reference reproduces the failure, and reverting it in the consumer world makes the failure disappear."
+    - "If either direction cannot be built or tested, report PARTIAL or INCONCLUSIVE and name the missing direction. Never label it fully attributed."
+    - "Label observed worlds separately from forced counterfactual worlds. Report search budget and minimality scope."
+  files: ["backend/faultline/attribution/ddmin.py", "backend/faultline/worlds/forced.py"]
+  tcs:
+    - id: TC-5.1.1
+      title: "ddmin on a mock oracle"
+      kind: auto
+      steps: "Unit tests: single cause, two interacting causes, no cause, non-monotonic oracle."
+      expect: "Returns a 1-minimal set for the monotonic cases; flags non-monotonicity; returns empty for no cause."
+    - id: TC-5.1.2
+      title: "Real scenario attribution"
+      kind: auto
+      steps: "Run attribution on the transitive-drift scenario (D) with several irrelevant differing packages."
+      expect: "Minimal set equals the expected package in the scenario YAML; sidedness two_sided; each attempted subset and outcome stored."
+    - id: TC-5.1.3
+      title: "One-sided is labelled"
+      kind: auto
+      steps: "Make the necessity world unbuildable (remove a wheel)."
+      expect: "Result PARTIAL with the missing direction named; UI does not say 'minimal'."
+    - id: TC-5.1.4
+      title: "Forced worlds are never presented as observed"
+      kind: manual
+      steps: "Open the why-path for the attribution."
+      expect: "Forced worlds carry the label 'attribution experiment (forced world)'."
+    - id: TC-5.1.5
+      title: "Budget honesty"
+      kind: auto
+      steps: "Set a tiny time budget."
+      expect: "Status budget-limited with the best subset so far; not 'complete'."
+
+- id: M5.2
+  title: "Portable evidence bundle, verifier and replay"
+  gate: D
+  tier: MUST
+  hackathon: P0
+  goal: "Another machine can verify and replay a witness from the bundle."
+  tasks:
+    - "Bundle contains pinned SHAs, manifests and lockfiles, world descriptors, runtime and platform, resolver versions, image digests, oracle plan, six run records, signature, attribution attempts, verdict predicate and policy version, reproduction instructions."
+    - "Verifier rejects missing, modified, duplicate, conflicting or path-traversal entries."
+    - "Replay outcome is exactly one of EXACT_REPRODUCTION, ENVIRONMENT_LIMITED, NON_REPRODUCIBLE with reasons. Missing artifacts are never fetched from moving refs."
+  files: ["backend/faultline/witnesses/bundle.py", "backend/faultline/witnesses/replay.py"]
+  tcs:
+    - id: TC-5.2.1
+      title: "Verifier rejects bad bundles"
+      kind: auto
+      steps: "Feed bundles with: a missing file, a changed byte, a duplicated entry, a ../ path, an unknown schema version."
+      expect: "Each rejected with a specific error. None processed."
+    - id: TC-5.2.2
+      title: "Replay on a clean machine"
+      kind: manual
+      steps: "On a different computer, run the bundle replay command."
+      expect: "Outcome EXACT_REPRODUCTION or ENVIRONMENT_LIMITED with reasons; recorded in the log."
+    - id: TC-5.2.3
+      title: "No moving refs"
+      kind: auto
+      steps: "Delete an artifact from the replay machine cache."
+      expect: "Replay reports the missing artifact; nothing is fetched by branch or tag."
+
+- id: M5.3
+  title: "Durable worker behaviour"
+  gate: D
+  tier: MUST
+  hackathon: P1
+  goal: "Crashes, retries and cancellations do not corrupt evidence."
+  tasks:
+    - "Atomic claim, lease and heartbeat, bounded retries, cancellation, duplicate idempotency, orphan sandbox cleanup."
+    - "Partial evidence is preserved with a status. Retries create new run records."
+    - "Cache keys include parser, resolver, oracle and verdict versions."
+  files: ["backend/faultline/workers/run.py", "backend/faultline/workers/cleanup.py"]
+  tcs:
+    - id: TC-5.3.1
+      title: "Worker crash mid-analysis"
+      kind: auto
+      steps: "Kill the worker during VERIFY."
+      expect: "Another worker resumes; no duplicated witnesses; no run is counted twice."
+    - id: TC-5.3.2
+      title: "Cancellation cleans up"
+      kind: auto
+      steps: "Cancel during execution."
+      expect: "The container is removed; partial evidence is retained and labelled."
+    - id: TC-5.3.3
+      title: "Stale cache after rule change"
+      kind: auto
+      steps: "Bump the verdict policy version."
+      expect: "Findings are recomputed from evidence; no stale verdict served."
+
+- id: M5.4
+  title: "Observability and retention (minimal)"
+  gate: D
+  tier: MUST
+  hackathon: P2
+  goal: "Know where time goes; never delete referenced evidence."
+  tasks:
+    - "Structured logs with correlation ids and phase timings; redact tokens and secrets."
+    - "Retention limits for repositories, artifacts, logs and bundles; cleanup must not delete evidence referenced by a retained finding."
+    - "Hackathon scope: log plus timing per phase. Dashboards for queue wait and cache rate are deferred."
+  files: ["backend/faultline/core/logging.py", "backend/faultline/storage/retention.py"]
+  tcs:
+    - id: TC-5.4.1
+      title: "Secrets redacted"
+      kind: auto
+      steps: "Run an analysis with a canary token in the environment and grep all logs."
+      expect: "Canary absent."
+    - id: TC-5.4.2
+      title: "Retention safety"
+      kind: auto
+      steps: "Run cleanup with aggressive limits."
+      expect: "Anything referenced by a finding survives."
+
+- id: M5.5
+  title: "Scenario set and false-positive controls"
+  gate: D
+  tier: MUST
+  hackathon: P0
+  goal: "Measured only against committed labels."
+  tasks:
+    - "Add the master scenarios and negative controls (A through J, plus the look-alike control)."
+    - "Compute TP, FP and FN only against committed labels; report sample count and scope."
+    - "Do not claim general ecosystem accuracy from a small set."
+  files: ["fixtures/scenarios/*.yaml", "scripts/run_fixtures.py"]
+  tcs:
+    - id: TC-5.5.1
+      title: "All scenarios match expected verdicts"
+      kind: auto
+      steps: "python scripts/run_fixtures.py --assert"
+      expect: "Every scenario's verdict equals its YAML expectation. Output lists the sample count."
+    - id: TC-5.5.2
+      title: "Controls produce no witness"
+      kind: auto
+      steps: "Inspect results for A, G, H and the look-alike control."
+      expect: "Zero BREAK or SILENT witnesses."
+
+- id: M5.6
+  title: "Complete MUST dashboard (eight views, all states)"
+  gate: D
+  tier: MUST
+  hackathon: P0
+  goal: "Funnel, world matrix, witness detail, why-path, findings list, suspected tray, inventory graph, mode and capability indicators."
+  tasks:
+    - "Implement each view against persisted API records only."
+    - "For each view, handle normal, empty, failed, unsupported, inconclusive and not-applicable states."
+    - "Retain screenshots and the test report per release."
+  files: ["frontend/src/pages/*.tsx", "tests/e2e/dashboard.spec.ts"]
+  tcs:
+    - id: TC-5.6.1
+      title: "Funnel counts"
+      kind: auto
+      steps: "E2E asserts every stage count against the API, including zero and partial coverage."
+      expect: "Displayed counts equal API values."
+    - id: TC-5.6.2
+      title: "World matrix"
+      kind: auto
+      steps: "E2E on a run with supported, failed, unsupported and NO_DRIFT cells."
+      expect: "Importer visibility, runtime, platform, cell status and coverage denominator are all correct."
+    - id: TC-5.6.3
+      title: "Witness detail"
+      kind: auto
+      steps: "E2E opens a witness."
+      expect: "Six fresh run records, normalized signature, raw and normalized output, failure taxonomy shown."
+    - id: TC-5.6.4
+      title: "Why-path"
+      kind: auto
+      steps: "E2E opens the why-path of a witnessed finding."
+      expect: "Chain: relationship evidence with source location, world delta, oracle, verdict predicate, partial attribution if any. Missing links are 'not analysed', never invented."
+    - id: TC-5.6.5
+      title: "Findings and suspected tray"
+      kind: auto
+      steps: "E2E filters findings; opens the suspected tray."
+      expect: "Scoped verdicts and evidence status shown. A suspected candidate never becomes a finding by display alone."
+    - id: TC-5.6.6
+      title: "Inventory graph"
+      kind: auto
+      steps: "E2E on a multi-ecosystem run."
+      expect: "Repositories, nested manifests, packages, producer/consumer edges, evidence levels and unsupported nodes are present."
+    - id: TC-5.6.7
+      title: "State coverage"
+      kind: auto
+      steps: "Parameterised E2E over empty, failed, unsupported, inconclusive and not-applicable states for each view."
+      expect: "Each state renders a distinct, truthful message."
+
+- id: M5.7
+  title: "Conformance report and Gate D decision"
+  gate: D
+  tier: MUST
+  hackathon: P0
+  goal: "A machine-readable report proves every master MUST passes."
+  tasks:
+    - "Build the traceability matrix (requirement, phase, test command, result, retained artifact)."
+    - "Include PC-1, PC-4, PC-5 and PC-10 cases and the reference-failure policy."
+    - "Any missing test, missing artifact or non-PASS row blocks Gate D."
+  files: ["docs/conformance/ps07-matrix.yaml", "scripts/conformance_report.py"]
+  tcs:
+    - id: TC-5.7.1
+      title: "Report is complete"
+      kind: auto
+      steps: "python scripts/conformance_report.py"
+      expect: "Every MUST row has a command, a result PASS and an existing artifact path."
+    - id: TC-5.7.2
+      title: "Report fails when a row fails"
+      kind: auto
+      steps: "Break one test deliberately and rerun the report."
+      expect: "Report exits non-zero and names the row."
+    - id: TC-5.7.3
+      title: "Gate D is not Gate E"
+      kind: manual
+      steps: "Read the report header."
+      expect: "States 'MVP conformant' and 'not release-hardened' until Gate E passes."
+
+gate_exit:
+  id: D
+  statement: "Every canonical MUST passes with an automated test and a retained evidence artifact."
+  must_not_claim: "SHOULD or NICE completion, universal compatibility, npm or Maven runtime support, or release hardening."

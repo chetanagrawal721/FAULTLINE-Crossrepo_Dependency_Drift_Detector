@@ -1,0 +1,281 @@
+phase: 6
+name: "Expansion: static API analysis, contract replay, type checking, what-if and remediation"
+gate: X
+release_point: "Explainability and actionability expansion"
+goal: "Better explanation and a verified fix, without ever replacing execution evidence. Static signals never prove a break."
+entry: "Gate D passed (or, for hackathon priority items, Gate C plus the Gate D items they depend on)."
+milestones:
+
+- id: M6.1
+  title: "Relationship sufficiency matrix"
+  gate: X
+  tier: SHOULD
+  hackathon: P2
+  goal: "Each signal maps to the strongest conclusion it allows."
+  tasks:
+    - "same name or version drift = candidate; dependency declaration or import = possible; traceable artifact identity plus consumer reference = stronger; verified provenance plus observed consumption = confirmable."
+    - "Keep the suspected tray separate. Name-only matches, forks and vendored code never create confirmed edges."
+  files: ["backend/faultline/relationships/sufficiency.py"]
+  tcs:
+    - id: TC-6.1.1
+      title: "Signal-to-conclusion table"
+      kind: auto
+      steps: "Table-driven test over every signal combination."
+      expect: "Output level equals the table; no combination skips a level."
+    - id: TC-6.1.2
+      title: "Forks and vendored code"
+      kind: auto
+      steps: "Run on a fork and on a repo vendoring the artifact."
+      expect: "No confirmed edge; suspected with the missing evidence listed."
+
+- id: M6.2
+  title: "Static API surface and ApiDelta (griffe)"
+  gate: X
+  tier: SHOULD
+  hackathon: P1
+  goal: "Explain which public symbols changed between two package versions."
+  tasks:
+    - "Extract API statically without importing target modules; cache by package hash and extractor version."
+    - "Preserve incomplete extraction when dynamic exports or C extensions limit visibility."
+    - "Static delta is explanatory only."
+  files: ["backend/faultline/diff/surface.py", "backend/faultline/diff/delta.py"]
+  tcs:
+    - id: TC-6.2.1
+      title: "Known removal is reported"
+      kind: auto
+      steps: "Compute the delta for the package pair in a verified fixture scenario."
+      expect: "The expected removed or changed symbol appears with kind and old/new description."
+    - id: TC-6.2.2
+      title: "No import of target code"
+      kind: auto
+      steps: "Run extraction on a package whose __init__ writes a canary."
+      expect: "Canary absent."
+    - id: TC-6.2.3
+      title: "Limits are flagged"
+      kind: auto
+      steps: "Run on a package with a C extension and a module __getattr__."
+      expect: "Flags opaque_modules and dynamic_exports set."
+
+- id: M6.3
+  title: "Full usage index and exposure"
+  gate: X
+  tier: SHOULD
+  hackathon: P1
+  goal: "Know which changed symbols are actually referenced, with honest coverage."
+  tasks:
+    - "Resolve imports, aliases, attribute chains, wildcard imports (via __all__), local type propagation, string-path references; tag GENERATED, NOTEBOOK, TYPE_ONLY, OPTIONAL_PATH."
+    - "Mark dynamic and reflective forms DYNAMIC or UNRESOLVED."
+    - "Exposure = reference to a changed symbol. Coverage = resolved references / all references to divergent packages."
+  files: ["backend/faultline/usage/index.py", "backend/faultline/usage/exposure.py"]
+  tcs:
+    - id: TC-6.3.1
+      title: "Resolution fixtures"
+      kind: auto
+      steps: "Run on re-export, wildcard, alias, shadowing and notebook fixtures."
+      expect: "Statuses match the golden file."
+    - id: TC-6.3.2
+      title: "Coverage is computed"
+      kind: auto
+      steps: "Run on a file with 9 resolved and 1 dynamic reference."
+      expect: "Coverage 0.9; dynamic reference listed."
+    - id: TC-6.3.3
+      title: "Cache invalidation"
+      kind: auto
+      steps: "Edit one source file."
+      expect: "Only that file is re-analysed (content-hash keyed)."
+
+- id: M6.4
+  title: "EXPOSED, POTENTIAL and NOT EXPOSED verdicts"
+  gate: X
+  tier: SHOULD
+  hackathon: P1
+  goal: "Static findings follow the master thresholds and stay distinct from witnesses."
+  tasks:
+    - "NOT EXPOSED is forbidden when coverage is below threshold. Show coverage on every NOT EXPOSED and POTENTIAL."
+    - "Static findings and witnessed findings are visually and semantically distinct."
+  files: ["backend/faultline/verdicts/engine.py"]
+  tcs:
+    - id: TC-6.4.1
+      title: "Coverage gate"
+      kind: auto
+      steps: "Feed coverage 0.85 and 0.95 with no exposures."
+      expect: "0.85 -> not NOT_EXPOSED (POTENTIAL or INCONCLUSIVE); 0.95 -> NOT_EXPOSED with coverage shown."
+    - id: TC-6.4.2
+      title: "Static cannot witness"
+      kind: auto
+      steps: "Feed exposures with no execution witness."
+      expect: "Verdict is EXPOSED, never BREAK_WITNESSED."
+
+- id: M7.1
+  title: "Contract replay (pydantic JSON, producer bytes to consumer)"
+  gate: X
+  tier: SHOULD
+  hackathon: P1
+  amend: "A-3. The plan puts contract replay after the MVP, but the master's hero demo for the data-crossing channel depends on it. Recommended as the first expansion item once Gate C is stable."
+  goal: "Catch silent data divergence between producer and consumer worlds."
+  tasks:
+    - "Produce bytes once in the producer world and feed those exact bytes to the consumer world."
+    - "Inputs in tiers: real fixtures (T1), minimal valid (T2), schema-generated (T3). An input counts only if the reference world accepts it."
+    - "Classify SAME, REJECTED_IN_TEST, VALUE_DIVERGENCE, FORMAT_DIVERGENCE, WARNING_ONLY, BOTH_FAIL. Shrink inputs. Headline witnesses come from T1 or T2."
+  files: ["backend/faultline/oracles/o_contract.py", "backend/faultline/oracles/harness/contract_producer.py", "backend/faultline/oracles/harness/contract_consumer.py"]
+  tcs:
+    - id: TC-7.1.1
+      title: "Known rejection"
+      kind: auto
+      steps: "Run on the data-contract scenario (J)."
+      expect: "REJECTED_IN_TEST on a T2 input; witness under the 3+3 rule; bytes stored."
+    - id: TC-7.1.2
+      title: "Known silent divergence"
+      kind: auto
+      steps: "Run on the union scenario (E) if it was verified in M1.0."
+      expect: "VALUE_DIVERGENCE with both values shown."
+    - id: TC-7.1.3
+      title: "Anti-garbage"
+      kind: auto
+      steps: "Generate inputs that the reference world rejects."
+      expect: "They are discarded and counted as invalid, never reported."
+    - id: TC-7.1.4
+      title: "Negative control"
+      kind: auto
+      steps: "Run on a model whose field has a default."
+      expect: "All SAME."
+
+- id: M7.2
+  title: "Differential type checking (pyright)"
+  gate: X
+  tier: SHOULD
+  hackathon: P2
+  goal: "A static signal for typed packages, never a runtime claim."
+  tasks:
+    - "Pin pyright and the exact flags and interpreter; run both worlds with identical source and configuration."
+    - "Report only new diagnostics. Configuration or import-resolution failure makes the oracle inconclusive."
+  files: ["backend/faultline/oracles/o_typecheck.py"]
+  tcs:
+    - id: TC-7.2.1
+      title: "Identical worlds, zero new diagnostics"
+      kind: auto
+      steps: "Run with ref == test."
+      expect: "No new diagnostics."
+    - id: TC-7.2.2
+      title: "Correct interpreter used"
+      kind: auto
+      steps: "Print the interpreter pyright resolved in each run."
+      expect: "Each equals the world's /opt/world interpreter, not the host."
+
+- id: M7.3
+  title: "Expanded O-bind and cross-oracle reconciliation"
+  gate: X
+  tier: SHOULD
+  hackathon: P2
+  goal: "More call shapes covered; conflicting signals shown, not hidden."
+  tasks:
+    - "Store each oracle independently; the ordered verdict engine decides precedence."
+    - "Typecheck or contract results never erase a valid repeatable runtime witness."
+  files: ["backend/faultline/oracles/reconcile.py"]
+  tcs:
+    - id: TC-7.3.1
+      title: "No erasure"
+      kind: auto
+      steps: "Combine a runtime witness with a passing typecheck."
+      expect: "Verdict remains BREAK_WITNESSED; the typecheck shown as a non-conflicting signal."
+
+- id: M8.0
+  title: "Demo-minimal remediation: pin and re-run"
+  gate: S
+  tier: AMEND
+  hackathon: P0
+  amend: "A-4. The story is Detect, Reproduce, Attribute, Fix, but the plan delivers 'fix' only in Phase 8 after Gates D and E. This milestone adds the smallest honest version earlier."
+  goal: "For the attributed cause, apply one constraint change, re-resolve, and re-run the matrix."
+  tasks:
+    - "Generate a structured constraint change (for example a version cap on the attributed package) for one consumer."
+    - "Resolve with the native resolver, rebuild the world, and re-run the affected oracles under the 3+3 rule."
+    - "Label VERIFIED only if the witness disappears and no new witness appears for that artifact's other consumer worlds; otherwise SUGGESTED."
+  files: ["backend/faultline/remediation/minimal.py"]
+  tcs:
+    - id: TC-8.0.1
+      title: "Fix verifies"
+      kind: auto
+      steps: "Apply the expected constraint for the transitive-drift scenario and re-run."
+      expect: "Original witness gone; no new witness; label VERIFIED with fresh run records."
+    - id: TC-8.0.2
+      title: "Bad fix is not verified"
+      kind: auto
+      steps: "Apply a constraint that makes resolution fail or breaks another consumer."
+      expect: "Label SUGGESTED or REJECTED with the reason."
+    - id: TC-8.0.3
+      title: "No auto-push"
+      kind: auto
+      steps: "Search the code for git push or network writes in remediation."
+      expect: "None; output is a diff only."
+
+- id: M8.1
+  title: "Bounded candidate generation"
+  gate: X
+  tier: SHOULD
+  hackathon: P2
+  goal: "Candidate worlds without a Cartesian explosion."
+  tasks:
+    - "Candidates from the minimal cause, observed consumer versions and bounded satisfying versions; at most six per package."
+    - "Record explored and pruned candidates and the budget. The native resolver validates each candidate."
+  files: ["backend/faultline/whatif/moves.py"]
+  tcs:
+    - id: TC-8.1.1
+      title: "Bounded"
+      kind: auto
+      steps: "Run on a finding with 3 cause packages."
+      expect: "No more than 6 versions per package; explored and pruned lists stored."
+
+- id: M8.2
+  title: "What-if evaluation and ranking"
+  gate: X
+  tier: SHOULD
+  hackathon: P2
+  goal: "Rank candidate worlds deterministically."
+  tasks:
+    - "Resolve candidates, run the minimal oracle first, then the full relevant matrix for promising ones."
+    - "Rank by number of changes, constraints and verification completeness."
+    - "Budget exhaustion returns SEARCH_INCOMPLETE, never 'no fix exists'."
+  files: ["backend/faultline/whatif/search.py"]
+  tcs:
+    - id: TC-8.2.1
+      title: "Deterministic ranking"
+      kind: auto
+      steps: "Run the search twice."
+      expect: "Same ranked list."
+    - id: TC-8.2.2
+      title: "Budget message"
+      kind: auto
+      steps: "Set a tiny budget."
+      expect: "SEARCH_INCOMPLETE."
+
+- id: M8.3
+  title: "Full remediation gates G1 to G4"
+  gate: X
+  tier: SHOULD
+  hackathon: P2
+  goal: "VERIFIED only after resolution, witness disappearance, affected oracles and matrix regression all pass."
+  tasks:
+    - "G1 resolve; G2 witness disappears; G3 affected reference and consumer oracles pass; G4 no new confirmed break in the affected matrix."
+    - "Validate a structured manifest or constraint diff. No shell commands, no auto-push."
+  files: ["backend/faultline/remediation/gates.py"]
+  tcs:
+    - id: TC-8.3.1
+      title: "All gates pass"
+      kind: auto
+      steps: "Verify a known-good plan."
+      expect: "VERIFIED with four gate records and fresh runs."
+    - id: TC-8.3.2
+      title: "One consumer fixed, another broken"
+      kind: auto
+      steps: "Verify a plan that helps one consumer but breaks another."
+      expect: "G4 fails; not VERIFIED."
+    - id: TC-8.3.3
+      title: "Stale cache is not verification"
+      kind: auto
+      steps: "Verify a plan with a warm cache."
+      expect: "Fresh runs required; reused results not counted."
+
+gate_exit:
+  id: X-analysis
+  statement: "Each expansion capability is enabled only after its own fixtures and tests pass, and none can overrule a runtime witness."
+  must_not_claim: "That expansion work substitutes for any missing MUST."

@@ -1,0 +1,272 @@
+phase: 1
+name: "Fixture-backed end-to-end differential proof"
+gate: B
+release_point: "First demonstrable finding / Gate B"
+goal: "One complete, honest finding is visible before broad live ingestion is built."
+entry: "Gate A met. Fixture claims verified by hand."
+milestones:
+
+- id: M1.0
+  title: "Verify every fixture claim by hand"
+  gate: B
+  tier: AMEND
+  hackathon: P0
+  amend: "A-1. The plan says 'select a verified scenario' but has no step that does the verifying. All third-party behaviours in the master (pydantic v1/v2, Werkzeug 3 / Flask 2.2, urllib3 2, PyJWT) were marked VERIFY and are not yet verified."
+  goal: "Every behaviour a fixture depends on has been reproduced in a plain virtualenv, outside Faultline, with the log kept."
+  tasks:
+    - "For each scenario you intend to use (minimum B or D, C or H, and J), reproduce the claimed behaviour with pinned packages in a plain venv."
+    - "Record exact versions, command, and output in fixtures/verification/<scenario>.md."
+    - "If a claim is false, replace the example. Never change the expected verdict to fit."
+  files: ["fixtures/verification/*.md"]
+  tcs:
+    - id: TC-1.0.1
+      title: "Break reproduces outside Faultline"
+      kind: manual
+      steps: "In a fresh venv, install the pinned consumer-world packages and run the failing import or test."
+      expect: "The failure matches the expected normalized signature in the scenario YAML."
+    - id: TC-1.0.2
+      title: "Reference world passes outside Faultline"
+      kind: manual
+      steps: "In a second fresh venv with the reference pins, run the identical command."
+      expect: "Passes 3 times out of 3."
+    - id: TC-1.0.3
+      title: "Verification record is committed"
+      kind: auto
+      steps: "scripts/check_fixture_verification.py"
+      expect: "Every scenario referenced by a test has verified: true, a date, and package versions."
+
+- id: M1.1
+  title: "Fixture repositories, scenario YAML and negative control"
+  gate: B
+  tier: MUST
+  hackathon: P0
+  goal: "Expected outcomes are written before any detection code exists."
+  tasks:
+    - "Create the demo repositories (shared artifact, at least two consumers, one unrelated project) with tags per scenario."
+    - "Write fixtures/scenarios/<ID>.yaml with expected relationships, cells, verdicts, oracle and signature."
+    - "Include at least one no-drift control (Scenario A) and one harmless-drift control (Scenario H)."
+    - "Do not manufacture a failure by breaking the consumer fixture unless that is the exact scenario."
+  files: ["fixtures/scenarios/*.yaml", "fixtures/repos/**", "scripts/push_fixtures.sh"]
+  tcs:
+    - id: TC-1.1.1
+      title: "Scenario files validate"
+      kind: auto
+      steps: "scripts/validate_scenarios.py"
+      expect: "Every YAML matches the scenario schema and references pinned SHAs and lockfiles."
+    - id: TC-1.1.2
+      title: "Negative control exists and is labelled"
+      kind: auto
+      steps: "Inspect scenarios A and H."
+      expect: "Both declare an expected non-break verdict and a reason."
+
+- id: M1.2
+  title: "Sandbox v0: sandboxd, execution image and hardened profile"
+  gate: B
+  tier: AMEND
+  hackathon: P0
+  amend: "A-2. The plan routes Phase 1 code through sandboxd but never schedules building it or testing its isolation until Gate E. Without this milestone Phase 1.3 cannot be done honestly, and Gate C requires these controls."
+  goal: "No repository or package code runs outside SandboxClient to sandboxd to an allowlisted image."
+  tasks:
+    - "Build sandboxd as the only holder of the Docker socket; accept structured jobs over a Unix socket."
+    - "Build the Python execution image pinned by digest; harness scripts baked in; no secrets."
+    - "Enforce: no network, non-root, read-only root, tmpfs only for /tmp and /work, cap-drop ALL, no-new-privileges, CPU/memory/PID/disk/time/output limits, container cleanup in a finally block."
+    - "Write adversarial tests (they are the deliverable, not an afterthought)."
+  files: ["backend/faultline/sandbox/sandboxd.py", "backend/faultline/sandbox/client.py", "backend/faultline/sandbox/profiles.py", "docker/exec-python/Dockerfile", "tests/security/test_sandbox.py"]
+  tcs:
+    - id: TC-1.2.1
+      title: "Network is unreachable"
+      kind: auto
+      steps: "Run a job that opens a socket to 1.1.1.1:443 and to the cloud metadata address."
+      expect: "Both fail. The job is classified as ARTIFACT_FAILURE or NEEDS_EXTERNAL, not as a sandbox error."
+    - id: TC-1.2.2
+      title: "Filesystem and identity"
+      kind: auto
+      steps: "Run jobs that write to /, read /var/run/docker.sock, print id, and read host environment."
+      expect: "Write fails; socket absent; uid is not 0; no host secrets in the environment."
+    - id: TC-1.2.3
+      title: "Resource bombs are contained"
+      kind: auto
+      steps: "Run a fork bomb, a 4 GB allocation, a disk-fill loop, and an infinite print loop."
+      expect: "Each is killed or capped. The host stays responsive. Output is truncated at the cap. The class is RESOURCE_LIMIT or TIMEOUT."
+    - id: TC-1.2.4
+      title: "No orphans"
+      kind: auto
+      steps: "Kill the worker and sandboxd mid-job; restart; list containers."
+      expect: "No faultline containers remain after the cleanup sweep."
+    - id: TC-1.2.5
+      title: "Fail closed"
+      kind: auto
+      steps: "Stop the Docker daemon; submit an execution job."
+      expect: "Capability reports execution unavailable with a reason. No job runs outside a container."
+
+- id: M1.3
+  title: "World descriptors and the offline world builder"
+  gate: B
+  tier: MUST
+  hackathon: P0
+  goal: "Reference and consumer worlds are built once, offline, from verified artifacts."
+  tasks:
+    - "Define explicit reference and consumer world descriptors from committed fixture lockfiles."
+    - "Fetch wheels with hash verification into a wheelhouse (fetch zone). Install offline into /opt/world per world hash (PC-10)."
+    - "Reusing a world must not create an oracle run."
+  files: ["backend/faultline/worlds/builder.py", "backend/faultline/resolvers/python.py"]
+  tcs:
+    - id: TC-1.3.1
+      title: "Offline build from verified artifacts"
+      kind: auto
+      steps: "Build a world with the network disabled after the wheelhouse is filled."
+      expect: "Build succeeds. The installed package set equals the descriptor exactly."
+    - id: TC-1.3.2
+      title: "Hash mismatch blocks use"
+      kind: auto
+      steps: "Corrupt one wheel in the wheelhouse; build."
+      expect: "Build fails with a hash-mismatch error. The world is not marked BUILT."
+    - id: TC-1.3.3
+      title: "Reuse is not an execution"
+      kind: auto
+      steps: "Request the same world twice, then count oracle run records."
+      expect: "World status BUILT then REUSED. Oracle run count unchanged."
+
+- id: M1.4
+  title: "O-import and failure classification"
+  gate: B
+  tier: MUST
+  hackathon: P0
+  goal: "The cheapest oracle works and failures are classified before they become evidence."
+  tasks:
+    - "Implement the O-import harness: import the artifact top-level package and each consumer-imported module."
+    - "Classify each run: ARTIFACT_FAILURE, HARNESS_FAILURE, RESOLUTION_FAILURE, BUILD_FAILURE, SANDBOX_FAILURE, RESOURCE_LIMIT, TIMEOUT, NEEDS_EXTERNAL, UNSUPPORTED."
+  files: ["backend/faultline/oracles/o_import.py", "backend/faultline/oracles/harness/import_modules.py", "backend/faultline/oracles/classify.py"]
+  tcs:
+    - id: TC-1.4.1
+      title: "Reference passes, consumer fails"
+      kind: auto
+      steps: "Run O-import for the chosen break scenario in both worlds."
+      expect: "Reference PASS. Consumer FAIL with the expected exception type and module."
+    - id: TC-1.4.2
+      title: "Harness error is not a break"
+      kind: auto
+      steps: "Run a harness with an injected bug."
+      expect: "Classified HARNESS_FAILURE. No witness candidate is created."
+    - id: TC-1.4.3
+      title: "Missing optional module is not a break"
+      kind: auto
+      steps: "Artifact module imports an extra the consumer lacks and does not use."
+      expect: "NOT_APPLICABLE, not ARTIFACT_FAILURE."
+
+- id: M1.5
+  title: "O-tests with the test-only overlay"
+  gate: B
+  tier: MUST
+  hackathon: P1
+  goal: "The artifact's own tests run in each world using the authors' real inputs."
+  tasks:
+    - "Run pytest inside the sandbox with per-test JUnit output parsed into per-test outcomes."
+    - "Overlay test-only packages (PC-5) without replacing runtime dependencies; record the overlay in world identity."
+    - "Disable plugin autoload; add needed plugins explicitly."
+  files: ["backend/faultline/oracles/o_tests.py", "backend/faultline/oracles/harness/run_pytest.py", "backend/faultline/worlds/overlay.py"]
+  tcs:
+    - id: TC-1.5.1
+      title: "Per-test differential"
+      kind: auto
+      steps: "Run the artifact tests in both worlds for scenario C or H."
+      expect: "Per-test records exist. Differences are listed per test id."
+    - id: TC-1.5.2
+      title: "Overlay does not change runtime versions"
+      kind: auto
+      steps: "Compare runtime package versions before and after overlay."
+      expect: "Identical. The overlay set is recorded and the world is flagged if it was forced."
+    - id: TC-1.5.3
+      title: "Collection error from test-only package"
+      kind: auto
+      steps: "Remove pytest from the overlay."
+      expect: "HARNESS_FAILURE, not a break."
+
+- id: M1.6
+  title: "Witness verifier: 3 reference passes and 3 consumer failures"
+  gate: B
+  tier: MUST
+  hackathon: P0
+  goal: "A witness exists only if six genuinely fresh runs agree."
+  tasks:
+    - "Run three independent reference executions and three consumer executions."
+    - "Require reference 3/3 pass, consumer 3/3 fail, identical normalized failure signature."
+    - "Record run provenance FRESH_EXECUTION or REUSED_RESULT. Only fresh runs count."
+    - "Keep raw output separate from the normalized signature."
+  files: ["backend/faultline/witnesses/verify.py", "backend/faultline/witnesses/signature.py"]
+  tcs:
+    - id: TC-1.6.1
+      title: "Witness predicate"
+      kind: auto
+      steps: "Run the verifier on the chosen break scenario."
+      expect: "Six run records with unique run ids and FRESH_EXECUTION. Signatures identical. Witness created."
+    - id: TC-1.6.2
+      title: "Flaky and both-fail are rejected"
+      kind: auto
+      steps: "Use a flaky test (random failure) and a scenario where the reference also fails."
+      expect: "No witness. Outcomes are INCONCLUSIVE(flaky) and discarded(reference fails)."
+    - id: TC-1.6.3
+      title: "Cache cannot fake repeats"
+      kind: auto
+      steps: "Run the verifier twice with the cache warm."
+      expect: "Cached results are shown as REUSED_RESULT and are not counted as fresh. A forced re-run creates six new run ids."
+    - id: TC-1.6.4
+      title: "Negative control stays clean"
+      kind: auto
+      steps: "Run scenarios A and H."
+      expect: "No witness in either."
+
+- id: M1.7
+  title: "Evidence bundle v1 and export"
+  gate: B
+  tier: MUST
+  hackathon: P0
+  goal: "A machine-readable, versioned, hash-checked bundle for the witness."
+  tasks:
+    - "Define the bundle schema with an explicit version and a manifest of every file with its SHA-256."
+    - "Include world descriptors, runtime and platform, image digest, oracle plan, six run records, signature."
+    - "Exclude secrets and unbounded logs."
+  files: ["backend/faultline/witnesses/bundle.py", "docs/schemas/evidence-bundle-v1.json"]
+  tcs:
+    - id: TC-1.7.1
+      title: "Bundle validates against schema"
+      kind: auto
+      steps: "Export the bundle; validate against the schema."
+      expect: "Valid. Version field present."
+    - id: TC-1.7.2
+      title: "Tamper is detected"
+      kind: auto
+      steps: "Modify one byte in a bundle file; run the verifier."
+      expect: "Rejected with the name of the modified file."
+    - id: TC-1.7.3
+      title: "No secrets"
+      kind: auto
+      steps: "Set a canary secret in the control-plane environment; export; grep the bundle."
+      expect: "Canary not present."
+
+- id: M1.8
+  title: "Thin UI for the fixture finding"
+  gate: B
+  tier: MUST
+  hackathon: P0
+  goal: "A judge can inspect one complete finding, labelled FIXTURE."
+  tasks:
+    - "Show mode, both world hashes, oracle results, six runs, normalized failure, raw traceback link, bundle download."
+    - "Persistent FIXTURE badge."
+  files: ["frontend/src/pages/WitnessDetail.tsx", "frontend/src/components/WitnessCard.tsx"]
+  tcs:
+    - id: TC-1.8.1
+      title: "End to end from scenario id"
+      kind: auto
+      steps: "make e2e SCENARIO=<id> (starts from the scenario id, ends at the displayed finding)."
+      expect: "Expected verdict displayed. Badge reads FIXTURE."
+    - id: TC-1.8.2
+      title: "No false live claim"
+      kind: manual
+      steps: "Read every label on the page."
+      expect: "Nothing says live or real-time analysis."
+
+gate_exit:
+  id: B
+  statement: "A judge can inspect one complete fixture-backed differential witness, labelled FIXTURE, with a clean negative control."
+  must_not_claim: "Live repository analysis. Any oracle that did not run."

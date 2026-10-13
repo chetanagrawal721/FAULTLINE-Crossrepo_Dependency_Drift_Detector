@@ -1,0 +1,278 @@
+phase: 9
+name: "Ecosystem runtime expansion (npm, Maven), release hardening, demo and submission"
+gate: E
+release_point: "Expansion, Gate E, and submission readiness"
+goal: "Optional ecosystem depth, a release-qualified deployment, and a demo that cannot fail silently."
+entry: "Gate D passed. Python MVP stays green."
+milestones:
+
+- id: M9.1
+  title: "npm runtime verification (NICE)"
+  gate: X
+  tier: NICE
+  hackathon: P2
+  goal: "Enable Node execution only after its own sandbox profile passes adversarial tests."
+  tasks:
+    - "Pin Node and npm; script suppression; separate sandbox image; O-import first."
+    - "Expose runtime capability independently from inventory and relationship support."
+  files: ["docker/exec-node/Dockerfile", "backend/faultline/oracles/o_import_node.py"]
+  tcs:
+    - id: TC-9.1.1
+      title: "Lifecycle scripts never run"
+      kind: auto
+      steps: "Include a package whose postinstall writes a canary."
+      expect: "Canary absent."
+    - id: TC-9.1.2
+      title: "Nested copies preserved"
+      kind: auto
+      steps: "Run on the nested-version fixture."
+      expect: "World hash keeps nested visibility; negative control passes."
+
+- id: M10.1
+  title: "Maven resolution and runtime (NICE)"
+  gate: X
+  tier: NICE
+  hackathon: P2
+  goal: "Only via Maven's model-builder and resolver libraries, never lifecycle goals."
+  tasks:
+    - "Enable only after an isolated image, pinned JDK and fixtures validate the exact operation."
+    - "SNAPSHOT artifacts are non-reproducible unless an immutable timestamp is captured."
+  files: ["tools/maven-resolve/"]
+  tcs:
+    - id: TC-10.1.1
+      title: "No plugin or lifecycle execution"
+      kind: auto
+      steps: "Resolve a POM declaring a build extension that writes a canary."
+      expect: "Canary absent."
+    - id: TC-10.1.2
+      title: "Capability matches tests"
+      kind: manual
+      steps: "Read the Maven row of the capability banner."
+      expect: "States exactly what is tested: inventory, resolution, runtime."
+
+- id: M11.1
+  title: "Final traceability and consistency pass"
+  gate: E
+  tier: MUST
+  hackathon: P1
+  goal: "The master, the plan, the code and the tests agree."
+  tasks:
+    - "Re-run the conformance report; consistency pass against the master (no unapproved schema or verdict divergence)."
+  files: ["docs/conformance/ps07-matrix.yaml"]
+  tcs:
+    - id: TC-11.1.1
+      title: "No divergence from the master"
+      kind: manual
+      steps: "Diff enums and verdict names in code against the master."
+      expect: "Identical, or an ADR documents the approved difference."
+
+- id: M11.2
+  title: "Evaluation protocol, benchmark and ablation"
+  gate: E
+  tier: MUST
+  hackathon: P0
+  amend: "A-5. The plan has an evaluation section but not the ablation (version-only, API-diff, author matrix, consumer-derived worlds, witnesses, ddmin). The consumer-derived-worlds claim is the project's novelty, so it must be measured directly."
+  goal: "Numbers in the pitch come from scripts, with denominators."
+  tasks:
+    - "Compute TP, FP and FN only against committed labels, including negative controls and sample size."
+    - "Ablation A to G: version-only; API diff; API diff + usage; author-selected matrix; consumer-derived matrix; + witness discipline; + ddmin. Headline: breaks found by consumer-derived worlds that the author-selected matrix misses."
+    - "Measure reproducibility, world coverage, inconclusive rate, latency p50 and p95, memory and disk. Detect producer CI worlds heuristically for the comparison and label them heuristic."
+    - "Do not state accuracy targets before a baseline exists."
+  files: ["benchmarks/cases/*.yaml", "benchmarks/ablations.py", "benchmarks/ci_worlds.py", "scripts/run_benchmark.py"]
+  tcs:
+    - id: TC-11.2.1
+      title: "Reproducible report"
+      kind: auto
+      steps: "Run scripts/run_benchmark.py twice."
+      expect: "Identical metrics (timings excluded); report lists denominators and limitations."
+    - id: TC-11.2.2
+      title: "Labels precede results"
+      kind: auto
+      steps: "Check git history for the label files and the results file."
+      expect: "Label commit is earlier than the first results commit."
+    - id: TC-11.2.3
+      title: "Ablation D vs E is reported"
+      kind: auto
+      steps: "Read the report."
+      expect: "Reports the count of breaks found only by consumer-derived worlds, even if zero."
+
+- id: M11.3
+  title: "Deployment security release gate"
+  gate: E
+  tier: MUST
+  hackathon: P1
+  goal: "Test the real deployment, not mocks."
+  tasks:
+    - "On the actual disposable VM and Docker daemon: socket exposure, privileges, pinned images, network and egress policy, CPU/memory/PID/disk/time limits, non-root, read-only mounts, dropped capabilities, seccomp, absence of secrets, orphan cleanup after crash and cancellation."
+    - "Test archive traversal, symlinks and hard links, decompression bombs, egress to cloud metadata and internal addresses, output flood, secret leakage."
+    - "If a control is absent or unverifiable, disable arbitrary-code execution and report it unavailable."
+  files: ["tests/security/test_deployment.py", "docs/security/deployment-report.md"]
+  tcs:
+    - id: TC-11.3.1
+      title: "Boundary inspection"
+      kind: auto
+      steps: "Run the deployment inspector on the demo VM."
+      expect: "Every control reported PASS with the observed value (not just the configured value)."
+    - id: TC-11.3.2
+      title: "Fail closed on a bad control"
+      kind: auto
+      steps: "Add a host mount or enable network on an execution profile."
+      expect: "Inspector fails; execution capability is disabled with a reason."
+    - id: TC-11.3.3
+      title: "Attack suite"
+      kind: auto
+      steps: "Run traversal, symlink, hard link, zip bomb, metadata egress, output flood and secret canary tests."
+      expect: "All contained; no canary visible; host healthy."
+
+- id: M11.4
+  title: "Concurrency and scale envelope (trimmed)"
+  gate: E
+  tier: SHOULD
+  hackathon: P2
+  amend: "A-6. Cache stampede tests, queue backpressure and a documented PostgreSQL migration trigger are good engineering, but are lower priority than the demo for a hackathon. Keep duplicate-submission, crash and lock-contention tests; defer the rest to the post-hackathon backlog."
+  goal: "Know the tested envelope and state it."
+  tasks:
+    - "Test duplicate submissions, worker crashes, lease expiry and SQLite contention."
+    - "Document the measured envelope and the PostgreSQL migration trigger."
+  files: ["tests/integration/test_concurrency.py", "docs/adr/postgres-trigger.md"]
+  tcs:
+    - id: TC-11.4.1
+      title: "Contention"
+      kind: auto
+      steps: "Run 4 workers and 20 concurrent submissions."
+      expect: "No lost or duplicated evidence; any lock errors handled by retry."
+
+- id: M11.5
+  title: "Release manifest and clean-machine replay"
+  gate: E
+  tier: MUST
+  hackathon: P1
+  goal: "A release candidate rebuilds from nothing."
+  tasks:
+    - "Pin the toolchain and image digests; generate the release manifest in CI."
+    - "REPLAY mode shows recorded evidence without Docker or network; re-run is disabled and labelled when prerequisites are missing."
+    - "Bundle import validates schema version, hashes, paths and size limits."
+  files: ["scripts/release_manifest.py"]
+  tcs:
+    - id: TC-11.5.1
+      title: "Clean-environment deploy and tests"
+      kind: manual
+      steps: "On a new VM, deploy the release candidate and run the release-blocking suite."
+      expect: "All green; deployment fingerprint and cleanup report retained."
+    - id: TC-11.5.2
+      title: "Replay without Docker or network"
+      kind: manual
+      steps: "Stop Docker, disconnect the network, open REPLAY mode."
+      expect: "Evidence displays; Re-run disabled with a visible reason; badge RECORDED."
+
+- id: M12.1
+  title: "Real-world historical case (not a fixture)"
+  gate: S
+  tier: AMEND
+  hackathon: P0
+  amend: "A-7. v3.1 dropped the real-world case. It is the answer to 'is the demo staged?' and must be built and verified."
+  goal: "Reproduce a publicly reported dependency break from public registries by resolution date."
+  tasks:
+    - "Candidate: an older Flask release resolved before and after a Werkzeug major release (time-bounded resolution). Verify every fact by hand first (release dates, removed symbol, error text, versions)."
+    - "Run it through the same pipeline, with the time-machine cutoff recorded in provenance."
+    - "If the case does not reproduce as expected, pick another public case and record why."
+  files: ["fixtures/scenarios/REAL1.yaml", "fixtures/verification/REAL1.md"]
+  tcs:
+    - id: TC-12.1.1
+      title: "Facts verified by hand"
+      kind: manual
+      steps: "Reproduce the failure in plain venvs for the two dates."
+      expect: "Failure and pass observed; versions and error recorded in REAL1.md."
+    - id: TC-12.1.2
+      title: "Faultline reproduces it"
+      kind: auto
+      steps: "Run the pipeline with the two resolution cutoffs."
+      expect: "BREAK WITNESSED, signature matches REAL1.md, attribution names the package you verified."
+    - id: TC-12.1.3
+      title: "Public evidence linked"
+      kind: manual
+      steps: "Collect at least one public issue or changelog link describing the break."
+      expect: "Link stored in the scenario file; claim in slides matches it."
+
+- id: M12.2
+  title: "Demo modes, warm caches and fallbacks"
+  gate: S
+  tier: AMEND
+  hackathon: P0
+  amend: "A-8. The master's three demo modes and fallbacks are missing from v3.1."
+  goal: "The demo survives GitHub, registry and Docker failures, and is always honest about what is live."
+  tasks:
+    - "FIXTURE mode: real public fixture repositories at pinned SHAs, warm caches, Re-run executes live."
+    - "REPLAY mode: recorded evidence only; Re-run disabled."
+    - "Local git mirror for pinned SHAs, warmed wheelhouse, images pulled by digest on the demo machine and a backup machine."
+    - "Mode badge cannot be hidden by configuration."
+  files: ["scripts/warm_caches.py", "scripts/export_replay.py", "docs/demo_drill.md"]
+  tcs:
+    - id: TC-12.2.1
+      title: "Network unplugged"
+      kind: manual
+      steps: "Disconnect the network and run FIXTURE mode end to end."
+      expect: "Works from mirror and caches; badge says so."
+    - id: TC-12.2.2
+      title: "Docker stopped"
+      kind: manual
+      steps: "Stop Docker and open REPLAY."
+      expect: "Recorded evidence displays; badge RECORDED; Re-run disabled."
+    - id: TC-12.2.3
+      title: "Badge cannot lie"
+      kind: auto
+      steps: "Serve a cached result with mode LIVE forced in the request."
+      expect: "UI shows the mode stored with the evidence, not the requested one."
+
+- id: M12.3
+  title: "Demo script, rehearsal and judge Q&A"
+  gate: S
+  tier: AMEND
+  hackathon: P0
+  amend: "A-9. The plan explicitly excludes any pitching or demo script. A hackathon playbook needs a rehearsed demo and Q&A milestone, because the demo is how the work is judged."
+  goal: "A rehearsed 3 to 5 minute run: Detect, Reproduce, Attribute, Fix."
+  tasks:
+    - "Script the sequence: repositories at pinned SHAs, consumer-derived worlds, funnel, open witness, live Re-run, attribution, fix and re-verify, evidence bundle, real-world case."
+    - "Rehearse three times: normal, network off, Docker off."
+    - "Prepare answers to the judge-attack matrix in the master and have every member rehearse them."
+  files: ["docs/demo_script.md", "docs/judge_qa.md"]
+  tcs:
+    - id: TC-12.3.1
+      title: "Timed rehearsal"
+      kind: manual
+      steps: "Three timed runs, each by a different member."
+      expect: "Each finishes between 3 and 5 minutes with no unlabelled cached result."
+    - id: TC-12.3.2
+      title: "Q&A drill"
+      kind: manual
+      steps: "A teammate asks all questions in judge_qa.md in random order."
+      expect: "Every answer is honest and matches what the product does."
+
+- id: M12.4
+  title: "Submission pack"
+  gate: S
+  tier: AMEND
+  hackathon: P0
+  amend: "A-10. No submission milestone exists in the plan. Slides and README claims must be audited against the product."
+  goal: "Slides, README, repository and short recording are consistent with the product."
+  tasks:
+    - "Slides within the template's slide limit; every claim traceable to a test or a measured result."
+    - "README with quickstart (make up, make demo-fixture)."
+    - "Backup recording of the demo clearly labelled as a recording."
+  files: ["README.md", "docs/submission_checklist.md"]
+  tcs:
+    - id: TC-12.4.1
+      title: "Claims audit"
+      kind: manual
+      steps: "Read every slide claim and link it to a test id or measured number."
+      expect: "No claim without evidence; no 'proof', 'guarantee' or 'compatible' wording."
+    - id: TC-12.4.2
+      title: "Fresh-clone quickstart"
+      kind: manual
+      steps: "A teammate follows the README from a clean machine."
+      expect: "Demo runs in FIXTURE mode with no undocumented steps."
+
+gate_exit:
+  id: E
+  statement: "The deployment boundary, security, regression, reliability and clean-machine replay checks are green on the actual demo deployment."
+  must_not_claim: "Any security guarantee beyond the tested disposable-VM and Docker configuration."

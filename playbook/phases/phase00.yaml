@@ -1,0 +1,181 @@
+phase: 0
+name: "Bootstrap, contracts and runnable shell"
+gate: A
+release_point: "Skeleton / Gate A"
+goal: "A stable base that every later phase extends without contract drift."
+entry: "Fresh checkout. No analysis capability required."
+milestones:
+
+- id: M0.1
+  title: "Repository layout and pinned toolchain"
+  gate: A
+  tier: MUST
+  hackathon: P0
+  goal: "One command boots everything; every tool version is pinned."
+  tasks:
+    - "Create backend/faultline, frontend, docker, fixtures, tests, scripts, migrations, docs/adr, benchmarks."
+    - "Pin Python 3.12 (exact patch), Node, uv, npm, Docker image digests, CI tool versions in one versions file."
+    - "Provide make up / make test / make fixtures / make e2e. Each returns a non-zero exit code on failure."
+  files: ["Makefile", "pyproject.toml", "uv.lock", "versions.toml", "docker/compose.yml", ".github/workflows/ci.yml"]
+  tcs:
+    - id: TC-0.1.1
+      title: "Clean checkout boots"
+      kind: auto
+      steps: "git clone to an empty directory; run make up."
+      expect: "API, worker, sandbox stub and UI all start. GET /api/health returns 200."
+    - id: TC-0.1.2
+      title: "Pins are real"
+      kind: auto
+      steps: "Run scripts/check_pins.py (fails on any floating tag such as :latest or unpinned dependency)."
+      expect: "Exit 0. Every image reference contains @sha256. Python, uv and Node versions equal versions.toml."
+    - id: TC-0.1.3
+      title: "Make targets fail loudly"
+      kind: auto
+      steps: "Introduce a deliberate failing test; run make test."
+      expect: "Non-zero exit code. Remove the failure and the exit code is 0."
+
+- id: M0.2
+  title: "Canonical models, schema and migrations"
+  gate: A
+  tier: MUST
+  hackathon: P0
+  goal: "One canonical shape per concept: ResolvedWorld, Cell, OracleJob, OracleRunResult, Witness, Finding."
+  tasks:
+    - "Implement the master-defined core models in core/models.py. No alternate shapes."
+    - "Create explicit SQL migrations for the master schema (project, repository, snapshot, manifest, world, cell, oracle run, witness, finding)."
+    - "Make enums explicit and reject invalid status transitions."
+    - "Version the API schema and the persisted evidence schema."
+  files: ["backend/faultline/core/models.py", "backend/faultline/core/enums.py", "backend/faultline/storage/migrations/*.sql"]
+  tcs:
+    - id: TC-0.2.1
+      title: "Migration is clean and idempotent"
+      kind: auto
+      steps: "Apply migrations to an empty DB; apply again."
+      expect: "First run creates all tables. Second run is a no-op with no error."
+    - id: TC-0.2.2
+      title: "Failed migration leaves no half schema"
+      kind: auto
+      steps: "Inject a failing statement in a test migration; run it."
+      expect: "Whole migration rolled back. Schema equals the pre-migration state."
+    - id: TC-0.2.3
+      title: "Invalid transition and unknown enum rejected"
+      kind: auto
+      steps: "Try job status DONE -> QUEUED; try to store an unknown verdict string."
+      expect: "Both rejected with a typed error. Nothing persisted."
+    - id: TC-0.2.4
+      title: "Foreign-key chain exists"
+      kind: auto
+      steps: "Insert a full chain project -> repository -> snapshot -> manifest -> world -> cell -> oracle run -> witness -> finding."
+      expect: "All inserts succeed. Deleting a snapshot referenced by a finding is refused."
+
+- id: M0.3
+  title: "Canonical hashing"
+  gate: A
+  tier: MUST
+  hackathon: P0
+  goal: "A single function computes every identity hash."
+  tasks:
+    - "Implement canonical JSON serialization and hashing in core/hashing.py only."
+    - "World identity excludes absolute paths and incidental timestamps; includes runtime, platform and visibility dimensions."
+    - "Add a lint rule that fails if any other module computes a hash of a model."
+  files: ["backend/faultline/core/hashing.py", "tests/unit/test_hashing.py"]
+  tcs:
+    - id: TC-0.3.1
+      title: "Order independence"
+      kind: auto
+      steps: "Hash the same world with its entries and keys shuffled 100 times."
+      expect: "Exactly one distinct hash."
+    - id: TC-0.3.2
+      title: "Semantic sensitivity"
+      kind: auto
+      steps: "Change one of: package version, runtime minor, platform, artifact hash."
+      expect: "Hash changes in every case. Changing only a timestamp or a local path does not change it."
+    - id: TC-0.3.3
+      title: "NaN and float handling"
+      kind: auto
+      steps: "Serialize a payload containing NaN, -0.0 and a very large float."
+      expect: "NaN is rejected with an explicit error. -0.0 and large floats serialize deterministically."
+
+- id: M0.4
+  title: "Durable job contract"
+  gate: A
+  tier: MUST
+  hackathon: P0
+  goal: "Analysis runs asynchronously in a separate worker with a safe job lifecycle."
+  tasks:
+    - "Persist job status, idempotency key, attempts, timestamps, lease owner and expiry, cancellation flag."
+    - "Atomic claim; stale leases reclaimable; transient and permanent failures distinguished."
+    - "API returns a job id immediately and exposes progress without holding the request open."
+    - "Hackathon scope: lease plus retry plus cancellation. Heartbeat tuning and backpressure are deferred to Phase 11."
+  files: ["backend/faultline/storage/jobs.py", "backend/faultline/workers/run.py"]
+  tcs:
+    - id: TC-0.4.1
+      title: "Atomic claim under contention"
+      kind: auto
+      steps: "Start two workers; enqueue 50 jobs; run to completion."
+      expect: "Each job executed exactly once. No duplicate run records."
+    - id: TC-0.4.2
+      title: "Stale lease reclaimed"
+      kind: auto
+      steps: "Kill a worker mid-job; wait past lease expiry."
+      expect: "Another worker reclaims and completes the job. The attempt count is 2."
+    - id: TC-0.4.3
+      title: "Idempotent submission"
+      kind: auto
+      steps: "POST the same analysis twice with the same idempotency key."
+      expect: "One job. Both calls return the same job id."
+    - id: TC-0.4.4
+      title: "Cancellation"
+      kind: auto
+      steps: "Cancel a running job."
+      expect: "Status becomes CANCELLED. The worker stops at the next checkpoint."
+
+- id: M0.5
+  title: "Health, capabilities and the capability banner"
+  gate: A
+  tier: MUST
+  hackathon: P0
+  goal: "The product states what it can and cannot do before any analysis exists."
+  tasks:
+    - "Implement GET /api/health and GET /api/capabilities (mode, ecosystems, oracles, sandbox state, disabled reasons)."
+    - "Render the mode badge and capability banner in the frontend."
+    - "Sandbox stub reports 'not verified' and must never be shown as isolation."
+  files: ["backend/faultline/api/routers/system.py", "frontend/src/components/CapabilityBanner.tsx", "frontend/src/components/ModeBadge.tsx"]
+  tcs:
+    - id: TC-0.5.1
+      title: "Capability truthfulness"
+      kind: auto
+      steps: "Call /api/capabilities with the sandbox stub."
+      expect: "Execution oracles listed as unavailable with reason 'sandbox not verified'."
+    - id: TC-0.5.2
+      title: "Banner renders from API"
+      kind: manual
+      steps: "Open the UI before any analysis exists."
+      expect: "Mode badge and per-ecosystem and per-oracle states visible. No finding is displayed."
+
+- id: M0.6
+  title: "CI gate"
+  gate: A
+  tier: MUST
+  hackathon: P0
+  goal: "Every push proves the skeleton still works."
+  tasks:
+    - "CI runs: migration check, API schema check, lint and unit tests, frontend typecheck and build, service boot."
+    - "Generate TypeScript types from OpenAPI and fail CI on drift."
+  files: [".github/workflows/ci.yml", "scripts/check_openapi_types.sh"]
+  tcs:
+    - id: TC-0.6.1
+      title: "CI is green on main"
+      kind: auto
+      steps: "Push to main."
+      expect: "All CI jobs pass."
+    - id: TC-0.6.2
+      title: "Schema drift is caught"
+      kind: auto
+      steps: "Change an API field without regenerating types; push."
+      expect: "CI fails on the type-drift check."
+
+gate_exit:
+  id: A
+  statement: "The product boots, states its mode and capabilities, core contracts are stable, and no compatibility claim is displayed."
+  must_not_claim: "Any compatibility finding. Any security claim based on the stub."

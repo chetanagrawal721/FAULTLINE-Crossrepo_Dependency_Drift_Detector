@@ -1,0 +1,23 @@
+# Phase and gate metadata. Milestones live in playbook/phases/*.yaml
+gates:
+  A: {name: "Runnable skeleton", requires: []}
+  B: {name: "Fixture-backed proof", requires: [A]}
+  C: {name: "First live vertical slice", requires: [B]}
+  D: {name: "PS07-compliant MVP (every canonical MUST)", requires: [C]}
+  E: {name: "Release-hardened deployment", requires: [D]}
+  S: {name: "Showtime: demo and submission readiness", requires: [C]}
+  X: {name: "Expansion (each item independent)", requires: []}
+phases:
+  0:  {name: "Bootstrap, contracts and runnable shell", gate: A}
+  1:  {name: "Fixture-backed end-to-end differential proof", gate: B}
+  2:  {name: "Pinned public repository ingestion", gate: C}
+  3:  {name: "Manifest parsing and native resolution", gate: C}
+  4:  {name: "First live vertical slice", gate: C}
+  5:  {name: "Complete the MUST core (attribution, evidence, dashboard, conformance)", gate: D}
+  6:  {name: "Static API analysis and exposure", gate: X}
+  7:  {name: "Contract replay, type checking, reconciliation", gate: X}
+  8:  {name: "What-if and verified remediation", gate: X}
+  9:  {name: "npm runtime expansion", gate: X}
+  10: {name: "Maven runtime expansion", gate: X}
+  11: {name: "Conformance, evaluation, security release gate", gate: E}
+  12: {name: "Real-world case, demo and submission", gate: S}

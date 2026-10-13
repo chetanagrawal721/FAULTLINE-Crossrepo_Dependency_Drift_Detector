@@ -1,0 +1,239 @@
+phase: 4
+name: "First live vertical slice: relationship, consumer cell, witness, verdict"
+gate: C
+release_point: "First Live Vertical Slice / Gate C"
+goal: "One real finding on pinned public repositories. Intentionally incomplete; unfinished MUSTs are shown as unavailable."
+entry: "Phases 0-3 done. A producer and a consumer with evidence-backed relationship. A real sandbox is operational before any repository code runs."
+milestones:
+
+- id: M4.1
+  title: "Relationship evidence"
+  gate: C
+  tier: MUST
+  hackathon: P0
+  goal: "Two repositories are linked only on traceable evidence."
+  tasks:
+    - "Implement relationship levels L2/L3 (and suspected L3') with the evidence chain: published name to dependency, path or git dependency, workspace, identical schema."
+    - "A same-name package or a version difference is candidate evidence only."
+    - "Uncertain relationships go to the suspected tray with supporting and missing evidence. Declared relationships are labelled user-supplied."
+  files: ["backend/faultline/relationships/signals.py", "backend/faultline/relationships/engine.py", "backend/faultline/relationships/suspected.py"]
+  tcs:
+    - id: TC-4.1.1
+      title: "Positive relationship"
+      kind: auto
+      steps: "Run discovery on the fixture where the consumer depends on the producer's published name."
+      expect: "One L2 relationship with evidence lines in both manifests."
+    - id: TC-4.1.2
+      title: "Name-only match is not actionable"
+      kind: auto
+      steps: "Run discovery on the unrelated-project control and the look-alike model control."
+      expect: "No actionable relationship. Look-alike appears only in the suspected tray."
+    - id: TC-4.1.3
+      title: "Evidence is traceable"
+      kind: auto
+      steps: "For each relationship fetch its evidence."
+      expect: "Every evidence row points to a snapshot file path and line."
+
+- id: M4.2
+  title: "Reference world, projection, test overlay and consumer-import scan"
+  gate: C
+  tier: MUST
+  hackathon: P0
+  goal: "Compute the world the shared artifact actually experiences inside each consumer."
+  tasks:
+    - "Select the reference world: artifact lockfile if present, otherwise manifest resolved as of the artifact commit time."
+    - "Compute the artifact runtime closure; project each consumer's importer-visible versions onto it plus runtime and artifact dimensions."
+    - "Overlay test-only dependencies (PC-5). Build offline (PC-10)."
+    - "Consumer-import scan (PC-4): record the artifact top-level package and the modules the consumer actually imports; an absent optional import is NOT_APPLICABLE."
+    - "Reference-world failure policy: baseline unsupported, unreproducible or failing -> INCONCLUSIVE, never clean, never consumer-caused."
+  files: ["backend/faultline/worlds/reference.py", "backend/faultline/worlds/projection.py", "backend/faultline/worlds/overlay.py", "backend/faultline/usage/consumer_imports.py"]
+  tcs:
+    - id: TC-4.2.1
+      title: "Exact projection"
+      kind: auto
+      steps: "Project the break-scenario consumer onto the artifact closure."
+      expect: "The projected package set and runtime equal the scenario YAML exactly."
+    - id: TC-4.2.2
+      title: "Consumer-import scan"
+      kind: auto
+      steps: "Scan a consumer that imports only two artifact modules."
+      expect: "Exactly those modules plus the top-level package are listed. A module needing an absent extra is NOT_APPLICABLE."
+    - id: TC-4.2.3
+      title: "Reference failure policy"
+      kind: auto
+      steps: "Inject: missing lockfile, unavailable wheel, unsupported resolver semantics, baseline that fails its own tests."
+      expect: "Each yields INCONCLUSIVE with provenance and reason. None yields a consumer-caused BREAK."
+
+- id: M4.3
+  title: "Cells, deltas and world coverage"
+  gate: C
+  tier: MUST
+  hackathon: P0
+  goal: "One cell per unique effective projection, with exact discovered and analysed counts."
+  tasks:
+    - "Build one cell per projection; keep consumer-to-cell links."
+    - "Compute package and runtime deltas against the reference. Deltas are candidate causes, not findings."
+    - "A cell that cannot be built stays in the discovered count as unsupported or failed, with a reason."
+    - "Coverage is discovered vs analysed counts, never a compatibility score."
+  files: ["backend/faultline/worlds/cells.py", "backend/faultline/verdicts/stats.py"]
+  tcs:
+    - id: TC-4.3.1
+      title: "Dedup and links"
+      kind: auto
+      steps: "Two consumers with identical projections."
+      expect: "One cell, two consumer links."
+    - id: TC-4.3.2
+      title: "NO_DRIFT cell"
+      kind: auto
+      steps: "A consumer matching the reference exactly."
+      expect: "Cell state NO_DRIFT; no oracle jobs queued."
+    - id: TC-4.3.3
+      title: "Failed cell counted"
+      kind: auto
+      steps: "Make one consumer's world unresolvable."
+      expect: "Discovered = 3, analysed = 2, the third listed as failed with its reason."
+
+- id: M4.4
+  title: "Live oracle execution"
+  gate: C
+  tier: MUST
+  hackathon: P0
+  goal: "O-import and O-tests run on real pinned inputs with the same artifact revision in both worlds."
+  tasks:
+    - "Plan oracles per cell (import first; stop downstream oracles if the top-level import already fails)."
+    - "Persist per-run output, traceback, classification and environment fingerprint."
+    - "Infrastructure, harness, timeout, resource and resolution failures never become witnesses."
+  files: ["backend/faultline/oracles/planner.py", "backend/faultline/workers/stages.py"]
+  tcs:
+    - id: TC-4.4.1
+      title: "Live import oracle"
+      kind: auto
+      steps: "Run the live analysis on two real public repositories (or the fixture repos pushed to GitHub)."
+      expect: "Per-world outcomes stored; fingerprints identical for the reference side across runs."
+    - id: TC-4.4.2
+      title: "Short-circuit"
+      kind: auto
+      steps: "Break the top-level import in the consumer world."
+      expect: "Downstream oracles marked blocked_by_import with a reason; no duplicate failures reported."
+    - id: TC-4.4.3
+      title: "Infrastructure failure is not evidence"
+      kind: auto
+      steps: "Kill the container during a consumer run."
+      expect: "Class SANDBOX_FAILURE; retried; never a witness."
+
+- id: M4.5
+  title: "Witness and ordered verdict engine"
+  gate: C
+  tier: MUST
+  hackathon: P0
+  goal: "A deterministic, ordered decision table over persisted evidence."
+  tasks:
+    - "Enforce 3 fresh reference passes and 3 fresh consumer failures with the same normalized signature."
+    - "Implement the master's ordered verdict table (HYGIENE, NO_DRIFT, NOT_APPLICABLE, BREAK WITNESSED, SILENT DIVERGENCE WITNESSED, NO DIVERGENCE OBSERVED, EXPOSED, POTENTIAL, NOT EXPOSED, INCONCLUSIVE)."
+    - "Unknown combinations become INCONCLUSIVE. Reason text is templated and scoped. Policy is versioned."
+    - "NO DIVERGENCE OBSERVED states exactly what was and was not exercised."
+  files: ["backend/faultline/verdicts/engine.py", "backend/faultline/verdicts/templates.py"]
+  tcs:
+    - id: TC-4.5.1
+      title: "Decision table coverage"
+      kind: auto
+      steps: "Run table-driven tests with one case per row plus unknown combinations."
+      expect: "Every row returns its verdict; unknown -> INCONCLUSIVE; no branch untested (coverage report)."
+    - id: TC-4.5.2
+      title: "Determinism"
+      kind: auto
+      steps: "Recompute the verdict from persisted evidence 10 times, in a different process."
+      expect: "Identical verdict and reason text."
+    - id: TC-4.5.3
+      title: "No LLM input"
+      kind: auto
+      steps: "Static check: verdict module imports."
+      expect: "No import of any LLM client; test fails if one appears."
+    - id: TC-4.5.4
+      title: "Scoped wording"
+      kind: auto
+      steps: "Render NO DIVERGENCE OBSERVED."
+      expect: "Text lists exercised interactions and a 'not checked' list; never says compatible."
+
+- id: M4.6
+  title: "Targeted call-site extractor and O-bind (PC-1, MUST for Gate D)"
+  gate: D
+  tier: MUST
+  hackathon: P1
+  goal: "Real call sites into the divergent package are extracted and checked against the new signature."
+  tasks:
+    - "AST pass over the artifact: imports, from-imports, aliases, module-level attribute chains; every Call resolving into a divergent package D with positional count, keyword names, star flags and literal arguments when all literal; file hash, line and column."
+    - "O-bind: resolve the symbol in the world, bind the call shape against its signature. Execute only literal-only, side-effect-contained candidates."
+    - "Dynamic, star-argument and unsupported forms stay DYNAMIC/UNRESOLVED."
+  files: ["backend/faultline/usage/callsites.py", "backend/faultline/oracles/o_bind.py", "backend/faultline/oracles/harness/bind_sites.py"]
+  tcs:
+    - id: TC-4.6.1
+      title: "Extraction fixture"
+      kind: auto
+      steps: "Run on a fixture containing import, from-import, alias, attribute chain, positional, keyword, star and literal calls."
+      expect: "Records match the golden file including line and column."
+    - id: TC-4.6.2
+      title: "Bind failure witnessed"
+      kind: auto
+      steps: "Run O-bind for the signature-change scenario (C)."
+      expect: "Reference binds; consumer world fails to bind; witness created under the 3+3 rule."
+    - id: TC-4.6.3
+      title: "Dynamic stays dynamic"
+      kind: auto
+      steps: "Include getattr(lib, name) and importlib.import_module(var)."
+      expect: "Recorded as DYNAMIC; never treated as absent."
+
+- id: M4.7
+  title: "MVP UI against persisted API records"
+  gate: D
+  tier: MUST
+  hackathon: P0
+  goal: "Submit two public repositories and see relationship, matrix, witness, verdict and export."
+  tasks:
+    - "Show pinned SHAs, relationship evidence, world matrix, exact delta, witness, verdict and export."
+    - "Mode badge and capability states; support refresh, failed jobs, retryable jobs, empty and unsupported states."
+    - "No frontend mock data may satisfy a MUST."
+  files: ["frontend/src/pages/Dashboard.tsx", "frontend/src/pages/Matrix.tsx", "frontend/src/pages/Findings.tsx"]
+  tcs:
+    - id: TC-4.7.1
+      title: "Two-URL end to end"
+      kind: auto
+      steps: "Browser E2E: submit two repository URLs and wait for completion."
+      expect: "Funnel, matrix, witness and verdict are displayed from API records."
+    - id: TC-4.7.2
+      title: "Mock-free proof"
+      kind: auto
+      steps: "Run the E2E with the API returning an unseen value (random world hash)."
+      expect: "UI displays that exact value, proving it renders persisted data."
+
+- id: M4.G
+  title: "Gate C acceptance: first live finding"
+  gate: C
+  tier: MUST
+  hackathon: P0
+  goal: "One real public producer/consumer pair yields a repeatable, correctly scoped LIVE finding."
+  tasks:
+    - "Run the clean-checkout end-to-end from two public repository URLs."
+    - "Confirm a negative control stays clean and every claim points to pinned SHAs."
+  files: []
+  tcs:
+    - id: TC-4.G.1
+      title: "Clean checkout live run"
+      kind: auto
+      steps: "Fresh clone, make up, submit the two URLs of the break scenario."
+      expect: "BREAK WITNESSED with six fresh runs, badge LIVE, evidence points to pinned SHAs."
+    - id: TC-4.G.2
+      title: "Negative control clean"
+      kind: auto
+      steps: "Submit the no-drift or harmless-drift pair."
+      expect: "No witness."
+    - id: TC-4.G.3
+      title: "Unfinished MUSTs are visible as unavailable"
+      kind: manual
+      steps: "Read the capability banner."
+      expect: "Attribution, bundle replay and unfinished dashboard views are shown unavailable, not hidden."
+
+gate_exit:
+  id: C
+  statement: "One real public producer/consumer pair yields a repeatable, correctly scoped LIVE finding with traceable evidence, and a negative control stays clean."
+  must_not_claim: "Full MVP conformance. Gate D is a separate decision."
