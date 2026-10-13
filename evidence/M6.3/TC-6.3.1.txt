@@ -1,0 +1,6 @@
+plugins: anyio-4.15.1
+collecting ... collected 9 items / 8 deselected / 1 selected
+
+tests/unit/test_usage_index.py::test_tc_6_3_1_statuses_match_the_golden_file PASSED [100%]
+
+======================= 1 passed, 8 deselected in 0.07s =======================
