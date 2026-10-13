@@ -74,9 +74,19 @@ def run_live_analysis(conn: sqlite3.Connection, sbx: SandboxClient, image: str, 
     aid = create_analysis(conn, analysis_project_id)
     say(0.05, "discovering relationships")
     rels = discover(conn, store, aid, analysis_project_id)
-    planned = plan_cells(conn, rels)
-    failed = list(planned.failed)
     builder = WorldBuilder(sbx, image, conn)
+    edge_cache: dict[str, dict] = {}
+
+    def closure_of(pinned, roots):
+        from ..core.hashing import object_hash
+        from ..worlds.closure import closure
+        key = object_hash([(p.name, p.version, list(p.hashes)) for p in pinned])
+        if key not in edge_cache:
+            edge_cache[key] = builder.edges(list(pinned))
+        return closure(list(pinned), roots, edge_cache[key])
+
+    planned = plan_cells(conn, rels, closure_of)
+    failed = list(planned.failed)
     conn.execute("UPDATE analysis SET status='BUILDING_CELLS' WHERE id=?", (aid,))
     out_cells: list[dict] = []
     ref_built: dict[str, str] = {}
@@ -130,6 +140,7 @@ def run_live_analysis(conn: sqlite3.Connection, sbx: SandboxClient, image: str, 
 
         art_dir = Path(prod_root) / layout["rel_path"] if layout["rel_path"] != "." else Path(prod_root)
         artifact = prepare_artifact(art_dir, store)
+        conn.execute("UPDATE project SET artifact_content_hash=? WHERE id=?", (artifact, plan.producer_project_id))
         pyroot = Path(src_root).relative_to(layout["rel_path"]).as_posix() if layout["rel_path"] != "." and src_root.startswith(layout["rel_path"]) else src_root
         pythonpath = "/artifact" if pyroot in (".", "") else f"/artifact/{pyroot}"
         modules = plan_modules(pkg, sorted({m for ms in imported.values() for m in ms if m != pkg}))

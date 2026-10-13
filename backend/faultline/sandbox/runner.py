@@ -93,7 +93,7 @@ def extract_frame(text: str) -> dict | None:
 
 
 HARNESS_SCRIPTS = {"probe.py", "fetch_wheels.py", "build_world.py", "world_info.py", "o_import.py", "fetch_repo.py",
-                   "resolve_uv.py"}
+                   "resolve_uv.py", "wheel_metadata.py"}
 
 
 def mount_arg(m: dict) -> str:
@@ -193,8 +193,9 @@ def run_job(job: dict, *, mounts: list[dict] | None = None, docker_host: str | N
             result["failure_class"] = FailureClass.RESOURCE_LIMIT.value
         elif result["data"] is None:
             # docker itself reports 125-127 when it could not create, start or find the command; any other
-            # exit without a result frame means the harness crashed or misbehaved
-            result["failure_class"] = (FailureClass.SANDBOX_FAILURE.value if result["exit_code"] in (125, 126, 127)
+            # exit without a result frame means the harness crashed or misbehaved. 137 and 143 are SIGKILL and SIGTERM
+            # that were not our own timeout or an out-of-memory kill: something outside the job stopped the container
+            result["failure_class"] = (FailureClass.SANDBOX_FAILURE.value if result["exit_code"] in (125, 126, 127, 137, 143)
                                        else FailureClass.HARNESS_FAILURE.value)
     result["duration_ms"] = int((time.monotonic() - t0) * 1000)
     return result

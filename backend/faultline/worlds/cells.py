@@ -5,6 +5,7 @@ compatibility score: coverage is the count of discovered versus analysed consume
 """
 import json
 import sqlite3
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from ..core.hashing import object_hash
@@ -45,7 +46,29 @@ def consumer_pinned(conn: sqlite3.Connection, project_id: str) -> list[PinnedReq
     return [PinnedRequirement(n, dn, v, tuple(h)) for n, dn, v, h in pinned]
 
 
-def plan_cells(conn: sqlite3.Connection, relationships) -> Planned:
+def artifact_roots(conn: sqlite3.Connection, producer_id: str, extras: frozenset[str]) -> list[tuple[str, frozenset[str]]]:
+    """The artifact's own runtime dependencies (main group) plus the optional groups the consumer asked for, from persisted manifests."""
+    roots: list[tuple[str, frozenset[str]]] = []
+    for m in conn.execute("SELECT parsed_json FROM manifest WHERE project_id=? AND kind='pyproject'", (producer_id,)):
+        for d in json.loads(m["parsed_json"] or "{}").get("dependencies", []):
+            if d["group"] == "main" or (d["group"].startswith("optional:") and d["group"].split(":", 1)[1] in extras):
+                roots.append((d["name"], frozenset(d.get("extras") or ())))
+    return roots
+
+
+def requested_extras(conn: sqlite3.Connection, consumer_id: str, producer_name: str | None) -> frozenset[str]:
+    out: set[str] = set()
+    for m in conn.execute("SELECT parsed_json FROM manifest WHERE project_id=? AND kind IN ('pyproject','requirements')", (consumer_id,)):
+        for d in json.loads(m["parsed_json"] or "{}").get("dependencies", []):
+            if d["name"] == producer_name:
+                out |= set(d.get("extras") or ())
+    return frozenset(out)
+
+
+ClosureProvider = Callable[[list[PinnedRequirement], list[tuple[str, frozenset[str]]]], set[str]]
+
+
+def plan_cells(conn: sqlite3.Connection, relationships, closure_of: ClosureProvider | None = None) -> Planned:
     out = Planned()
     refs: dict[str, ReferenceWorld | ReferenceFailure] = {}
     groups: dict[tuple[str, str], CellPlan] = {}
@@ -62,7 +85,12 @@ def plan_cells(conn: sqlite3.Connection, relationships) -> Planned:
             out.failed.append({"consumer": rel.consumer_project_id, "producer": rel.producer_project_id, "reason": cw["reason"],
                                "text": cw["text"], "side": "consumer"})
             continue
-        proj = project(ref, cw)
+        ref_names = cons_names = None
+        if closure_of is not None:
+            pub = conn.execute("SELECT published_name FROM project WHERE id=?", (rel.producer_project_id,)).fetchone()["published_name"]
+            roots = artifact_roots(conn, rel.producer_project_id, requested_extras(conn, rel.consumer_project_id, pub))
+            ref_names, cons_names = closure_of(list(ref.pinned), roots), closure_of(cw, roots)
+        proj = project(ref, cw, ref_names=ref_names, consumer_names=cons_names)
         key = (rel.producer_project_id, proj.key)
         plan = groups.setdefault(key, CellPlan(rel.producer_project_id, proj, ref))
         plan.consumers.append((rel.consumer_project_id, rel.id))

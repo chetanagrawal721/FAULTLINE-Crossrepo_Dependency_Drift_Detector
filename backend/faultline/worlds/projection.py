@@ -36,17 +36,21 @@ class Projection:
         return render_lock(list(self.pinned))
 
 
-def project(ref: ReferenceWorld, consumer: list[PinnedRequirement]) -> Projection:
-    """The consumer's resolved runtime world, compared with the reference over the UNION of package names.
+def project(ref: ReferenceWorld, consumer: list[PinnedRequirement], *, ref_names: set[str] | None = None,
+            consumer_names: set[str] | None = None) -> Projection:
+    """The consumer's resolved runtime world compared with the reference, restricted to the artifact's runtime closure.
 
-    Packages only the consumer has (for example what a newer pydantic pulls in) belong to the delta: the artifact runs next to
-    them. Reference packages the consumer lacks are ABSENT. Deltas are candidate causes, never findings by themselves.
+    `ref_names` / `consumer_names` are the packages reachable from the artifact's dependencies in each world (see closure.py).
+    Packages outside both closures (an unrelated `requests`) cannot create drift. When a closure is unknown (None) the whole world
+    counts. Reference packages the consumer lacks are ABSENT. Deltas are candidate causes, never findings by themselves.
     """
     have = {c.name: c for c in consumer}
     want = ref.versions
-    absent = sorted(n for n in want if n not in have)
+    scope = (ref_names if ref_names is not None else set(want)) | (consumer_names if consumer_names is not None else set(have))
+    inside = [have[n] for n in have if n in scope]
+    absent = sorted(n for n in want if n in scope and n not in have)
     delta = [DeltaItem(n, want.get(n), have[n].version if n in have else None)
-             for n in sorted(set(want) | set(have)) if want.get(n) != (have[n].version if n in have else None)]
-    pinned = tuple(sorted(consumer, key=lambda x: x.name))
+             for n in sorted(scope) if want.get(n) != (have[n].version if n in have else None)]
+    pinned = tuple(sorted(inside, key=lambda x: x.name))
     key = object_hash({"runtime": RUNTIME, "versions": [(p.name, p.version) for p in pinned], "reference": ref.world_hash})
     return Projection(pinned, tuple(absent), tuple(delta), key)

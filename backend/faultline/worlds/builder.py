@@ -135,6 +135,20 @@ class WorldBuilder:
             world_store.set_venv_status(self.conn, world.world_hash, VenvStatus.BUILT, f"volume:fl-world-{world.world_hash}")
         return BuildResult("BUILT", world.world_hash)
 
+    def read_metadata(self, wheel_files: list[str]) -> dict:
+        """Requires-Dist and Provides-Extra of wheels in the wheelhouse, read offline in the sandbox (no wheel code runs)."""
+        r = self.sandbox.submit({"image": self.image, "zone": "exec", "script": "wheel_metadata.py", "args": {"files": wheel_files},
+                                 "mounts": {"/wheelhouse": {}}})
+        data = r.get("data") or {}
+        if r["failure_class"] != "NONE" or "metadata" not in data:
+            raise WorldBuildError("could not read wheel metadata", details={"tail": r.get("error", "")})
+        return data["metadata"]
+
+    def edges(self, pinned: list[PinnedRequirement]) -> dict[str, list[str]]:
+        """Dependency edges of a pinned world, from the wheels' own metadata."""
+        from .closure import fetch_edges
+        return fetch_edges(lambda text: self.fetch_wheels(text), self.read_metadata, pinned)
+
     def info(self, world: ResolvedWorld) -> dict:
         """What the built world really contains, read in a fresh read-only container."""
         r = self.sandbox.submit({"image": self.image, "zone": "exec", "script": "world_info.py",
