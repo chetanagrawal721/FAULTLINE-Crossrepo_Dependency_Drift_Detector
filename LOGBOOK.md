@@ -877,3 +877,25 @@ Format: `### <UTC time> | <EVENT> | <id> | by <name>` followed by details.
 ### 2026-10-13 16:44 UTC | DONE | M0.6 | by Chetan Agrawal
 - CI gate
 - test cases passed: 2/2
+
+### 2026-10-13 16:46 UTC | START | M11.3 | by Chetan Agrawal
+- Deployment security release gate
+
+### 2026-10-13 17:40 UTC | TC PASS | TC-11.3.1 | by Chetan Agrawal
+- Boundary inspection
+- evidence: evidence/M11.3/TC-11.3.1.txt
+
+### 2026-10-13 17:40 UTC | TC PASS | TC-11.3.2 | by Chetan Agrawal
+- Fail closed on a bad control
+- evidence: evidence/M11.3/TC-11.3.2.txt
+
+### 2026-10-13 17:40 UTC | TC PASS | TC-11.3.3 | by Chetan Agrawal
+- Attack suite
+- evidence: evidence/M11.3/TC-11.3.3.txt
+
+### 2026-10-13 17:40 UTC | NOTE | - | by Chetan Agrawal
+- M11.3: fetch-zone egress is now an internal Docker network plus an allowlisting proxy (GitHub and PyPI over HTTPS only; no IP literals, metadata or private ranges). Found on the way: git and uv drop the proxy variables unless passed on (uncached clone test), the orphan sweeper removed the long-lived proxy, the proxy must try every verified address, and bundle verify accepted symlink entries. Local full suite takes 30+ min on this PC (CI ~10 min); CI is the full-suite authority.
+
+### 2026-10-13 17:40 UTC | DONE | M11.3 | by Chetan Agrawal
+- Deployment security release gate
+- test cases passed: 3/3

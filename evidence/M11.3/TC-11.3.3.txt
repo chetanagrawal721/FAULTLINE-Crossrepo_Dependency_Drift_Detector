@@ -1,0 +1,20 @@
+tests/integration/test_ingestion.py::test_tc_2_2_1_hostile_repository PASSED [  7%]
+tests/integration/test_ingestion.py::test_tc_2_2_2_limits_produce_a_partial_snapshot_and_a_warning PASSED [ 14%]
+tests/unit/test_bundle.py::test_missing_extra_duplicate_and_unsafe_entries_are_rejected PASSED [ 21%]
+tests/unit/test_bundle.py::test_tc_1_7_3_no_secrets_in_the_bundle PASSED [ 28%]
+tests/unit/test_bundle.py::test_a_decompression_bomb_is_rejected_before_anything_is_read PASSED [ 35%]
+tests/unit/test_bundle.py::test_symlink_and_device_entries_in_a_bundle_are_rejected PASSED [ 42%]
+tests/security/test_sandbox.py::test_tc_1_2_1_no_network_to_internet_or_metadata_endpoint PASSED [ 50%]
+tests/security/test_sandbox.py::test_tc_1_2_2_docker_socket_and_host_files_unreadable PASSED [ 57%]
+tests/security/test_sandbox.py::test_tc_1_2_3_fork_bomb_is_stopped_by_pids_limit PASSED [ 64%]
+tests/security/test_sandbox.py::test_tc_1_2_3_memory_bomb_is_oom_killed PASSED [ 71%]
+tests/security/test_sandbox.py::test_tc_1_2_3_disk_fill_stops_at_tmpfs_size PASSED [ 78%]
+tests/security/test_sandbox.py::test_tc_1_2_3_output_flood_is_capped PASSED [ 85%]
+tests/security/test_sandbox.py::test_sr4_fetch_zone_has_no_direct_route_out PASSED [ 92%]
+tests/security/test_sandbox.py::test_sr4_proxy_refuses_metadata_private_unlisted_and_other_ports PASSED [100%]
+===================== 14 passed, 36 deselected in 28.78s ======================
+
+Coverage map for the attack list: path traversal and symlinks in a repository (hostile repository test), symlink and device entries and path traversal in a
+bundle zip, decompression bomb (compression ratio limit), size limits (partial snapshot), cloud-metadata and private egress (fetch zone proxy and the
+no-network exec zone), output flood, fork bomb, memory bomb, disk fill, host-file and docker-socket reads, secret canary (no secrets in the bundle).
+Hard links: not applicable as a separate case. A git tree and a zip file have no hard-link entry type; link entries of every kind are refused.

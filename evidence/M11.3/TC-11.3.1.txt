@@ -1,0 +1,16 @@
+Deployment inspector, observed values (not configured values)
+verified: True | all boundary checks passed
+PASS  non-root user                                                  observed: 65534
+PASS  no capabilities                                                observed: "0000000000000000"
+PASS  no-new-privileges                                              observed: "1"
+PASS  seccomp filter active                                          observed: "2"
+PASS  root filesystem read-only                                      observed: true
+PASS  docker socket absent                                           observed: false
+PASS  no network                                                     observed: {"connected": false, "dns": false, "dns_error": "gaierror", "error": "OSError", "host": "1.1.1.1", "port": 443}
+PASS  cannot write to /etc                                           observed: {"error": "OSError", "path": "/etc/faultline_probe", "written": false}
+PASS  egress proxy running                                           observed: "egress proxy running"
+PASS  fetch network is internal                                      observed: "faultline-fetch"
+PASS  direct egress from the fetch zone is blocked                   observed: {"1.1.1.1:443": false, "169.254.169.254:80": false, "8.8.8.8:53": false}
+PASS  proxy refuses cloud metadata, loopback and private targets     observed: {"10.0.0.1:443": "403", "127.0.0.1:443": "403", "169.254.169.254:443": "403", "169.254.169.254:80": "403", "example.com:443": "403", "github.com:22": "403", "github.com:4
+PASS  proxy refuses hosts that are not allowlisted and other ports   observed: {"10.0.0.1:443": "403", "127.0.0.1:443": "403", "169.254.169.254:443": "403", "169.254.169.254:80": "403", "example.com:443": "403", "github.com:22": "403", "github.com:4
+Machine: this development PC (Windows 11, Docker Desktop, Linux containers). The same inspector tests also run on a clean Ubuntu CI runner in every CI run.
