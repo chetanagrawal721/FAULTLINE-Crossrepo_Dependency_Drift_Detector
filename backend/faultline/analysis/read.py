@@ -30,7 +30,7 @@ def _commit(conn: sqlite3.Connection, project_id: str) -> str:
 
 
 def latest_analysis_id(conn: sqlite3.Connection, project_id: str) -> str | None:
-    r = conn.execute("SELECT id FROM analysis WHERE analysis_project_id=? AND mode='LIVE' ORDER BY started_at DESC, rowid DESC LIMIT 1", (project_id,)).fetchone()
+    r = conn.execute("SELECT id FROM analysis WHERE analysis_project_id=? AND mode IN ('LIVE','REPLAY') ORDER BY started_at DESC, rowid DESC LIMIT 1", (project_id,)).fetchone()
     return r["id"] if r else None
 
 

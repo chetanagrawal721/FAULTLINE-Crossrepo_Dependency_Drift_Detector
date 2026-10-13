@@ -328,8 +328,18 @@
             "title": "Imported Modules",
             "type": "array"
           },
+          "platform": {
+            "default": "linux/amd64 (x86_64-unknown-linux-gnu)",
+            "title": "Platform",
+            "type": "string"
+          },
           "ref_world_hash": {
             "title": "Ref World Hash",
+            "type": "string"
+          },
+          "runtime": {
+            "default": "cpython 3.12.15",
+            "title": "Runtime",
             "type": "string"
           },
           "state": {
@@ -350,6 +360,11 @@
               }
             ],
             "title": "Verdict"
+          },
+          "visibility": {
+            "default": "flat site-packages: the importer sees the resolved version",
+            "title": "Visibility",
+            "type": "string"
           }
         },
         "required": [
@@ -987,6 +1002,103 @@
         "title": "FindingSummary",
         "type": "object"
       },
+      "GraphEdge": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "target": {
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "target",
+          "kind"
+        ],
+        "title": "GraphEdge",
+        "type": "object"
+      },
+      "GraphNode": {
+        "additionalProperties": false,
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "ecosystem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ecosystem"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "status": {
+            "default": "ok",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "label"
+        ],
+        "title": "GraphNode",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1097,6 +1209,36 @@
           "note"
         ],
         "title": "InventoryDep",
+        "type": "object"
+      },
+      "InventoryGraph": {
+        "additionalProperties": false,
+        "properties": {
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdge"
+            },
+            "title": "Edges",
+            "type": "array"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/GraphNode"
+            },
+            "title": "Nodes",
+            "type": "array"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "nodes",
+          "edges"
+        ],
+        "title": "InventoryGraph",
         "type": "object"
       },
       "Job": {
@@ -2060,6 +2202,70 @@
         "title": "ValidationError",
         "type": "object"
       },
+      "WhyPath": {
+        "additionalProperties": false,
+        "properties": {
+          "finding_id": {
+            "title": "Finding Id",
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/WhyStep"
+            },
+            "title": "Steps",
+            "type": "array"
+          },
+          "verdict": {
+            "title": "Verdict",
+            "type": "string"
+          }
+        },
+        "required": [
+          "finding_id",
+          "verdict",
+          "steps"
+        ],
+        "title": "WhyPath",
+        "type": "object"
+      },
+      "WhyStep": {
+        "additionalProperties": false,
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "items": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "status",
+          "title",
+          "detail"
+        ],
+        "title": "WhyStep",
+        "type": "object"
+      },
       "WitnessView": {
         "additionalProperties": false,
         "properties": {
@@ -2333,7 +2539,42 @@
     },
     "/api/findings": {
       "get": {
+        "description": "All findings, newest first. Optional filters: ?verdict=BREAK_WITNESSED&mode=LIVE.",
         "operationId": "list_findings_api_findings_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "verdict",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Verdict"
+            }
+          },
+          {
+            "in": "query",
+            "name": "mode",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Mode"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -2348,6 +2589,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "summary": "List Findings",
@@ -2395,6 +2646,107 @@
         "summary": "Get Finding",
         "tags": [
           "findings"
+        ]
+      }
+    },
+    "/api/findings/{finding_id}/remediate": {
+      "post": {
+        "description": "Propose and verify a constraint for the attributed cause. The result is a diff; nothing is pushed anywhere.",
+        "operationId": "remediate_finding_api_findings__finding_id__remediate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "finding_id",
+            "required": true,
+            "schema": {
+              "title": "Finding Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remediate Finding",
+        "tags": [
+          "analysis"
+        ]
+      }
+    },
+    "/api/findings/{finding_id}/why-path": {
+      "get": {
+        "operationId": "finding_why_path_api_findings__finding_id__why_path_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "finding_id",
+            "required": true,
+            "schema": {
+              "title": "Finding Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhyPath"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Finding Why Path",
+        "tags": [
+          "analysis"
         ]
       }
     },
@@ -2879,6 +3231,48 @@
         "summary": "Analyze Project",
         "tags": [
           "projects"
+        ]
+      }
+    },
+    "/api/projects/{project_id}/inventory": {
+      "get": {
+        "operationId": "project_inventory_api_projects__project_id__inventory_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryGraph"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Project Inventory",
+        "tags": [
+          "analysis"
         ]
       }
     },
@@ -3407,6 +3801,65 @@
         "summary": "Witness Bundle",
         "tags": [
           "findings"
+        ]
+      }
+    },
+    "/api/witnesses/{witness_id}/rerun": {
+      "post": {
+        "description": "Run the witness's oracle again (3 fresh runs per world). A live action: refused in REPLAY mode.",
+        "operationId": "rerun_api_witnesses__witness_id__rerun_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "witness_id",
+            "required": true,
+            "schema": {
+              "title": "Witness Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rerun",
+        "tags": [
+          "analysis"
         ]
       }
     }

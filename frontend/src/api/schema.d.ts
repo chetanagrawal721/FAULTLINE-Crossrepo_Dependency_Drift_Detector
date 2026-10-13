@@ -45,7 +45,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Findings */
+        /**
+         * List Findings
+         * @description All findings, newest first. Optional filters: ?verdict=BREAK_WITNESSED&mode=LIVE.
+         */
         get: operations["list_findings_api_findings_get"];
         put?: never;
         post?: never;
@@ -64,6 +67,43 @@ export interface paths {
         };
         /** Get Finding */
         get: operations["get_finding_api_findings__finding_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/findings/{finding_id}/remediate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remediate Finding
+         * @description Propose and verify a constraint for the attributed cause. The result is a diff; nothing is pushed anywhere.
+         */
+        post: operations["remediate_finding_api_findings__finding_id__remediate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/findings/{finding_id}/why-path": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Finding Why Path */
+        get: operations["finding_why_path_api_findings__finding_id__why_path_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -216,6 +256,23 @@ export interface paths {
          * @description Run the live cross-repository analysis over the repositories already ingested into this project.
          */
         post: operations["analyze_project_api_projects__project_id__analyze_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{project_id}/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Inventory */
+        get: operations["project_inventory_api_projects__project_id__inventory_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -407,6 +464,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/witnesses/{witness_id}/rerun": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rerun
+         * @description Run the witness's oracle again (3 fresh runs per world). A live action: refused in REPLAY mode.
+         */
+        post: operations["rerun_api_witnesses__witness_id__rerun_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -509,14 +586,29 @@ export interface components {
             id: string;
             /** Imported Modules */
             imported_modules: string[];
+            /**
+             * Platform
+             * @default linux/amd64 (x86_64-unknown-linux-gnu)
+             */
+            platform: string;
             /** Ref World Hash */
             ref_world_hash: string;
+            /**
+             * Runtime
+             * @default cpython 3.12.15
+             */
+            runtime: string;
             /** State */
             state: string;
             /** Test World Hash */
             test_world_hash: string;
             /** Verdict */
             verdict: string | null;
+            /**
+             * Visibility
+             * @default flat site-packages: the importer sees the resolved version
+             */
+            visibility: string;
         };
         /** DeclaredView */
         DeclaredView: {
@@ -702,6 +794,37 @@ export interface components {
             /** Witness Ids */
             witness_ids: string[];
         };
+        /** GraphEdge */
+        GraphEdge: {
+            /** Kind */
+            kind: string;
+            /** Label */
+            label?: string | null;
+            /** Level */
+            level?: string | null;
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+        };
+        /** GraphNode */
+        GraphNode: {
+            /** Detail */
+            detail?: string | null;
+            /** Ecosystem */
+            ecosystem?: string | null;
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /**
+             * Status
+             * @default ok
+             */
+            status: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -745,6 +868,15 @@ export interface components {
             version: string | null;
             /** Version Source */
             version_source: string;
+        };
+        /** InventoryGraph */
+        InventoryGraph: {
+            /** Edges */
+            edges: components["schemas"]["GraphEdge"][];
+            /** Nodes */
+            nodes: components["schemas"]["GraphNode"][];
+            /** Project Id */
+            project_id: string;
         };
         /** Job */
         Job: {
@@ -1050,6 +1182,31 @@ export interface components {
             /** Error Type */
             type: string;
         };
+        /** WhyPath */
+        WhyPath: {
+            /** Finding Id */
+            finding_id: string;
+            /** Steps */
+            steps: components["schemas"]["WhyStep"][];
+            /** Verdict */
+            verdict: string;
+        };
+        /** WhyStep */
+        WhyStep: {
+            /** Detail */
+            detail: string;
+            /**
+             * Items
+             * @default []
+             */
+            items: string[];
+            /** Kind */
+            kind: string;
+            /** Status */
+            status: string;
+            /** Title */
+            title: string;
+        };
         /** WitnessView */
         WitnessView: {
             /** Divergence */
@@ -1178,7 +1335,10 @@ export interface operations {
     };
     list_findings_api_findings_get: {
         parameters: {
-            query?: never;
+            query?: {
+                verdict?: string | null;
+                mode?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1192,6 +1352,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FindingSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1214,6 +1383,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FindingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remediate_finding_api_findings__finding_id__remediate_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Job"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    finding_why_path_api_findings__finding_id__why_path_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WhyPath"];
                 };
             };
             /** @description Validation Error */
@@ -1538,6 +1771,37 @@ export interface operations {
             };
         };
     };
+    project_inventory_api_projects__project_id__inventory_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryGraph"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     add_repository_api_projects__project_id__repositories_post: {
         parameters: {
             query?: never;
@@ -1840,6 +2104,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rerun_api_witnesses__witness_id__rerun_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                witness_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Job"];
                 };
             };
             /** @description Validation Error */

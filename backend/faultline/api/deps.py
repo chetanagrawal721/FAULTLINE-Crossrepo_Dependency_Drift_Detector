@@ -4,7 +4,8 @@ from collections.abc import Iterator
 from fastapi import Header, Request
 
 from ..core.config import Settings
-from ..core.errors import UnauthorizedError
+from ..core.enums import Mode
+from ..core.errors import InvalidTransitionError, UnauthorizedError
 from ..storage.db import connect
 
 
@@ -23,7 +24,9 @@ def get_conn(request: Request) -> Iterator:
 
 
 def require_token(request: Request, authorization: str | None = Header(default=None)) -> None:
-    """Mutating endpoints need the admin token when one is configured."""
+    """Mutating endpoints need the admin token when one is configured, and are refused in REPLAY mode (recorded evidence only)."""
+    if request.app.state.settings.mode == Mode.REPLAY:
+        raise InvalidTransitionError("REPLAY mode shows recorded evidence only: nothing can be started or re-run")
     token = request.app.state.settings.admin_token
     if token is None:
         return

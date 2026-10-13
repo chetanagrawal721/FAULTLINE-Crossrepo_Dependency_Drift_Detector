@@ -5,6 +5,8 @@ import { FindingDetailView } from "./components/FindingDetail";
 import { FindingsList } from "./components/FindingsList";
 import { ModeBadge } from "./components/ModeBadge";
 import { Dashboard } from "./pages/Dashboard";
+import { Findings } from "./pages/Findings";
+import { Inventory } from "./pages/Inventory";
 import { RepositoriesPanel } from "./components/RepositoriesPanel";
 import { WorldInspector } from "./pages/WorldInspector";
 import { ScenarioPanel } from "./components/ScenarioPanel";
@@ -46,6 +48,7 @@ export default function App() {
     };
   }, [loadFindings]);
 
+  const page = route.startsWith("#/findings") ? "findings" : route.startsWith("#/inventory") ? "inventory" : "home";
   const repoId = route.startsWith("#/repo/") ? route.slice("#/repo/".length) : null;
   const findingId = route.startsWith("#/finding/") ? route.slice("#/finding/".length) : null;
 
@@ -70,6 +73,14 @@ export default function App() {
         </div>
       </header>
 
+      <nav className="row" aria-label="Views" data-testid="nav">
+        {[["#/", "Dashboard", "home"], ["#/findings", "Findings", "findings"], ["#/inventory", "Inventory graph", "inventory"]].map(([href, label, id]) => (
+          <a key={id} href={href} className={page === id && !repoId && !findingId ? "btn" : "plain"} aria-current={page === id ? "page" : undefined}>
+            {label}
+          </a>
+        ))}
+      </nav>
+
       {error && (
         <div className="panel error" role="alert">
           Could not reach the API: {error}
@@ -79,11 +90,15 @@ export default function App() {
       {repoId ? (
         <WorldInspector key={repoId} repositoryId={repoId} />
       ) : findingId ? (
-        <FindingDetailView id={findingId} />
+        <FindingDetailView id={findingId} replay={caps?.mode === "REPLAY"} />
+      ) : page === "findings" ? (
+        <Findings />
+      ) : page === "inventory" ? (
+        <Inventory />
       ) : (
         <>
-          <RepositoriesPanel />
-          <Dashboard />
+          <RepositoriesPanel replay={caps?.mode === "REPLAY"} />
+          <Dashboard replay={caps?.mode === "REPLAY"} />
           <ScenarioPanel onFinished={loadFindings} />
           <FindingsList findings={findings} />
           {caps ? <CapabilityBanner caps={caps} /> : !error && <p className="muted">Loading capabilities…</p>}

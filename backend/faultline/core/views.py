@@ -289,6 +289,9 @@ class CellView(View):
     verdict: str | None
     headline: str | None
     attribution: AttributionView | None = None
+    runtime: str = "cpython 3.12.15"
+    platform: str = "linux/amd64 (x86_64-unknown-linux-gnu)"
+    visibility: str = "flat site-packages: the importer sees the resolved version"
 
 
 class FailedConsumer(View):
@@ -310,3 +313,42 @@ class AnalysisView(View):
     failed: list[FailedConsumer]
     relationships: list[RelationshipView]
     cells: list[CellView]
+
+
+# ---- why-path and inventory graph (M5.6) ------------------------------------------------------------------
+
+class WhyStep(View):
+    kind: str                         # relationship | delta | oracle | verdict | attribution
+    status: str                       # analysed | not_analysed
+    title: str
+    detail: str
+    items: list[str] = []
+
+
+class WhyPath(View):
+    finding_id: str
+    verdict: str
+    steps: list[WhyStep]
+
+
+class GraphNode(View):
+    id: str
+    kind: str                         # repository | project | manifest | package
+    label: str
+    ecosystem: str | None = None
+    status: str = "ok"                # ok | unsupported | failed
+    detail: str | None = None
+
+
+class GraphEdge(View):
+    source: str
+    target: str
+    kind: str                         # contains | declares | consumes | suspected
+    label: str | None = None
+    level: str | None = None          # relationship evidence level for consumes edges
+
+
+class InventoryGraph(View):
+    project_id: str
+    nodes: list[GraphNode]
+    edges: list[GraphEdge]

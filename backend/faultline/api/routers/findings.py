@@ -29,6 +29,7 @@ def list_scenarios() -> list[ScenarioInfo]:
     for f in sorted(_scenario_dir().glob("*.yaml")):
         sc = load_scenario(f)
         cells = {c.consumer: c for c in sc.expect.cells}
+        sc.consumers = [c for c in sc.consumers if c.repo in cells]
         out.append(ScenarioInfo(
             id=sc.id, title=sc.title, kind=sc.kind, artifact=sc.artifact.repo,
             consumers=[ScenarioConsumer(repo=c.repo, expected_state=cells[c.repo].state,
@@ -47,8 +48,9 @@ def run_scenario(scenario_id: str, conn=Depends(get_conn)) -> Job:
 
 
 @router.get("/findings", response_model=list[FindingSummary])
-def list_findings(conn=Depends(get_conn)) -> list[FindingSummary]:
-    return finding_store.list_findings(conn)
+def list_findings(verdict: str | None = None, mode: str | None = None, conn=Depends(get_conn)) -> list[FindingSummary]:
+    """All findings, newest first. Optional filters: ?verdict=BREAK_WITNESSED&mode=LIVE."""
+    return [f for f in finding_store.list_findings(conn) if (not verdict or f.verdict == verdict) and (not mode or f.mode == mode)]
 
 
 @router.get("/findings/{finding_id}", response_model=FindingDetail)
@@ -64,6 +66,12 @@ def witness_bundle(witness_id: str, conn=Depends(get_conn), settings: Settings =
                        (witness_id,)).fetchone()
     if row is None:
         raise NotFoundError(f"witness {witness_id} not found")
+    if settings.mode.value == "REPLAY":                          # recorded evidence: serve the pre-built, pre-verified bundle only
+        pre = Path(settings.store_path) / "bundles" / f"{witness_id}.zip"
+        if not pre.is_file():
+            raise NotFoundError(f"no recorded bundle for witness {witness_id}")
+        return Response(content=pre.read_bytes(), media_type="application/zip",
+                        headers={"Content-Disposition": f'attachment; filename="faultline-evidence-{witness_id}.zip"'})
     with tempfile.TemporaryDirectory() as d:
         path = Path(d) / "bundle.zip"
         write_bundle(conn, witness_id, path, Store(settings.store_path), mode=row["mode"])

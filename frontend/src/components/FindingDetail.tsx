@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { api, type FindingDetail as Detail } from "../api/client";
 import { VerdictChip } from "./VerdictChip";
+import { FixPanel, RerunPanel } from "./ActionPanels";
+import { WhyPathPanel } from "./WhyPathPanel";
 
 const short = (h: string) => `${h.slice(0, 12)}…`;
 
@@ -93,7 +95,7 @@ function Evidence({ d }: { d: Detail }) {
   );
 }
 
-export function FindingDetailView({ id }: { id: string }) {
+export function FindingDetailView({ id, replay = false }: { id: string; replay?: boolean }) {
   const [d, setD] = useState<Detail | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -108,7 +110,7 @@ export function FindingDetailView({ id }: { id: string }) {
   return (
     <div className="stack" data-testid="finding-detail">
       <p>
-        <a href="#/">← All findings</a>
+        <a href="#/findings">← All findings</a>
       </p>
       <section className="panel">
         <div className="row">
@@ -122,6 +124,10 @@ export function FindingDetailView({ id }: { id: string }) {
           {d.headline}
         </p>
       </section>
+
+      <WhyPathPanel findingId={id} />
+      {d.witnesses[0] && <RerunPanel witnessId={d.witnesses[0].witness_id} replay={replay} />}
+      {d.verdict === "BREAK_WITNESSED" && d.mode !== "FIXTURE" && <FixPanel findingId={id} replay={replay} />}
 
       <section className="panel" data-testid="worlds">
         <h2>What was compared</h2>

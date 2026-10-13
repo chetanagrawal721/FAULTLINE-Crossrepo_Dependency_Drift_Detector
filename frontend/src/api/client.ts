@@ -19,6 +19,8 @@ export type PackageView = components["schemas"]["PackageView"];
 export type AnalysisView = components["schemas"]["AnalysisView"];
 export type CellView = components["schemas"]["CellView"];
 export type RelationshipView = components["schemas"]["RelationshipView"];
+export type InventoryGraph = components["schemas"]["InventoryGraph"];
+export type WhyPath = components["schemas"]["WhyPath"];
 export type FileView = components["schemas"]["FileView"];
 
 /** An API failure that keeps the machine-readable code, so the UI can show distinct states. */
@@ -60,7 +62,9 @@ export const api = {
   scenarios: () => request<ScenarioInfo[]>("/api/scenarios"),
   runScenario: (id: string) => request<Job>(`/api/scenarios/${encodeURIComponent(id)}/run`, { method: "POST" }),
   job: (id: string) => request<Job>(`/api/jobs/${encodeURIComponent(id)}`),
-  findings: () => request<FindingSummary[]>("/api/findings"),
+  findings: (verdict?: string) => request<FindingSummary[]>(`/api/findings${verdict ? `?verdict=${encodeURIComponent(verdict)}` : ""}`),
+  inventory: (id: string) => request<InventoryGraph>(`/api/projects/${encodeURIComponent(id)}/inventory`),
+  whyPath: (id: string) => request<WhyPath>(`/api/findings/${encodeURIComponent(id)}/why-path`),
   finding: (id: string) => request<FindingDetail>(`/api/findings/${encodeURIComponent(id)}`),
   projects: () => request<ProjectView[]>("/api/projects?mode=LIVE"),
   createProject: (name: string) =>
@@ -79,5 +83,7 @@ export const api = {
   repositoryProjects: (id: string) => request<ProjectDetail[]>(`/api/repositories/${encodeURIComponent(id)}/projects`),
   analyzeProject: (id: string) => request<Job>(`/api/projects/${encodeURIComponent(id)}/analyze`, { method: "POST" }),
   projectAnalysis: (id: string) => request<AnalysisView>(`/api/projects/${encodeURIComponent(id)}/analysis`),
+  rerunWitness: (id: string) => request<Job>(`/api/witnesses/${encodeURIComponent(id)}/rerun`, { method: "POST" }),
+  remediateFinding: (id: string) => request<Job>(`/api/findings/${encodeURIComponent(id)}/remediate`, { method: "POST" }),
   bundleUrl: (witnessId: string) => `/api/witnesses/${encodeURIComponent(witnessId)}/bundle`,
 };

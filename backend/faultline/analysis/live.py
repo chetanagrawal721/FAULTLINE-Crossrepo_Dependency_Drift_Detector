@@ -138,36 +138,43 @@ def run_live_analysis(conn: sqlite3.Connection, sbx: SandboxClient, image: str, 
             out_cells.append({"cell_id": cell_id, "state": "NO_DRIFT", "finding_id": None, "consumers": [c for c, _ in plan.consumers]})
             continue
 
-        art_dir = Path(prod_root) / layout["rel_path"] if layout["rel_path"] != "." else Path(prod_root)
-        artifact = prepare_artifact(art_dir, store)
-        conn.execute("UPDATE project SET artifact_content_hash=? WHERE id=?", (artifact, plan.producer_project_id))
-        pyroot = Path(src_root).relative_to(layout["rel_path"]).as_posix() if layout["rel_path"] != "." and src_root.startswith(layout["rel_path"]) else src_root
-        pythonpath = "/artifact" if pyroot in (".", "") else f"/artifact/{pyroot}"
-        modules = plan_modules(pkg, sorted({m for ms in imported.values() for m in ms if m != pkg}))
-        env_id = builder.env_profile_id if hasattr(builder, "env_profile_id") else _env_id(builder)
-        cell = FixtureCell(aid, cell_id, plan.producer_project_id, plan.reference.world_hash, test_hash, artifact, env_id)
-        say(base + 0.05 / n, f"running O-import (3 + 3 fresh runs) on {', '.join(modules)}")
-
-        def run(world_hash: str, modules=modules, artifact=artifact, pkg=pkg, pythonpath=pythonpath):
-            return retrying(lambda: run_o_import(sbx, image, world_hash=world_hash, artifact_hash=artifact, top_level=pkg,
-                                                 modules=modules, pythonpath=(pythonpath,)))()
-
-        v = verify_cell(conn, cell, oracle=ORACLE, version=ORACLE_VERSION, run_in_world=run, args={"modules": modules, "pythonpath": pythonpath}, force=True)
-        has_tests = any(e["path"].startswith(("tests/", "test/")) for e in prod_inv["entries"])
-        for dec in v.witnesses:
-            if dec.witness_id and dec.signature is not None:
-                say(base + 0.1 / n, f"attributing the break in {dec.entry} (two-sided search)")
-                a = attribute(sbx, image, builder, artifact_hash=artifact, entry=dec.entry, top_level=pkg, pythonpath=pythonpath, signature=dec.signature,
-                              ref=list(plan.reference.pinned), consumer=list(plan.projection.pinned), delta=[d.name for d in plan.projection.delta])
-                persist(conn, dec.witness_id, a)
-        steps = planner.after_import(planner.plan(pkg, modules, has_tests=has_tests, test_lock=False), pkg, v)
-        fid = write_live_finding(conn, aid, cell, v, layout, plan, steps, rels)
-        state = "ANALYZED" if v.decisions else "INCONCLUSIVE"
-        conn.execute("UPDATE cell SET state=? WHERE id=?", (state, cell_id))
+        fid, state = execute_cell(conn, sbx, image, store, builder, aid, cell_id, plan, layout, pkg, imported, test_hash, rels, say, base, n,
+                                  prod_root=prod_root, prod_inv=prod_inv, src_root=src_root)
         out_cells.append({"cell_id": cell_id, "state": state, "finding_id": fid, "consumers": [c for c, _ in plan.consumers]})
     conn.execute("UPDATE analysis SET status='DONE', finished_at=?, stats_json=? WHERE id=?",
                  (_now(), json.dumps({"failed_consumers": failed}, sort_keys=True), aid))
     return LiveResult(aid, out_cells, funnel(conn, aid))
+
+
+def execute_cell(conn, sbx, image, store, builder, aid, cell_id, plan, layout, pkg, imported, test_hash, rels, say, base, n, *, prod_root, prod_inv, src_root):
+    """Run the oracle 3 + 3 times on one cell, attribute any witness, and write the finding. Returns (finding_id, cell_state)."""
+    art_dir = Path(prod_root) / layout["rel_path"] if layout["rel_path"] != "." else Path(prod_root)
+    artifact = prepare_artifact(art_dir, store)
+    conn.execute("UPDATE project SET artifact_content_hash=? WHERE id=?", (artifact, plan.producer_project_id))
+    pyroot = Path(src_root).relative_to(layout["rel_path"]).as_posix() if layout["rel_path"] != "." and src_root.startswith(layout["rel_path"]) else src_root
+    pythonpath = "/artifact" if pyroot in (".", "") else f"/artifact/{pyroot}"
+    modules = plan_modules(pkg, sorted({m for ms in imported.values() for m in ms if m != pkg}))
+    env_id = builder.env_profile_id if hasattr(builder, "env_profile_id") else _env_id(builder)
+    cell = FixtureCell(aid, cell_id, plan.producer_project_id, plan.reference.world_hash, test_hash, artifact, env_id)
+    say(base + 0.05 / n, f"running O-import (3 + 3 fresh runs) on {', '.join(modules)}")
+
+    def run(world_hash: str, modules=modules, artifact=artifact, pkg=pkg, pythonpath=pythonpath):
+        return retrying(lambda: run_o_import(sbx, image, world_hash=world_hash, artifact_hash=artifact, top_level=pkg,
+                                             modules=modules, pythonpath=(pythonpath,)))()
+
+    v = verify_cell(conn, cell, oracle=ORACLE, version=ORACLE_VERSION, run_in_world=run, args={"modules": modules, "pythonpath": pythonpath}, force=True)
+    has_tests = any(e["path"].startswith(("tests/", "test/")) for e in prod_inv["entries"])
+    for dec in v.witnesses:
+        if dec.witness_id and dec.signature is not None:
+            say(base + 0.1 / n, f"attributing the break in {dec.entry} (two-sided search)")
+            a = attribute(sbx, image, builder, artifact_hash=artifact, entry=dec.entry, top_level=pkg, pythonpath=pythonpath, signature=dec.signature,
+                          ref=list(plan.reference.pinned), consumer=list(plan.projection.pinned), delta=[d.name for d in plan.projection.delta])
+            persist(conn, dec.witness_id, a)
+    steps = planner.after_import(planner.plan(pkg, modules, has_tests=has_tests, test_lock=False), pkg, v)
+    fid = write_live_finding(conn, aid, cell, v, layout, plan, steps, rels)
+    state = "ANALYZED" if v.decisions else "INCONCLUSIVE"
+    conn.execute("UPDATE cell SET state=? WHERE id=?", (state, cell_id))
+    return fid, state
 
 
 def _with_hash(ref, world_hash: str):
@@ -186,7 +193,7 @@ def write_live_finding(conn: sqlite3.Connection, analysis_id: str, cell: Fixture
                               "WHERE p.id=?", (c,)).fetchone() for c, _ in plan.consumers]
     names = [f"{c['owner']}/{c['name']}" for c in consumers]
     rel_levels = {r.consumer_project_id: r.level for r in rels if r.producer_project_id == plan.producer_project_id}
-    level = "L2" if all(rel_levels.get(c) == "L2" for c, _ in plan.consumers) else "L1"
+    level = "L2" if all(rel_levels.get(c) in ("L2", "L3", "L4", "L5") for c, _ in plan.consumers) else "L1"
     out = decide(Evidence(relationship_level=level, cell_state="PENDING", decisions=tuple(v.decisions), run_problem=v.problem))
     artifact = layout["name"] or layout["rel_path"]
     kw = {"artifact": artifact, "consumers": names, "exercised": out.exercised, "reasons": out.reasons}

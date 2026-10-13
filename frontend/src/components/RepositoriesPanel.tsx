@@ -148,7 +148,7 @@ function RepoCard({ repo, onRetry }: { repo: RepositoryView; onRetry: (id: strin
 }
 
 /** Submit a public GitHub repository. Faultline pins it to one commit and records what is in it. Nothing is executed. */
-export function RepositoriesPanel() {
+export function RepositoriesPanel({ replay = false }: { replay?: boolean }) {
   const [repos, setRepos] = useState<RepositoryView[]>([]);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [url, setUrl] = useState("");
@@ -222,7 +222,7 @@ export function RepositoriesPanel() {
           size={42}
         />
         <input type="text" value={ref} onChange={(e) => setRef(e.target.value)} placeholder="branch, tag or SHA (optional)" aria-label="Ref" size={26} />
-        <button className="btn" type="submit" disabled={busy || !url.trim()}>
+        <button className="btn" type="submit" disabled={replay || busy || !url.trim()} title={replay ? "Recorded results: nothing can be started" : ""}>
           {busy ? "Resolving…" : "Add repository"}
         </button>
       </form>
