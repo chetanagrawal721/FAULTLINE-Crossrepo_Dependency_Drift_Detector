@@ -192,3 +192,15 @@ def test_a_computed_version_does_not_make_a_setup_py_partial_but_computed_depend
     assert any(d.code == "NON_LITERAL_ARGUMENT" and "version" in d.message for d in ok.diagnostics)         # still reported, not hidden
     bad = parse_setup_py(snap(tmp_path / "b", {"setup.py": "from setuptools import setup\nsetup(name='x', install_requires=f())\n"}), "setup.py")
     assert bad.status == "PARTIAL"
+
+
+def test_artifact_roots_include_dependencies_declared_in_setup_py():
+    import json
+    import sqlite3
+
+    from faultline.worlds.cells import artifact_roots
+    c = sqlite3.connect(":memory:")
+    c.row_factory = sqlite3.Row
+    c.execute("CREATE TABLE manifest(project_id TEXT, kind TEXT, parsed_json TEXT)")
+    c.execute("INSERT INTO manifest VALUES ('p', 'setup_py', ?)", (json.dumps({"dependencies": [{"name": "requests", "group": "main", "extras": []}]}),))
+    assert artifact_roots(c, "p", frozenset()) == [("requests", frozenset())]
