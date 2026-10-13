@@ -1,0 +1,22 @@
+# Scenario A: no drift. Negative control: every consumer resolves exactly the reference world.
+id: A
+title: No drift (control)
+verified_by: D
+artifact:
+  repo: acme-models
+  path: fixtures/repos/acme-models
+  import_package: acme_models
+consumers:
+  - repo: orders-svc
+    path: fixtures/repos/orders-svc/A
+    imports: [acme_models.customer]
+expect:
+  relationships:
+    - {producer: acme-models, consumer: orders-svc, level: L2}
+  cells:
+    - consumer: orders-svc
+      state: NO_DRIFT
+      witness: false
+      control:
+        kind: no_drift
+        reason: The consumer lock file is identical to the artifact's reference lock.

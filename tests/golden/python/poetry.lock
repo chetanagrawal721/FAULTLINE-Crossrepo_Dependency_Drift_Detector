@@ -1,0 +1,29 @@
+[[package]]
+name = "Flask"
+version = "2.2.2"
+description = "x"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "Flask-2.2.2-py3-none-any.whl", hash = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    {file = "Flask-2.2.2.tar.gz", hash = "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+]
+
+[package.dependencies]
+Werkzeug = ">=2.2.2"
+
+[[package]]
+name = "werkzeug"
+version = "2.2.2"
+python-versions = ">=3.7"
+files = [{file = "Werkzeug-2.2.2-py3-none-any.whl", hash = "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}]
+
+[package.source]
+type = "legacy"
+url = "https://pypi.internal.example/simple"
+reference = "internal"
+
+[metadata]
+lock-version = "2.0"
+python-versions = "^3.10"
+content-hash = "abc"

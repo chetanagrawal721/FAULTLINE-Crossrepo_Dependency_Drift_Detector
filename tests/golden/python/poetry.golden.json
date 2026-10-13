@@ -1,0 +1,134 @@
+{
+  "constraints": [],
+  "dependencies": [
+    {
+      "display": "requests",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "registry",
+      "line": 7,
+      "marker": null,
+      "name": "requests",
+      "origin": "poetry.toml",
+      "source_ref": null,
+      "specifier": ">=2.31.0,<3"
+    },
+    {
+      "display": "flask",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "registry",
+      "line": 8,
+      "marker": null,
+      "name": "flask",
+      "origin": "poetry.toml",
+      "source_ref": null,
+      "specifier": ">=2.2,<2.3"
+    },
+    {
+      "display": "numpy",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "registry",
+      "line": 9,
+      "marker": "python_version >= '3.9'",
+      "name": "numpy",
+      "origin": "poetry.toml",
+      "source_ref": null,
+      "specifier": ">=1.24,<2"
+    },
+    {
+      "display": "pendulum",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "vcs",
+      "line": 10,
+      "marker": null,
+      "name": "pendulum",
+      "origin": "poetry.toml",
+      "source_ref": "git+https://github.com/sdispater/pendulum.git@3.0.0",
+      "specifier": ""
+    },
+    {
+      "display": "uvicorn",
+      "extras": [
+        "standard"
+      ],
+      "group": "optional:uvicorn",
+      "hashes": [],
+      "kind": "registry",
+      "line": 11,
+      "marker": null,
+      "name": "uvicorn",
+      "origin": "poetry.toml",
+      "source_ref": null,
+      "specifier": ">=0.30,<0.31"
+    },
+    {
+      "display": "tomli",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "registry",
+      "line": 12,
+      "marker": "python_version < '3.11'",
+      "name": "tomli",
+      "origin": "poetry.toml",
+      "source_ref": null,
+      "specifier": ">=2.0,<3"
+    },
+    {
+      "display": "tomli",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "registry",
+      "line": 12,
+      "marker": "python_version >= '3.11'",
+      "name": "tomli",
+      "origin": "poetry.toml",
+      "source_ref": null,
+      "specifier": ">=1.0,<2"
+    },
+    {
+      "display": "pytest",
+      "extras": [],
+      "group": "group:dev",
+      "hashes": [],
+      "kind": "registry",
+      "line": 15,
+      "marker": null,
+      "name": "pytest",
+      "origin": "poetry.toml",
+      "source_ref": null,
+      "specifier": ">=8.0,<9"
+    }
+  ],
+  "diagnostics": [],
+  "kind": "pyproject",
+  "meta": {
+    "build_backend": null,
+    "build_requires": [],
+    "index_urls": [
+      {
+        "name": "internal",
+        "priority": "supplemental",
+        "url": "https://pypi.internal.example/simple"
+      }
+    ],
+    "name": "poetry-app",
+    "name_line": 2,
+    "poetry": true,
+    "requires_python": ">=3.10,<4",
+    "tool": [
+      "poetry"
+    ],
+    "version": "0.3.0"
+  },
+  "path": "poetry.toml",
+  "status": "OK"
+}

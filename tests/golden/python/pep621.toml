@@ -1,0 +1,20 @@
+[project]
+name = "Acme_Service"
+version = "1.4.0"
+requires-python = ">=3.10"
+dependencies = [
+  "flask>=2.2",
+  "acme-models @ git+https://github.com/acme/models.git@v2",
+  "tomli; python_version < '3.11'",
+]
+
+[project.optional-dependencies]
+yaml = ["pyyaml>=6"]
+
+[dependency-groups]
+test = ["pytest>=8"]
+dev = [{ include-group = "test" }, "ruff"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

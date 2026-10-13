@@ -1,0 +1,413 @@
+{
+  "verified_at": "2026-10-12T19:34:19Z",
+  "python": "3.12",
+  "platform": "win32",
+  "results": [
+    {
+      "id": "D",
+      "title": "Transitive world drift: Flask 2.2.2 imports werkzeug.urls.url_quote, removed in Werkzeug 3",
+      "verified": true,
+      "ref_ok": true,
+      "test_ok": true,
+      "ref_pins": [
+        "flask==2.2.2",
+        "werkzeug==2.2.3"
+      ],
+      "test_pins": [
+        "flask==2.2.2",
+        "werkzeug==3.0.6"
+      ],
+      "ref_freeze": [
+        "click==8.5.0",
+        "flask==2.2.2",
+        "itsdangerous==2.2.0",
+        "jinja2==3.1.6",
+        "markupsafe==3.0.4",
+        "werkzeug==2.2.3"
+      ],
+      "test_freeze": [
+        "click==8.5.0",
+        "flask==2.2.2",
+        "itsdangerous==2.2.0",
+        "jinja2==3.1.6",
+        "markupsafe==3.0.4",
+        "werkzeug==3.0.6"
+      ],
+      "expected": {
+        "ref_expect": "ok 2.2.2",
+        "test_expect_error": "cannot import name 'url_quote' from 'werkzeug.urls'"
+      },
+      "ref_runs": [
+        {
+          "exit": 0,
+          "stdout": "ok 2.2.2",
+          "last_line": "ok 2.2.2",
+          "text": "ok 2.2.2"
+        },
+        {
+          "exit": 0,
+          "stdout": "ok 2.2.2",
+          "last_line": "ok 2.2.2",
+          "text": "ok 2.2.2"
+        },
+        {
+          "exit": 0,
+          "stdout": "ok 2.2.2",
+          "last_line": "ok 2.2.2",
+          "text": "ok 2.2.2"
+        }
+      ],
+      "test_runs": [
+        {
+          "exit": 1,
+          "stdout": "",
+          "last_line": "ImportError: cannot import name 'url_quote' from 'werkzeug.urls' (C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\D-test\\Lib\\site-packages\\werkzeug\\urls.py). Did you mean: 'unquote'?",
+          "text": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\D-test\\Lib\\site-packages\\flask\\__init__.py\", line 5, in <module>\n    from .app import Flask as Flask\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\D-test\\Lib\\site-packages\\flask\\app.py\", line 30, in <module>\n    from werkzeug.urls import url_quote\nImportError: cannot import name 'url_quote' from 'werkzeug.urls' (C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\D-test\\Lib\\site-packages\\werkzeug\\urls.py). Did you mean: 'unquote'?"
+        },
+        {
+          "exit": 1,
+          "stdout": "",
+          "last_line": "ImportError: cannot import name 'url_quote' from 'werkzeug.urls' (C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\D-test\\Lib\\site-packages\\werkzeug\\urls.py). Did you mean: 'unquote'?",
+          "text": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\D-test\\Lib\\site-packages\\flask\\__init__.py\", line 5, in <module>\n    from .app import Flask as Flask\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\D-test\\Lib\\site-packages\\flask\\app.py\", line 30, in <module>\n    from werkzeug.urls import url_quote\nImportError: cannot import name 'url_quote' from 'werkzeug.urls' (C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\D-test\\Lib\\site-packages\\werkzeug\\urls.py). Did you mean: 'unquote'?"
+        },
+        {
+          "exit": 1,
+          "stdout": "",
+          "last_line": "ImportError: cannot import name 'url_quote' from 'werkzeug.urls' (C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\D-test\\Lib\\site-packages\\werkzeug\\urls.py). Did you mean: 'unquote'?",
+          "text": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\D-test\\Lib\\site-packages\\flask\\__init__.py\", line 5, in <module>\n    from .app import Flask as Flask\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\D-test\\Lib\\site-packages\\flask\\app.py\", line 30, in <module>\n    from werkzeug.urls import url_quote\nImportError: cannot import name 'url_quote' from 'werkzeug.urls' (C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\D-test\\Lib\\site-packages\\werkzeug\\urls.py). Did you mean: 'unquote'?"
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "title": "API removed: pydantic.BaseSettings moved out of pydantic in v2",
+      "verified": true,
+      "ref_ok": true,
+      "test_ok": true,
+      "ref_pins": [
+        "pydantic==1.10.13"
+      ],
+      "test_pins": [
+        "pydantic==2.7.4"
+      ],
+      "ref_freeze": [
+        "pydantic==1.10.13",
+        "typing-extensions==4.16.0"
+      ],
+      "test_freeze": [
+        "annotated-types==0.8.0",
+        "pydantic==2.7.4",
+        "pydantic-core==2.18.4",
+        "typing-extensions==4.16.0"
+      ],
+      "expected": {
+        "ref_expect": "ok",
+        "test_expect_error": "BaseSettings` has been moved to the `pydantic-settings` package"
+      },
+      "ref_runs": [
+        {
+          "exit": 0,
+          "stdout": "ok",
+          "last_line": "ok",
+          "text": "ok"
+        },
+        {
+          "exit": 0,
+          "stdout": "ok",
+          "last_line": "ok",
+          "text": "ok"
+        },
+        {
+          "exit": 0,
+          "stdout": "ok",
+          "last_line": "ok",
+          "text": "ok"
+        }
+      ],
+      "test_runs": [
+        {
+          "exit": 1,
+          "stdout": "",
+          "last_line": "For further information visit https://errors.pydantic.dev/2.7/u/import-error",
+          "text": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\B-test\\Lib\\site-packages\\pydantic\\__init__.py\", line 386, in __getattr__\n    return _getattr_migration(attr_name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\B-test\\Lib\\site-packages\\pydantic\\_migration.py\", line 296, in wrapper\n    raise PydanticImportError(\npydantic.errors.PydanticImportError: `BaseSettings` has been moved to the `pydantic-settings` package. See https://docs.pydantic.dev/2.7/migration/#basesettings-has-moved-to-pydantic-settings for more details.\n\nFor further information visit https://errors.pydantic.dev/2.7/u/import-error"
+        },
+        {
+          "exit": 1,
+          "stdout": "",
+          "last_line": "For further information visit https://errors.pydantic.dev/2.7/u/import-error",
+          "text": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\B-test\\Lib\\site-packages\\pydantic\\__init__.py\", line 386, in __getattr__\n    return _getattr_migration(attr_name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\B-test\\Lib\\site-packages\\pydantic\\_migration.py\", line 296, in wrapper\n    raise PydanticImportError(\npydantic.errors.PydanticImportError: `BaseSettings` has been moved to the `pydantic-settings` package. See https://docs.pydantic.dev/2.7/migration/#basesettings-has-moved-to-pydantic-settings for more details.\n\nFor further information visit https://errors.pydantic.dev/2.7/u/import-error"
+        },
+        {
+          "exit": 1,
+          "stdout": "",
+          "last_line": "For further information visit https://errors.pydantic.dev/2.7/u/import-error",
+          "text": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\B-test\\Lib\\site-packages\\pydantic\\__init__.py\", line 386, in __getattr__\n    return _getattr_migration(attr_name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\B-test\\Lib\\site-packages\\pydantic\\_migration.py\", line 296, in wrapper\n    raise PydanticImportError(\npydantic.errors.PydanticImportError: `BaseSettings` has been moved to the `pydantic-settings` package. See https://docs.pydantic.dev/2.7/migration/#basesettings-has-moved-to-pydantic-settings for more details.\n\nFor further information visit https://errors.pydantic.dev/2.7/u/import-error"
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "title": "Signature changed: urllib3 2.x removed Retry(method_whitelist=...)",
+      "verified": true,
+      "ref_ok": true,
+      "test_ok": true,
+      "ref_pins": [
+        "urllib3==1.26.18"
+      ],
+      "test_pins": [
+        "urllib3==2.0.7"
+      ],
+      "ref_freeze": [
+        "urllib3==1.26.18"
+      ],
+      "test_freeze": [
+        "urllib3==2.0.7"
+      ],
+      "expected": {
+        "ref_expect": "ok",
+        "test_expect_error": "unexpected keyword argument 'method_whitelist'"
+      },
+      "ref_runs": [
+        {
+          "exit": 0,
+          "stdout": "ok",
+          "last_line": "ok",
+          "text": "ok"
+        },
+        {
+          "exit": 0,
+          "stdout": "ok",
+          "last_line": "ok",
+          "text": "ok"
+        },
+        {
+          "exit": 0,
+          "stdout": "ok",
+          "last_line": "ok",
+          "text": "ok"
+        }
+      ],
+      "test_runs": [
+        {
+          "exit": 1,
+          "stdout": "",
+          "last_line": "TypeError: Retry.__init__() got an unexpected keyword argument 'method_whitelist'",
+          "text": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nTypeError: Retry.__init__() got an unexpected keyword argument 'method_whitelist'"
+        },
+        {
+          "exit": 1,
+          "stdout": "",
+          "last_line": "TypeError: Retry.__init__() got an unexpected keyword argument 'method_whitelist'",
+          "text": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nTypeError: Retry.__init__() got an unexpected keyword argument 'method_whitelist'"
+        },
+        {
+          "exit": 1,
+          "stdout": "",
+          "last_line": "TypeError: Retry.__init__() got an unexpected keyword argument 'method_whitelist'",
+          "text": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nTypeError: Retry.__init__() got an unexpected keyword argument 'method_whitelist'"
+        }
+      ]
+    },
+    {
+      "id": "H",
+      "title": "Harmless drift: pydantic .dict() still works in v2 (deprecated, warns)",
+      "verified": true,
+      "ref_ok": true,
+      "test_ok": true,
+      "ref_pins": [
+        "pydantic==1.10.13"
+      ],
+      "test_pins": [
+        "pydantic==2.7.4"
+      ],
+      "ref_freeze": [
+        "pydantic==1.10.13",
+        "typing-extensions==4.16.0"
+      ],
+      "test_freeze": [
+        "annotated-types==0.8.0",
+        "pydantic==2.7.4",
+        "pydantic-core==2.18.4",
+        "typing-extensions==4.16.0"
+      ],
+      "expected": {
+        "ref_expect": "{'a': 1}",
+        "test_expect_ok": "{'a': 1}"
+      },
+      "ref_runs": [
+        {
+          "exit": 0,
+          "stdout": "{'a': 1}",
+          "last_line": "{'a': 1}",
+          "text": "{'a': 1}"
+        },
+        {
+          "exit": 0,
+          "stdout": "{'a': 1}",
+          "last_line": "{'a': 1}",
+          "text": "{'a': 1}"
+        },
+        {
+          "exit": 0,
+          "stdout": "{'a': 1}",
+          "last_line": "{'a': 1}",
+          "text": "{'a': 1}"
+        }
+      ],
+      "test_runs": [
+        {
+          "exit": 0,
+          "stdout": "{'a': 1}",
+          "last_line": "{'a': 1}",
+          "text": "{'a': 1}"
+        },
+        {
+          "exit": 0,
+          "stdout": "{'a': 1}",
+          "last_line": "{'a': 1}",
+          "text": "{'a': 1}"
+        },
+        {
+          "exit": 0,
+          "stdout": "{'a': 1}",
+          "last_line": "{'a': 1}",
+          "text": "{'a': 1}"
+        }
+      ]
+    },
+    {
+      "id": "J",
+      "title": "Data contract: Optional field without a default is required in pydantic v2",
+      "verified": true,
+      "ref_ok": true,
+      "test_ok": true,
+      "ref_pins": [
+        "pydantic==1.10.13"
+      ],
+      "test_pins": [
+        "pydantic==2.7.4"
+      ],
+      "ref_freeze": [
+        "pydantic==1.10.13",
+        "typing-extensions==4.16.0"
+      ],
+      "test_freeze": [
+        "annotated-types==0.8.0",
+        "pydantic==2.7.4",
+        "pydantic-core==2.18.4",
+        "typing-extensions==4.16.0"
+      ],
+      "expected": {
+        "ref_expect": "accepted",
+        "test_expect_error": "middle_name"
+      },
+      "ref_runs": [
+        {
+          "exit": 0,
+          "stdout": "accepted",
+          "last_line": "accepted",
+          "text": "accepted"
+        },
+        {
+          "exit": 0,
+          "stdout": "accepted",
+          "last_line": "accepted",
+          "text": "accepted"
+        },
+        {
+          "exit": 0,
+          "stdout": "accepted",
+          "last_line": "accepted",
+          "text": "accepted"
+        }
+      ],
+      "test_runs": [
+        {
+          "exit": 1,
+          "stdout": "",
+          "last_line": "    For further information visit https://errors.pydantic.dev/2.7/v/missing",
+          "text": "Traceback (most recent call last):\n  File \"<string>\", line 15, in <module>\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\J-test\\Lib\\site-packages\\pydantic\\main.py\", line 580, in model_validate_json\n    return cls.__pydantic_validator__.validate_json(json_data, strict=strict, context=context)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\npydantic_core._pydantic_core.ValidationError: 1 validation error for CustomerRequest\nmiddle_name\n  Field required [type=missing, input_value={'customer_id': 1, 'loyalty_points': 0}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.7/v/missing"
+        },
+        {
+          "exit": 1,
+          "stdout": "",
+          "last_line": "    For further information visit https://errors.pydantic.dev/2.7/v/missing",
+          "text": "Traceback (most recent call last):\n  File \"<string>\", line 15, in <module>\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\J-test\\Lib\\site-packages\\pydantic\\main.py\", line 580, in model_validate_json\n    return cls.__pydantic_validator__.validate_json(json_data, strict=strict, context=context)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\npydantic_core._pydantic_core.ValidationError: 1 validation error for CustomerRequest\nmiddle_name\n  Field required [type=missing, input_value={'customer_id': 1, 'loyalty_points': 0}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.7/v/missing"
+        },
+        {
+          "exit": 1,
+          "stdout": "",
+          "last_line": "    For further information visit https://errors.pydantic.dev/2.7/v/missing",
+          "text": "Traceback (most recent call last):\n  File \"<string>\", line 15, in <module>\n  File \"C:\\Users\\Chetan\\AppData\\Local\\Temp\\fl-verify-gy8glla1\\J-test\\Lib\\site-packages\\pydantic\\main.py\", line 580, in model_validate_json\n    return cls.__pydantic_validator__.validate_json(json_data, strict=strict, context=context)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\npydantic_core._pydantic_core.ValidationError: 1 validation error for CustomerRequest\nmiddle_name\n  Field required [type=missing, input_value={'customer_id': 1, 'loyalty_points': 0}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.7/v/missing"
+        }
+      ]
+    },
+    {
+      "id": "E",
+      "title": "Silent divergence: Union[int, str] parses '42' as int in v1 and keeps str in v2",
+      "verified": true,
+      "ref_ok": true,
+      "test_ok": true,
+      "ref_pins": [
+        "pydantic==1.10.13"
+      ],
+      "test_pins": [
+        "pydantic==2.7.4"
+      ],
+      "ref_freeze": [
+        "pydantic==1.10.13",
+        "typing-extensions==4.16.0"
+      ],
+      "test_freeze": [
+        "annotated-types==0.8.0",
+        "pydantic==2.7.4",
+        "pydantic-core==2.18.4",
+        "typing-extensions==4.16.0"
+      ],
+      "expected": {
+        "ref_expect": "int 42",
+        "test_expect_ok": "str '42'"
+      },
+      "ref_runs": [
+        {
+          "exit": 0,
+          "stdout": "int 42",
+          "last_line": "int 42",
+          "text": "int 42"
+        },
+        {
+          "exit": 0,
+          "stdout": "int 42",
+          "last_line": "int 42",
+          "text": "int 42"
+        },
+        {
+          "exit": 0,
+          "stdout": "int 42",
+          "last_line": "int 42",
+          "text": "int 42"
+        }
+      ],
+      "test_runs": [
+        {
+          "exit": 0,
+          "stdout": "str '42'",
+          "last_line": "str '42'",
+          "text": "str '42'"
+        },
+        {
+          "exit": 0,
+          "stdout": "str '42'",
+          "last_line": "str '42'",
+          "text": "str '42'"
+        },
+        {
+          "exit": 0,
+          "stdout": "str '42'",
+          "last_line": "str '42'",
+          "text": "str '42'"
+        }
+      ]
+    }
+  ]
+}

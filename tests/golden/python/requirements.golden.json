@@ -1,0 +1,189 @@
+{
+  "constraints": [
+    {
+      "display": "markupsafe",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "registry",
+      "line": 1,
+      "marker": null,
+      "name": "markupsafe",
+      "origin": "constraints.txt",
+      "source_ref": null,
+      "specifier": "<2.2"
+    }
+  ],
+  "dependencies": [
+    {
+      "display": "flask",
+      "extras": [
+        "async"
+      ],
+      "group": "main",
+      "hashes": [],
+      "kind": "registry",
+      "line": 2,
+      "marker": "python_version >= \"3.9\"",
+      "name": "flask",
+      "origin": "requirements.txt",
+      "source_ref": null,
+      "specifier": "<3,>=2.2"
+    },
+    {
+      "display": "Werkzeug",
+      "extras": [],
+      "group": "main",
+      "hashes": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ],
+      "kind": "registry",
+      "line": 3,
+      "marker": null,
+      "name": "werkzeug",
+      "origin": "requirements.txt",
+      "source_ref": null,
+      "specifier": "==2.2.2"
+    },
+    {
+      "display": "jinja2",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "registry",
+      "line": 1,
+      "marker": null,
+      "name": "jinja2",
+      "origin": "base.txt",
+      "source_ref": null,
+      "specifier": ">=3"
+    },
+    {
+      "display": "click",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "registry",
+      "line": 1,
+      "marker": null,
+      "name": "click",
+      "origin": "nested/deep.txt",
+      "source_ref": null,
+      "specifier": "==8.1.7"
+    },
+    {
+      "display": "proj",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "vcs",
+      "line": 8,
+      "marker": null,
+      "name": "proj",
+      "origin": "requirements.txt",
+      "source_ref": "git+https://github.com/org/proj.git@v1.2",
+      "specifier": ""
+    },
+    {
+      "display": "requests",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "url",
+      "line": 9,
+      "marker": null,
+      "name": "requests",
+      "origin": "requirements.txt",
+      "source_ref": "https://example.com/requests-2.31.0.tar.gz",
+      "specifier": ""
+    },
+    {
+      "display": "pkg",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "path",
+      "line": 10,
+      "marker": null,
+      "name": "pkg",
+      "origin": "requirements.txt",
+      "source_ref": "./local/pkg",
+      "specifier": ""
+    },
+    {
+      "display": "editable-pkg",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "path",
+      "line": 11,
+      "marker": null,
+      "name": "editable-pkg",
+      "origin": "requirements.txt",
+      "source_ref": "./editable-pkg",
+      "specifier": ""
+    },
+    {
+      "display": "Foo_Bar",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "registry",
+      "line": 14,
+      "marker": null,
+      "name": "foo-bar",
+      "origin": "requirements.txt",
+      "source_ref": null,
+      "specifier": ">=1"
+    },
+    {
+      "display": "foo.bar",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "registry",
+      "line": 15,
+      "marker": null,
+      "name": "foo-bar",
+      "origin": "requirements.txt",
+      "source_ref": null,
+      "specifier": "<3"
+    },
+    {
+      "display": "FOO-BAR",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "registry",
+      "line": 16,
+      "marker": null,
+      "name": "foo-bar",
+      "origin": "requirements.txt",
+      "source_ref": null,
+      "specifier": "!=2"
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "UNPARSEABLE_LINE",
+      "line": 17,
+      "message": "cannot parse 'badline !!': Expected semicolon (after name with no version specifier) or end\n    badline !!\n            ^",
+      "path": "requirements.txt"
+    }
+  ],
+  "kind": "requirements",
+  "meta": {
+    "editable": [
+      "./editable-pkg"
+    ],
+    "extra_index_urls": [
+      "https://pypi.example/simple"
+    ],
+    "options": [
+      "--prefer-binary"
+    ]
+  },
+  "path": "requirements.txt",
+  "status": "PARTIAL"
+}

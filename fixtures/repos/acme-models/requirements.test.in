@@ -1,0 +1,2 @@
+# Test-only packages, overlaid on whichever runtime world is under test (PC-5).
+pytest==8.3.3

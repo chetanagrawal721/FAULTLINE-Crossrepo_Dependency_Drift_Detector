@@ -1,0 +1,26 @@
+# Scenario H: harmless drift. billing-svc resolves pydantic 2, but only uses acme_models.customer, which
+# calls .dict() (deprecated, still works). It never installs Flask, so acme_models.web is NOT_APPLICABLE for it.
+# Negative control: no witness may be produced. Verified by scripts/verify_fixture_facts.py (H).
+id: H
+title: Harmless drift (pydantic 2, only deprecated .dict() used)
+verified_by: H
+artifact:
+  repo: acme-models
+  path: fixtures/repos/acme-models
+  import_package: acme_models
+consumers:
+  - repo: billing-svc
+    path: fixtures/repos/billing-svc/H
+    imports: [acme_models.customer]
+expect:
+  relationships:
+    - {producer: acme-models, consumer: billing-svc, level: L2}
+  cells:
+    - consumer: billing-svc
+      delta: [annotated-types, click, flask, itsdangerous, jinja2, markupsafe, pydantic, pydantic-core, werkzeug]
+      state: ANALYZED
+      verdict: NO_DIVERGENCE_OBSERVED
+      witness: false
+      control:
+        kind: harmless_drift
+        reason: Versions differ, but the interactions the consumer exercises behave the same (deprecation warning only).

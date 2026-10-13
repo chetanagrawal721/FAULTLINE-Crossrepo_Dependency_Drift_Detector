@@ -1,0 +1,37 @@
+# Scenario D: transitive world drift. notify-svc pins Flask but not Werkzeug, so its world resolves Werkzeug 3,
+# which removed werkzeug.urls.url_quote that Flask 2.2.2 imports. Verified by scripts/verify_fixture_facts.py (D).
+id: D
+title: Transitive dependency drift (Werkzeug 3 under Flask 2.2.2)
+verified_by: D
+artifact:
+  repo: acme-models
+  path: fixtures/repos/acme-models
+  import_package: acme_models
+consumers:
+  - repo: notify-svc
+    path: fixtures/repos/notify-svc/D
+    imports: [acme_models.web]
+  - repo: orders-svc
+    path: fixtures/repos/orders-svc/D
+    imports: [acme_models.customer]
+expect:
+  relationships:
+    - {producer: acme-models, consumer: notify-svc, level: L2}
+    - {producer: acme-models, consumer: orders-svc, level: L2}
+  cells:
+    - consumer: notify-svc
+      delta: [itsdangerous, werkzeug]
+      state: ANALYZED
+      verdict: BREAK_WITNESSED
+      witness: true
+      oracle: o_import
+      entry_point: acme_models.web
+      signature:
+        exc_type: ImportError
+        message_contains: "cannot import name 'url_quote' from 'werkzeug.urls'"
+      attribution:
+        minimal_set: [werkzeug]
+        sidedness: two_sided
+    - consumer: orders-svc
+      state: NO_DRIFT
+      witness: false

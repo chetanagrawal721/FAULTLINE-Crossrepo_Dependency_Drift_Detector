@@ -1,0 +1,5 @@
+pydantic==1.10.13
+flask==2.2.2
+click==8.1.7
+itsdangerous==2.1.2
+acme-models[web] @ git+https://github.com/faultline-demo/acme-models@scenario-D

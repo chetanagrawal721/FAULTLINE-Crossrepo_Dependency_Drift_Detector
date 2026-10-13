@@ -1,0 +1,112 @@
+{
+  "constraints": [],
+  "dependencies": [
+    {
+      "display": "flask",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "registry",
+      "line": 6,
+      "marker": null,
+      "name": "flask",
+      "origin": "pep621.toml",
+      "source_ref": null,
+      "specifier": ">=2.2"
+    },
+    {
+      "display": "acme-models",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "vcs",
+      "line": 7,
+      "marker": null,
+      "name": "acme-models",
+      "origin": "pep621.toml",
+      "source_ref": "git+https://github.com/acme/models.git@v2",
+      "specifier": ""
+    },
+    {
+      "display": "tomli",
+      "extras": [],
+      "group": "main",
+      "hashes": [],
+      "kind": "registry",
+      "line": 8,
+      "marker": "python_version < \"3.11\"",
+      "name": "tomli",
+      "origin": "pep621.toml",
+      "source_ref": null,
+      "specifier": ""
+    },
+    {
+      "display": "pyyaml",
+      "extras": [],
+      "group": "optional:yaml",
+      "hashes": [],
+      "kind": "registry",
+      "line": 12,
+      "marker": null,
+      "name": "pyyaml",
+      "origin": "pep621.toml",
+      "source_ref": null,
+      "specifier": ">=6"
+    },
+    {
+      "display": "pytest",
+      "extras": [],
+      "group": "group:test",
+      "hashes": [],
+      "kind": "registry",
+      "line": 15,
+      "marker": null,
+      "name": "pytest",
+      "origin": "pep621.toml",
+      "source_ref": null,
+      "specifier": ">=8"
+    },
+    {
+      "display": "pytest",
+      "extras": [],
+      "group": "group:dev",
+      "hashes": [],
+      "kind": "registry",
+      "line": 15,
+      "marker": null,
+      "name": "pytest",
+      "origin": "pep621.toml",
+      "source_ref": null,
+      "specifier": ">=8"
+    },
+    {
+      "display": "ruff",
+      "extras": [],
+      "group": "group:dev",
+      "hashes": [],
+      "kind": "registry",
+      "line": 16,
+      "marker": null,
+      "name": "ruff",
+      "origin": "pep621.toml",
+      "source_ref": null,
+      "specifier": ""
+    }
+  ],
+  "diagnostics": [],
+  "kind": "pyproject",
+  "meta": {
+    "build_backend": "hatchling.build",
+    "build_requires": [
+      "hatchling"
+    ],
+    "dynamic": [],
+    "name": "Acme_Service",
+    "name_line": 2,
+    "requires_python": ">=3.10",
+    "tool": [],
+    "version": "1.4.0"
+  },
+  "path": "pep621.toml",
+  "status": "OK"
+}

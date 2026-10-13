@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "poetry-app"
+version = "0.3.0"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.31.0"
+flask = "~2.2"
+numpy = { version = ">=1.24,<2", python = ">=3.9" }
+pendulum = { git = "https://github.com/sdispater/pendulum.git", tag = "3.0.0" }
+uvicorn = { version = "^0.30", extras = ["standard"], optional = true }
+tomli = [{ version = "^2.0", python = "<3.11" }, { version = "^1.0", python = ">=3.11" }]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+
+[[tool.poetry.source]]
+name = "internal"
+url = "https://pypi.internal.example/simple"
+priority = "supplemental"

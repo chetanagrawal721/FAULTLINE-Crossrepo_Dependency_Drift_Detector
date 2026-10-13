@@ -1,0 +1,52 @@
+{
+  "error": null,
+  "kind": "poetry_lock",
+  "meta": {
+    "content_hash": "abc",
+    "lock_version": "2.0"
+  },
+  "packages": [
+    {
+      "dep_edges": [
+        [
+          "werkzeug",
+          null
+        ]
+      ],
+      "dependencies": [
+        "werkzeug"
+      ],
+      "display": "Flask",
+      "has_sdist": true,
+      "name": "flask",
+      "source_kind": "registry",
+      "source_ref": null,
+      "version": "2.2.2",
+      "wheel_files": [
+        "Flask-2.2.2-py3-none-any.whl"
+      ],
+      "wheel_hashes": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ]
+    },
+    {
+      "dep_edges": [],
+      "dependencies": [],
+      "display": "werkzeug",
+      "has_sdist": false,
+      "name": "werkzeug",
+      "source_kind": "registry",
+      "source_ref": "https://pypi.internal.example/simple",
+      "version": "2.2.2",
+      "wheel_files": [
+        "Werkzeug-2.2.2-py3-none-any.whl"
+      ],
+      "wheel_hashes": [
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ]
+    }
+  ],
+  "path": "poetry.lock",
+  "requires_python": "^3.10",
+  "status": "OK"
+}

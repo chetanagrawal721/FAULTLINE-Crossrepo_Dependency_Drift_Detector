@@ -1,0 +1,17 @@
+# top comment
+flask[async]>=2.2,<3 ; python_version >= "3.9"   # inline comment
+Werkzeug==2.2.2 \
+    --hash=sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
+    --hash=sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+-r base.txt
+--constraint constraints.txt
+git+https://github.com/org/proj.git@v1.2#egg=proj
+requests @ https://example.com/requests-2.31.0.tar.gz
+./local/pkg
+-e ./editable-pkg
+--extra-index-url https://pypi.example/simple
+--prefer-binary
+Foo_Bar>=1
+foo.bar<3
+FOO-BAR!=2
+badline !!

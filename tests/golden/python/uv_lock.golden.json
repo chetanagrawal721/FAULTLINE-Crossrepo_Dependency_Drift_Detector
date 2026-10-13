@@ -1,0 +1,71 @@
+{
+  "error": null,
+  "kind": "uv_lock",
+  "meta": {
+    "lock_version": 1,
+    "revision": 3
+  },
+  "packages": [
+    {
+      "dep_edges": [
+        [
+          "flask",
+          null
+        ]
+      ],
+      "dependencies": [
+        "flask"
+      ],
+      "display": "demo",
+      "has_sdist": false,
+      "name": "demo",
+      "source_kind": "virtual",
+      "source_ref": ".",
+      "version": "0.1.0",
+      "wheel_files": [],
+      "wheel_hashes": []
+    },
+    {
+      "dep_edges": [
+        [
+          "werkzeug",
+          null
+        ]
+      ],
+      "dependencies": [
+        "werkzeug"
+      ],
+      "display": "Flask",
+      "has_sdist": true,
+      "name": "flask",
+      "source_kind": "registry",
+      "source_ref": "https://pypi.org/simple",
+      "version": "2.2.2",
+      "wheel_files": [
+        "Flask-2.2.2-py3-none-any.whl"
+      ],
+      "wheel_hashes": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ]
+    },
+    {
+      "dep_edges": [],
+      "dependencies": [],
+      "display": "werkzeug",
+      "has_sdist": false,
+      "name": "werkzeug",
+      "source_kind": "registry",
+      "source_ref": "https://pypi.org/simple",
+      "version": "2.2.2",
+      "wheel_files": [
+        "Werkzeug-2.2.2-py3-none-any.whl"
+      ],
+      "wheel_hashes": [
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ]
+    }
+  ],
+  "path": "uv.lock",
+  "requires_python": ">=3.10",
+  "status": "OK"
+}
