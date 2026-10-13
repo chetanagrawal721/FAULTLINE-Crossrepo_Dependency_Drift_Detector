@@ -1,0 +1,11 @@
+EXPOSED (static-confirmed)  [rule 6]  coverage 3/3 references (100.0%)  (static: nothing was executed)
+  urllib3: 342 public change(s), 200 breaking
+  src/acme_http/retry.py:7:11  call of urllib3.util.retry.Retry  [SIGNATURE_BREAKING, does not bind]
+      parameter `raise_on_redirect` moved from position 9 to 10
+      parameter `raise_on_status` moved from position 10 to 11
+      parameter `history` moved from position 11 to 12
+  src/acme_http/retry.py:12:11  call of urllib3.util.retry.Retry  [SIGNATURE_BREAKING, still binds]
+      parameter `raise_on_redirect` moved from position 9 to 10
+      parameter `raise_on_status` moved from position 10 to 11
+      parameter `history` moved from position 11 to 12
+  note: exposed interactions were not all exercised

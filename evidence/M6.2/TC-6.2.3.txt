@@ -1,0 +1,6 @@
+plugins: anyio-4.15.1
+collecting ... collected 6 items / 5 deselected / 1 selected
+
+tests/unit/test_api_surface.py::test_tc_6_2_3_limits_are_flagged_not_hidden PASSED [100%]
+
+======================= 1 passed, 5 deselected in 0.05s =======================
