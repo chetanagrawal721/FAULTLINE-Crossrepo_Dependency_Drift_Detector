@@ -1,0 +1,31 @@
+# REAL1: a publicly reported dependency break, reproduced from public registries by resolution date (not a fixture).
+# Flask 2.2.2 (2022-08-08) imports werkzeug.urls.url_quote. Werkzeug 3.0.0 (2023-09-30) removed it. Resolve Flask 2.2.2's own
+# dependencies before and after that release and the same Flask source fails to import. Facts verified by hand: fixtures/verification/REAL1.md
+id: REAL1
+title: "Flask 2.2.2 with Werkzeug resolved before and after 3.0.0 (url_quote removed)"
+kind: real_world
+truth: break
+verified_by: REAL1
+real_source:
+  url: https://github.com/pallets/flask
+  ref: 2.2.2
+time_machine:
+  reference_cutoff: "2023-09-01T00:00:00Z"
+  consumer_cutoff: "2023-11-01T00:00:00Z"
+public_evidence:
+  - https://github.com/pallets/werkzeug/issues/2789
+  - https://github.com/pallets/werkzeug/releases/tag/3.0.0
+artifact: {repo: flask, path: "", import_package: flask}
+consumers: []
+expect:
+  relationships: []
+  cells:
+    - consumer: flask
+      delta: [werkzeug]
+      state: ANALYZED
+      verdict: BREAK_WITNESSED
+      witness: true
+      oracle: o_import
+      entry_point: flask
+      signature: {exc_type: ImportError, message_contains: "cannot import name 'url_quote' from 'werkzeug.urls'"}
+      attribution: {minimal_set: [werkzeug], sidedness: two_sided}
