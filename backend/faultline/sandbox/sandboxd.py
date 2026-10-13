@@ -84,6 +84,10 @@ class Daemon:
                     raise ValueError("/snapshot is writable only for repository fetches in the fetch zone")
                 dest = self.store.snapshot_dir(ref["snapshot"])
                 dest.mkdir(parents=True, exist_ok=True)
+                try:
+                    os.chmod(dest, 0o777)              # the container runs as an unprivileged user and must be able to write here (Linux hosts enforce modes)
+                except OSError:
+                    pass
                 out.append({"type": "bind", "source": dest, "target": target, "readonly": False})
             elif target == "/source":
                 if not (zone == "fetch" and script in ("fetch_repo.py", "resolve_uv.py")):

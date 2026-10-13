@@ -151,6 +151,12 @@ def main() -> None:
     with open(os.path.join(SNAP, INVENTORY), "w", encoding="utf-8") as f:
         json.dump({"commit": head, "committed_at": committed, "entries": entries, "truncated": truncated,
                    "warnings": warnings}, f, sort_keys=True)
+    for root, _dirs, files in os.walk(SNAP):              # directories stay deletable by the host user, files become read-only
+        for path, mode in [(root, 0o777), *[(os.path.join(root, fn), 0o444) for fn in files]]:
+            try:
+                os.chmod(path, mode)
+            except OSError:                               # the mount root belongs to the host and is prepared by sandboxd
+                pass
     counts: dict[str, int] = {}
     for e in entries:
         counts[e["kind"]] = counts.get(e["kind"], 0) + 1
