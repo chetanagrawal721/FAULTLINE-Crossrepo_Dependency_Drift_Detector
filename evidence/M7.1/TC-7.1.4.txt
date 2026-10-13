@@ -1,0 +1,11 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.15, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Chetan\Hackethopia\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\Chetan\Hackethopia
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collecting ... collected 4 items / 3 deselected / 1 selected
+
+tests/integration/test_o_contract.py::test_tc_7_1_4_a_field_with_a_default_is_the_same_in_both_worlds PASSED [100%]
+
+================= 1 passed, 3 deselected in 129.49s (0:02:09) =================

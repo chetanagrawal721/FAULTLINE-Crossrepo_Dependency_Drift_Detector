@@ -1,0 +1,11 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.15, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Chetan\Hackethopia\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\Chetan\Hackethopia
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collecting ... collected 4 items / 3 deselected / 1 selected
+
+tests/integration/test_o_contract.py::test_tc_7_1_1_a_payload_the_consumer_rejects_is_witnessed_on_a_minimal_input PASSED [100%]
+
+================= 1 passed, 3 deselected in 130.97s (0:02:10) =================

@@ -38,10 +38,29 @@ NOT_CHECKED_LIVE = (
 )
 
 
+NOT_CHECKED_CONTRACT = (
+    "contract replay covers pydantic models in the modules the consumer imports; serialisation options were assumed (default and exclude_none), not read from call sites",
+    "other wire formats (protobuf, msgpack, Avro) and values the sampled inputs did not contain are not replayed",
+)
+
+
+def _contract_text(c: dict) -> str:
+    tier = {"T1": "T1 (a sample shipped with the artifact)", "T2": "T2 (the smallest valid instance)", "T3": "T3 (generated)"}.get(c["tier"], c["tier"])
+    opts = "the serialisation options were assumed" if c.get("options_assumed") else "the sample is used as the wire bytes"
+    return f"Input tier {tier}; {opts}."
+
+
 def live_headline(outcome: str, *, artifact: str, consumers: list[str], entry: str | None = None, exc: str | None = None,
                   message: str | None = None, exercised: tuple[str, ...] = (), reasons: tuple[str, ...] = (),
-                  not_checked: tuple[str, ...] = NOT_CHECKED_LIVE, site: dict | None = None) -> str:
+                  not_checked: tuple[str, ...] = NOT_CHECKED_LIVE, site: dict | None = None, contract: dict | None = None) -> str:
     who = ", ".join(consumers) or "the consumer"
+    if outcome == "BREAK_WITNESSED" and contract:
+        return (f"Reproduced: the bytes `{contract['preview']}` of `{contract['type']}` parse with {artifact}'s own dependencies and are rejected when "
+                f"{who}'s dependencies read the same bytes: `{exc}: {message}`. 3 of 3 fresh runs on each side. {_contract_text(contract)}"
+                f"{' The input was generated.' if contract.get('generated') else ''}")
+    if outcome == "SILENT_DIVERGENCE_WITNESSED" and contract:
+        return (f"Accepted in both worlds, but the result differs: {message}. The same bytes `{contract['preview']}` of `{contract['type']}` were read with "
+                f"{artifact}'s own dependencies and with those of {who}. 3 of 3 fresh runs on each side. {_contract_text(contract)}")
     if outcome == "BREAK_WITNESSED" and site:
         shape = ", ".join([*(["..."] * site["n_positional"]), *(f"{k}=..." for k in site["keyword_names"])])
         return (f"Reproduced: the call `{site['callee']}({shape})` at {site['id']} no longer binds to its signature and fails with `{exc}: {message}` when "

@@ -1011,3 +1011,32 @@ Format: `### <UTC time> | <EVENT> | <id> | by <name>` followed by details.
 
 ### 2026-10-13 22:03 UTC | NOTE | - | by Chetan Agrawal
 - M6.2: the static API surface uses the standard-library ast, not griffe (ADR 0005). On the real urllib3 1.26.18 and 2.2.3 wheels it reads 430 and 382 symbols in 0.14 s and reports Retry(method_whitelist) removed. With the acme-http sources it marks retry.py:7 as not binding and retry.py:12 as still binding (evidence/M6.2/real-urllib3-static.txt). The static verdict there is EXPOSED (static-confirmed): nothing was executed. The static path is a library and a script (scripts/static_exposure.py); it is not yet wired into the live analysis, because the wheels sit in the sandbox wheelhouse.
+
+### 2026-10-13 22:33 UTC | START | M7.1 | by Chetan Agrawal
+- Contract replay (pydantic JSON, producer bytes to consumer)
+
+### 2026-10-13 22:46 UTC | START | M7.1 | by Chetan Agrawal
+- Contract replay (pydantic JSON, producer bytes to consumer)
+
+### 2026-10-13 22:46 UTC | TC PASS | TC-7.1.1 | by Chetan Agrawal
+- Known rejection
+- evidence: evidence/M7.1/TC-7.1.1.txt
+
+### 2026-10-13 22:46 UTC | TC PASS | TC-7.1.2 | by Chetan Agrawal
+- Known silent divergence
+- evidence: evidence/M7.1/TC-7.1.2.txt
+
+### 2026-10-13 22:46 UTC | TC PASS | TC-7.1.3 | by Chetan Agrawal
+- Anti-garbage
+- evidence: evidence/M7.1/TC-7.1.3.txt
+
+### 2026-10-13 22:46 UTC | TC PASS | TC-7.1.4 | by Chetan Agrawal
+- Negative control
+- evidence: evidence/M7.1/TC-7.1.4.txt
+
+### 2026-10-13 22:46 UTC | DONE | M7.1 | by Chetan Agrawal
+- Contract replay (pydantic JSON, producer bytes to consumer)
+- test cases passed: 4/4
+
+### 2026-10-13 22:46 UTC | NOTE | - | by Chetan Agrawal
+- M7.1: contract replay runs in the live pipeline for pydantic models in the modules the consumer imports. Scenario J: T2 input rejected (middle_name: Field required), scenario E: T1 sample read as 42 vs "42" (SILENT_DIVERGENCE_WITNESSED). Serialisation options are assumed (default and exclude_none), not read from call sites. E and J are kept out of the benchmark denominator, fixed before they existed. The harness scripts are baked into the sandbox image, so the image was rebuilt.

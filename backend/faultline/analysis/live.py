@@ -15,7 +15,7 @@ from ..core.ids import new_id
 from ..core.logging import phase
 from ..core.models import OracleRunResult
 from ..ingestion.clone import load_inventory
-from ..oracles import planner
+from ..oracles import o_contract, planner
 from ..oracles.artifacts import prepare_artifact
 from ..oracles.o_bind import ORACLE as BIND_ORACLE
 from ..oracles.o_bind import ORACLE_VERSION as BIND_VERSION
@@ -27,12 +27,12 @@ from ..sandbox.client import SandboxClient
 from ..storage.store import Store
 from ..usage.consumer_imports import artifact_modules, scan_imports
 from ..verdicts import templates
-from ..verdicts.engine import LIVE_POLICY_VERSION, LIVE_PRIORITY, Evidence, decide
+from ..verdicts.engine import LIVE_POLICY_VERSION, LIVE_PRIORITY, Evidence, decide, split_silent
 from ..verdicts.stats import funnel
 from ..witnesses.verify import INFRA_CLASSES, Verification, verify_cell
 from ..worlds.builder import WorldBuilder, WorldBuildError
 from ..worlds.cells import CellPlan, persist_cell, plan_cells
-from .bind import find_sites
+from .bind import artifact_sources, find_sites, module_of
 from .fixture import FixtureCell
 from .lifecycle import mark_partial, reconcile_abandoned
 
@@ -180,6 +180,23 @@ def _bind_runner(payload: dict):
     return runner
 
 
+def _contract_runner(item: "o_contract.Item"):
+    """Attribution re-runs one contract input in each forced world; this adapts O-contract to the runner interface attribute() expects."""
+    def runner(sbx, image, *, world_hash, artifact_hash, top_level, modules, pythonpath):
+        return o_contract.run_o_contract(sbx, image, world_hash=world_hash, artifact_hash=artifact_hash, items=[item], compare=True, top_level=top_level,
+                                         pythonpath=pythonpath)
+    return runner
+
+
+def _contract_scope(ex: "o_contract.Exploration", items: list["o_contract.Item"]) -> dict:
+    import base64
+    return {"types": [f"{t.module}.{t.name}" for t in ex.types], "inputs_total": ex.n_total, "inputs_valid": ex.n_valid, "inputs_invalid": ex.n_invalid,
+            "classes": dict(sorted(ex.classes.items())), "notes": list(ex.notes),
+            "inputs": {i.entry: {"type": f"{i.type.module}.{i.type.name}", "tier": i.tier, "variant": i.variant, "options_assumed": i.assumed_options,
+                                 "source": i.source, "sha256": i.bytes_hash, "generated": i.tier == "T3",
+                                 "preview": base64.b64decode(i.bytes_b64).decode("utf-8", "replace")[:160]} for i in items}}
+
+
 def execute_cell(conn, sbx, image, store, builder, aid, cell_id, plan, layout, pkg, imported, test_hash, rels, say, base, n, *, prod_root, prod_inv, src_root):
     """Run the oracle 3 + 3 times on one cell, attribute any witness, and write the finding. Returns (finding_id, cell_state)."""
     art_dir = Path(prod_root) / layout["rel_path"] if layout["rel_path"] != "." else Path(prod_root)
@@ -204,7 +221,14 @@ def execute_cell(conn, sbx, image, store, builder, aid, cell_id, plan, layout, p
     delta_names = [d.name for d in plan.projection.delta]
     sites, unchecked = find_sites(conn, art_dir, delta_names, src_root=pyroot, consumer_modules=set(modules))
     site_by_entry = {"bind:" + s.site_id: s for s in sites}
-    steps = planner.after_import(planner.plan(pkg, modules, has_tests=has_tests, test_lock=False, bind_sites=len(sites)), pkg, v)
+    ctypes: list = []
+    creason = "pydantic does not differ between the reference world and the consumer world"
+    if any(d.lower() == "pydantic" for d in delta_names):
+        srcs = artifact_sources(art_dir)
+        ctypes = o_contract.discover_types(srcs, {p: module_of(p, pyroot) for p in srcs}, set(modules))
+        creason = "no pydantic model is defined in the modules the consumer imports"
+    steps = planner.after_import(planner.plan(pkg, modules, has_tests=has_tests, test_lock=False, bind_sites=len(sites), contract_types=len(ctypes),
+                                              contract_reason=creason), pkg, v)
     if any(s.oracle == "o_bind" and s.status == "PLANNED" for s in steps):
         say(base + 0.095 / n, f"running O-bind (3 + 3 fresh runs) on {len(sites)} call site(s)")
         payload = [site_payload(s) for s in sites]
@@ -216,16 +240,41 @@ def execute_cell(conn, sbx, image, store, builder, aid, cell_id, plan, layout, p
             vb = verify_cell(conn, cell, oracle=BIND_ORACLE, version=BIND_VERSION, run_in_world=run_bind, args={"sites": [p["id"] for p in payload]}, force=True)
         v = Verification(v.ref_runs + vb.ref_runs, v.test_runs + vb.test_runs, v.decisions + vb.decisions, v.problem or vb.problem)
         steps = planner.mark_ran(steps, "o_bind", tuple("bind:" + p["id"] for p in payload))
+    contract_scope: dict | None = None
+    item_by_entry: dict = {}
+    if any(s.oracle == "o_contract" and s.status == "PLANNED" for s in steps):
+        say(base + 0.097 / n, f"replaying the data contracts of {len(ctypes)} model(s): bytes from the reference world, parsed in the consumer world")
+        with phase("explore data contracts", cell=cell_id, models=len(ctypes)):
+            ex = o_contract.explore(sbx, image, producer_world=cell.ref_world_hash, consumer_world=test_hash, artifact_hash=artifact, art_dir=art_dir,
+                                    types=ctypes, pythonpath=(pythonpath,))
+        citems = ex.verification_items()
+        item_by_entry = {i.entry: i for i in citems}
+        contract_scope = _contract_scope(ex, citems)
+        if citems:
+            def run_contract(world_hash: str):
+                return retrying(lambda: o_contract.run_o_contract(sbx, image, world_hash=world_hash, artifact_hash=artifact, items=citems,
+                                                                  compare=world_hash != cell.ref_world_hash, top_level=pkg, pythonpath=(pythonpath,)),
+                                checkpoint=lambda: say(base + 0.097 / n, "checking whether the job was cancelled"))()
+            with phase("verify O-contract (3 + 3 fresh runs)", cell=cell_id, inputs=len(citems)):
+                vc = verify_cell(conn, cell, oracle=o_contract.ORACLE, version=o_contract.ORACLE_VERSION, run_in_world=run_contract,
+                                 args={"items": [i.entry for i in citems]}, force=True, entry_meta={i.entry: o_contract.witness_input(i) for i in citems})
+            v = Verification(v.ref_runs + vc.ref_runs, v.test_runs + vc.test_runs, v.decisions + vc.decisions, v.problem or vc.problem)
+            steps = planner.mark_ran(steps, "o_contract", tuple(i.entry for i in citems))
+        else:
+            steps = [planner.Step("o_contract", "NOT_PLANNED", "; ".join(ex.notes) or "no input was accepted by the reference world, so there was nothing to replay")
+                     if s.oracle == "o_contract" else s for s in steps]
     for dec in v.witnesses:
         if dec.witness_id and dec.signature is not None:
             say(base + 0.1 / n, f"attributing the break in {dec.entry} (two-sided search)")
             site = site_by_entry.get(dec.entry)
             runner = _bind_runner(site_payload(site)) if site is not None else None
+            if dec.entry in item_by_entry:
+                runner = _contract_runner(item_by_entry[dec.entry])
             with phase("attribute (two-sided ddmin)", cell=cell_id, entry=dec.entry):
                 a = attribute(sbx, image, builder, artifact_hash=artifact, entry=dec.entry, top_level=pkg, pythonpath=pythonpath, signature=dec.signature,
                               ref=list(plan.reference.pinned), consumer=list(plan.projection.pinned), delta=delta_names, run=runner)
             persist(conn, dec.witness_id, a)
-    fid = write_live_finding(conn, aid, cell, v, layout, plan, steps, rels, sites=site_by_entry, unchecked_sites=len(unchecked))
+    fid = write_live_finding(conn, aid, cell, v, layout, plan, steps, rels, sites=site_by_entry, unchecked_sites=len(unchecked), contract=contract_scope)
     state = "ANALYZED" if v.decisions else "INCONCLUSIVE"
     conn.execute("UPDATE cell SET state=? WHERE id=?", (state, cell_id))
     return fid, state
@@ -242,23 +291,29 @@ def _env_id(builder: WorldBuilder) -> str:
 
 
 def write_live_finding(conn: sqlite3.Connection, analysis_id: str, cell: FixtureCell, v: Verification, layout: dict, plan: CellPlan,
-                       steps: list[planner.Step], rels, sites: dict | None = None, unchecked_sites: int = 0) -> str:
+                       steps: list[planner.Step], rels, sites: dict | None = None, unchecked_sites: int = 0, contract: dict | None = None) -> str:
     consumers = [conn.execute("SELECT p.rel_path, r.owner, r.name FROM project p JOIN snapshot s ON s.id=p.snapshot_id JOIN repository r ON r.id=s.repository_id "
                               "WHERE p.id=?", (c,)).fetchone() for c, _ in plan.consumers]
     names = [f"{c['owner']}/{c['name']}" for c in consumers]
     rel_levels = {r.consumer_project_id: r.level for r in rels if r.producer_project_id == plan.producer_project_id}
     level = "L2" if all(rel_levels.get(c) in ("L2", "L3", "L4", "L5") for c, _ in plan.consumers) else "L1"
-    out = decide(Evidence(relationship_level=level, cell_state="PENDING", decisions=tuple(v.decisions), run_problem=v.problem))
+    plain, silent = split_silent(v.decisions)
+    out = decide(Evidence(relationship_level=level, cell_state="PENDING", decisions=plain, run_problem=v.problem, silent_entries=silent))
     artifact = layout["name"] or layout["rel_path"]
     sites = sites or {}
     ran_bind = any(s.oracle == "o_bind" and s.status == "RAN" for s in steps)
-    not_checked = (*templates.NOT_CHECKED_LIVE, *(templates.NOT_CHECKED_BIND if ran_bind else ()),
+    ran_contract = any(s.oracle == "o_contract" and s.status == "RAN" for s in steps)
+    live_not_checked = tuple(x for x in templates.NOT_CHECKED_LIVE if not (ran_contract and x == "data-contract replay was not run"))
+    not_checked = (*live_not_checked, *(templates.NOT_CHECKED_BIND if ran_bind else ()), *(templates.NOT_CHECKED_CONTRACT if ran_contract else ()),
                    *((f"{unchecked_sites} dynamic or unresolved call site(s) were recorded and not checked",) if unchecked_sites else ()))
     shown = tuple(f"call `{sites[e].callee}` at {sites[e].site_id}" if e in sites else e for e in out.exercised)
     kw = {"artifact": artifact, "consumers": names, "exercised": shown, "reasons": out.reasons, "not_checked": not_checked}
-    if out.outcome == "BREAK_WITNESSED":
+    cinputs = (contract or {}).get("inputs", {})
+    if out.outcome in ("BREAK_WITNESSED", "SILENT_DIVERGENCE_WITNESSED"):
         dec = next(x for x in v.decisions if x.entry == out.witness_entries[0])
         kw.update(entry=dec.entry, exc=dec.signature.exc_type, message=dec.signature.message_norm)
+        if dec.entry in cinputs:
+            kw["contract"] = cinputs[dec.entry]
         if dec.entry in sites:
             s = sites[dec.entry]
             kw["site"] = {"id": s.site_id, "callee": s.callee, "n_positional": s.n_positional, "keyword_names": list(s.keyword_names)}
@@ -268,7 +323,7 @@ def write_live_finding(conn: sqlite3.Connection, analysis_id: str, cell: Fixture
     fid = new_id("fnd")
     verdict = out.verdict
     scope = {"exercised": list(out.exercised), "not_applicable": list(out.not_applicable), "not_checked": list(not_checked), "bind_sites": {e: {"id": s.site_id, "callee": s.callee, "n_positional": s.n_positional, "keyword_names": list(s.keyword_names)} for e, s in sites.items()},
-             "reasons": list(out.reasons), "policy": LIVE_POLICY_VERSION, "oracle_plan": planner.as_json(steps), "consumers": names,
+             "reasons": list(out.reasons), "policy": LIVE_POLICY_VERSION, "oracle_plan": planner.as_json(steps), "consumers": names, "contract": contract,
              "delta": [{"name": d.name, "reference": d.reference, "consumer": d.consumer} for d in plan.projection.delta]}
     conn.execute("INSERT INTO finding(id, analysis_id, scope_kind, cell_id, verdict, sub_label, headline, scope_json, priority, created_at) "
                  "VALUES (?,?, 'ARTIFACT_CELL', ?,?,?,?,?,?,?)",

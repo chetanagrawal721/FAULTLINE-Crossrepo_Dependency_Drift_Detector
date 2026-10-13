@@ -26,7 +26,7 @@ Forbidden wording in all materials: "proof", "guarantee", "compatible" (except i
 - Docker Desktop isolation (shared kernel); the fetch zone is limited to GitHub and PyPI by a proxy allowlist.
 - Python verified end to end; npm and Maven are inventory only.
 - O-bind is bind-level only (calls are not executed; star, dynamic and instance-method call sites are not checked).
-- Scenarios needing contract replay or static API analysis are registered but not evaluated.
+- Scenarios E and J have contract-replay tests but are outside the benchmark denominator; F and I (static analysis) are registered but not evaluated.
 - Small fixture set: no claim about real-world accuracy.
 
 ## Materials

@@ -54,5 +54,5 @@ python tools/fl.py up               # API + worker + sandbox + UI at http://127.
 - Python is verified end to end. npm and Maven are inventory only.
 - O-bind checks that call shapes found in the artifact still bind to the current signatures (scenario C). It does not execute the calls, and call
   sites with star arguments, dynamic targets or instance methods are not checked.
-- Scenarios E, F, I and J are registered with reasons but are not detectable by the MVP oracles (they need contract replay or static API analysis).
+- Scenarios E and J (data contracts) are reproduced by contract replay (`tests/integration/test_o_contract.py`) but are not in the benchmark denominator; F and I need static analysis in the live pipeline, which is a script and library only (`scripts/static_exposure.py`).
 - Numbers come from scripts, against committed labels, on a small fixture set: they are not an estimate of real-world accuracy.

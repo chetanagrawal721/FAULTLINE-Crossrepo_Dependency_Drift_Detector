@@ -52,6 +52,16 @@ WITNESSED_VERDICTS = frozenset({"BREAK_WITNESSED", "SILENT_DIVERGENCE_WITNESSED"
 STATIC_VERDICTS = frozenset({"EXPOSED", "POTENTIAL", "NOT_EXPOSED"})                    # read from source and API deltas; nothing was executed for the claim
 
 
+SILENT_EXC = "ValueDivergence"                  # the failure signature of a contract input that both worlds accept but read differently
+
+
+def split_silent(decisions):
+    """(decisions without silent divergences, entries of silent divergence witnesses). A witnessed ValueDivergence is a SILENT_DIVERGENCE
+    witness (decision-table row 4); every other witness is a BREAK (row 3)."""
+    silent = tuple(d.entry for d in decisions if d.decision == Decision.WITNESS and d.signature is not None and d.signature.exc_type == SILENT_EXC)
+    return tuple(d for d in decisions if d.entry not in silent), silent
+
+
 def evidence_kind(outcome: str) -> str:
     """WITNESSED, STATIC or OTHER. The UI shows the first two differently; a static verdict is never worded like a witness."""
     return "WITNESSED" if outcome in WITNESSED_VERDICTS else "STATIC" if outcome in STATIC_VERDICTS else "OTHER"
@@ -95,7 +105,7 @@ class Outcome:
 def decide(ev: Evidence) -> Outcome:
     d = ev.decisions
     witnesses = tuple(x.entry for x in d if x.decision == Decision.WITNESS)
-    exercised = tuple(x.entry for x in d if x.decision in (Decision.WITNESS, Decision.NO_DIVERGENCE))
+    exercised = tuple(x.entry for x in d if x.decision in (Decision.WITNESS, Decision.NO_DIVERGENCE)) + tuple(ev.silent_entries)
     na = tuple(x.entry for x in d if x.decision == Decision.NOT_APPLICABLE)
     problems = tuple(f"{x.entry}: {x.reason}" for x in d if x.decision in (Decision.INCONCLUSIVE, Decision.REUSED_ONLY, Decision.NOT_EXERCISED,
                                                                           Decision.DISCARDED))

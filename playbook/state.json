@@ -234,6 +234,11 @@
       "started": "2026-10-13 22:03 UTC",
       "status": "done"
     },
+    "M7.1": {
+      "done": "2026-10-13 22:46 UTC",
+      "started": "2026-10-13 22:46 UTC",
+      "status": "done"
+    },
     "M8.0": {
       "done": "2026-10-13 11:30 UTC",
       "status": "done"
@@ -1071,6 +1076,30 @@
     "TC-6.4.2": {
       "date": "2026-10-13 22:03 UTC",
       "evidence": "evidence/M6.4/TC-6.4.2.txt",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-7.1.1": {
+      "date": "2026-10-13 22:46 UTC",
+      "evidence": "evidence/M7.1/TC-7.1.1.txt",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-7.1.2": {
+      "date": "2026-10-13 22:46 UTC",
+      "evidence": "evidence/M7.1/TC-7.1.2.txt",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-7.1.3": {
+      "date": "2026-10-13 22:46 UTC",
+      "evidence": "evidence/M7.1/TC-7.1.3.txt",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-7.1.4": {
+      "date": "2026-10-13 22:46 UTC",
+      "evidence": "evidence/M7.1/TC-7.1.4.txt",
       "note": "",
       "status": "pass"
     },

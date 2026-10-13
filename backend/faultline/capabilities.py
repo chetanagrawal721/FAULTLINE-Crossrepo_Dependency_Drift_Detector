@@ -61,10 +61,11 @@ def build_capabilities(mode: Mode, sandbox: SandboxStatus) -> Capabilities:
         oracles["o_tests"] = _off("implemented (M1.5) but not part of the live pipeline: reported NOT_PLANNED per cell", CapabilityState.PARTIAL)
         oracles["o_bind"] = on("call shapes found in the artifact are bound to the current signatures in the sandbox, 3 + 3 fresh runs; calls are not executed, "
                                "and star-argument, dynamic and instance-method call sites are not checked")
-        for name, phase in (("o_contract", "M7.1 contract replay"), ("o_typecheck", "M7.2 type checking")):
-            oracles[name] = _off(f"not built ({phase})")
+        oracles["o_contract"] = on("pydantic models in the modules the consumer imports: bytes written in the reference world are parsed in the consumer world, 3 + 3 fresh runs; "
+                                   "serialisation options are assumed (default and exclude_none), other wire formats are not replayed")
+        oracles["o_typecheck"] = _off("not built (M7.2 type checking)")
         features["repository_ingestion"] = on("public GitHub repositories at a pinned commit, fetched in the sandbox into immutable hashed snapshots")
-        features["witness_verification"] = on("O-import and O-bind witnesses under the 3 + 3 rule; O-tests is not part of the live pipeline")
+        features["witness_verification"] = on("O-import, O-bind and O-contract witnesses under the 3 + 3 rule; O-tests is not part of the live pipeline")
         features["attribution_ddmin"] = on("two-sided ddmin over the world delta; forced worlds are labelled experiments")
         features["remediation_minimal"] = on("constraint diff, native re-resolution and a 3 + 3 re-run; the result is a diff and nothing is pushed")
     return Capabilities(

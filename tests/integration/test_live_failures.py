@@ -15,8 +15,8 @@ from tests.unit.test_witness_decision import NAME, bad, ok, runs
 
 
 def test_tc_4_4_2_a_failing_top_level_import_blocks_downstream_oracles():
-    steps = planner.plan(NAME, [NAME, "acme_models.web"], has_tests=True, test_lock=True, bind_sites=2)
-    assert [s.oracle for s in steps] == ["o_import", "o_tests", "o_bind"] and [s.status for s in steps] == ["PLANNED", "PLANNED", "PLANNED"]
+    steps = planner.plan(NAME, [NAME, "acme_models.web"], has_tests=True, test_lock=True, bind_sites=2, contract_types=1)
+    assert [s.oracle for s in steps] == ["o_import", "o_tests", "o_bind", "o_contract"] and [s.status for s in steps] == ["PLANNED"] * 4
     assert planner.plan(NAME, [NAME], has_tests=True, test_lock=True)[2].status == "NOT_PLANNED"                        # no call site into a differing package: O-bind is not planned
     witness = decide_entry(NAME, runs("ref", [ok()] * 3), runs("test", [bad()] * 3))
     assert witness.decision == Decision.WITNESS

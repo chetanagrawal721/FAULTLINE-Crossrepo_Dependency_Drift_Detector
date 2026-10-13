@@ -11,12 +11,12 @@ from ..core.models import OracleRunResult
 from ..witnesses.runs import RunRecord
 from ..witnesses.verify import Decision, EntryDecision, decide_entry
 from . import templates
-from .engine import LIVE_POLICY_VERSION, LIVE_PRIORITY, Evidence, decide
+from .engine import LIVE_POLICY_VERSION, LIVE_PRIORITY, Evidence, decide, split_silent
 
 LEVELS_OK = ("L2", "L3", "L4", "L5")
 
 
-ORACLES = ("o_import", "o_bind")
+ORACLES = ("o_import", "o_bind", "o_contract")
 
 
 def _records(conn: sqlite3.Connection, cell_id: str, oracle: str = "o_import") -> tuple[list[RunRecord], list[RunRecord]]:
@@ -57,7 +57,8 @@ def recompute_finding(conn: sqlite3.Connection, finding: sqlite3.Row) -> str:
     levels = [x["level"] for x in conn.execute(
         "SELECT rl.level FROM finding_evidence fe JOIN relationship rl ON rl.id=fe.evidence_id WHERE fe.finding_id=? AND fe.evidence_kind='RELATIONSHIP'", (finding["id"],))]
     level = "L2" if levels and all(x in LEVELS_OK for x in levels) else "L1"
-    out = decide(Evidence(relationship_level=level, cell_state="PENDING", decisions=tuple(decisions), run_problem=problem))
+    plain, silent = split_silent(decisions)
+    out = decide(Evidence(relationship_level=level, cell_state="PENDING", decisions=plain, run_problem=problem, silent_entries=silent))
     artifact = conn.execute("SELECT COALESCE(published_name, display_name, rel_path) FROM project p JOIN cell c ON c.artifact_project_id=p.id WHERE c.id=?",
                             (finding["cell_id"],)).fetchone()[0]
     sites = scope.get("bind_sites", {})
@@ -65,9 +66,12 @@ def recompute_finding(conn: sqlite3.Connection, finding: sqlite3.Row) -> str:
     kw = {"artifact": artifact, "consumers": scope.get("consumers", []), "exercised": shown, "reasons": out.reasons}
     if scope.get("not_checked"):
         kw["not_checked"] = tuple(scope["not_checked"])
-    if out.outcome == "BREAK_WITNESSED":
+    cinputs = (scope.get("contract") or {}).get("inputs", {})
+    if out.outcome in ("BREAK_WITNESSED", "SILENT_DIVERGENCE_WITNESSED"):
         dec = next(x for x in decisions if x.entry == out.witness_entries[0])
         kw.update(entry=dec.entry, exc=dec.signature.exc_type, message=dec.signature.message_norm)
+        if dec.entry in cinputs:
+            kw["contract"] = cinputs[dec.entry]
         if dec.entry in sites:
             kw["site"] = sites[dec.entry]
     headline = templates.live_headline(out.outcome, **kw)
