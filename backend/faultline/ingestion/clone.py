@@ -35,7 +35,11 @@ def snapshot_key(owner: str, name: str, sha: str) -> str:
 def _read_only(root: Path) -> None:
     for p in root.rglob("*"):
         if p.is_file():
-            p.chmod(stat.S_IREAD)
+            try:
+                p.chmod(stat.S_IREAD)
+            except OSError:                    # on a Linux host the files belong to the container user; the harness already made them 0444
+                if os.access(p, os.W_OK):
+                    raise
 
 
 def _writable(root: Path) -> None:

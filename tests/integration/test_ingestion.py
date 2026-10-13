@@ -66,7 +66,7 @@ def test_snapshot_is_complete_hashed_read_only_and_cached(ing, remotes):
     # read-only and tamper-evident
     f = s.path / "src" / "a.py"
     assert not os.access(f, os.W_OK)
-    f.chmod(stat.S_IWRITE | stat.S_IREAD)
+    unlock(f)
     f.write_bytes(b"x = 999\n")
     assert verify_snapshot(s.path) == ["modified file: src/a.py"]
     f.write_bytes(b"x = 1\n")                                                    # restore for the cache check
@@ -75,11 +75,19 @@ def test_snapshot_is_complete_hashed_read_only_and_cached(ing, remotes):
     assert again.cached and again.key == s.key                                   # same repo + SHA: no second fetch
 
 
+def unlock(f):
+    """Make a snapshot file replaceable: chmod where the host owns it (Windows, macOS), else remove it (Linux: the container user owns it, the directory is open)."""
+    try:
+        f.chmod(stat.S_IWRITE | stat.S_IREAD)
+    except OSError:
+        f.unlink()
+
+
 def test_extra_or_missing_files_are_detected_by_verification(ing, remotes):
     r = remotes("rm_tamper")
     sha = r.commit({"a.txt": b"a\n", "b.txt": b"b\n"})
     s = fetch(ing, "rm_tamper", sha)
-    (s.path / "b.txt").chmod(stat.S_IWRITE | stat.S_IREAD)
+    unlock(s.path / "b.txt")
     (s.path / "b.txt").unlink()
     (s.path / "injected.py").write_text("print('x')\n")
     assert sorted(verify_snapshot(s.path)) == ["missing file: b.txt", "unexpected file: injected.py"]
