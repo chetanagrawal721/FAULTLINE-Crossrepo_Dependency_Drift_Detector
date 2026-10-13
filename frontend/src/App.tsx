@@ -27,8 +27,8 @@ export default function App() {
   useEffect(() => {
     if (!booting) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const a = window.setTimeout(() => setLeaving(true), reduced ? 80 : 1100);
-    const b = window.setTimeout(() => setBooting(false), reduced ? 100 : 1550);
+    const a = window.setTimeout(() => setLeaving(true), reduced ? 60 : 550);
+    const b = window.setTimeout(() => setBooting(false), reduced ? 80 : 800);
     return () => {
       window.clearTimeout(a);
       window.clearTimeout(b);

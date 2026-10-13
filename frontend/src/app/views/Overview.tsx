@@ -1,6 +1,7 @@
 import { ApiError, api, type AnalysisView, type ProjectView } from "../../api/client";
 import { useAsync, short } from "../../lib/hooks";
 import type { AppView } from "../../lib/route";
+import { Bars, Donut, type Slice } from "../../ui/charts";
 import { AppAction, DataTable, Panel, Status } from "../../ui/primitives";
 import { useWorkspace } from "../context";
 import { Loading, ModeStatus, StateBlock, StateNote, VerdictStatus } from "../shared";
@@ -33,6 +34,22 @@ export function OverviewView({ go }: { go: Go }) {
     ["Findings requiring review", findings.data ? reviewCount : "—", findings.data ? "Break or silent divergence witnessed" : "Loading"],
     ["Inconclusive", findings.data ? inconclusive.length : "—", findings.data ? "Not enough evidence either way" : "Loading"],
     ["Jobs needing attention", jobs.data ? failedJobs.length : "—", jobs.data ? "Failed jobs among the latest 50" : "Loading"],
+  ];
+
+  const count = (pred: (v: string) => boolean) => f.filter((x) => pred(x.verdict)).length;
+  const outcomes: Slice[] = [
+    { key: "break", label: "Break witnessed", value: count((v) => v === "BREAK_WITNESSED"), tone: "break" },
+    { key: "silent", label: "Silent divergence", value: count((v) => v === "SILENT_DIVERGENCE_WITNESSED"), tone: "silent" },
+    { key: "inconclusive", label: "Inconclusive", value: count((v) => v === "INCONCLUSIVE"), tone: "warn" },
+    { key: "none", label: "No divergence observed", value: count((v) => v === "NO_DIVERGENCE_OBSERVED"), tone: "ok" },
+    { key: "other", label: "Other", value: count((v) => !["BREAK_WITNESSED", "SILENT_DIVERGENCE_WITNESSED", "INCONCLUSIVE", "NO_DIVERGENCE_OBSERVED"].includes(v)), tone: "neutral" },
+  ];
+  const jobRows = jobs.data ?? [];
+  const jobSlices: Slice[] = [
+    { key: "DONE", label: "Completed", value: jobRows.filter((j) => j.status === "DONE").length, tone: "ok" },
+    { key: "FAILED", label: "Failed", value: jobRows.filter((j) => j.status === "FAILED").length, tone: "break" },
+    { key: "ACTIVE", label: "Running or queued", value: jobRows.filter((j) => j.status === "RUNNING" || j.status === "QUEUED").length, tone: "run" },
+    { key: "CANCELLED", label: "Cancelled", value: jobRows.filter((j) => j.status === "CANCELLED").length, tone: "neutral" },
   ];
 
   const fn = (analysis?.funnel ?? {}) as Record<string, unknown>;
@@ -79,6 +96,14 @@ export function OverviewView({ go }: { go: Go }) {
         </StateBlock>
       ) : (
         <>
+          <div className="work-grid equal" data-testid="charts">
+            <Panel title="Outcomes" meta={findings.data ? `${f.length} finding${f.length === 1 ? "" : "s"}` : "Loading"}>
+              {findings.data ? <Donut slices={outcomes} centerLabel="findings" onSlice={() => go("findings")} testid="chart-outcomes" /> : <Loading what="findings" />}
+            </Panel>
+            <Panel title="Jobs by status" meta={jobs.data ? `latest ${jobRows.length}` : "Loading"}>
+              {jobs.data ? <Bars slices={jobSlices} onBar={() => go("jobs")} testid="chart-jobs" /> : <Loading what="jobs" />}
+            </Panel>
+          </div>
           <div className="work-grid two-one">
             <div data-testid="dashboard">
               <Panel title="Analysis funnel" meta={project ? `${project.name} · persisted stages` : "Persisted stages"}>

@@ -1144,31 +1144,11 @@ export function StartModal({
 export function LoadingScreen({ leaving }: { leaving: boolean }) {
   return (
     <div className={`faultline-loader${leaving ? " is-leaving" : ""}`} role="status" aria-live="polite" aria-label="Loading FAULTLINE">
-      <div className="loader-grain" />
       <div className="loader-content">
-        <div className="loader-brand">
-          <img src="/faultline-logo.svg" alt="" />
-          <span>FAULTLINE</span>
-        </div>
-        <div className="loader-centerpiece" aria-hidden="true">
-          <div className="loader-orbit orbit-one" />
-          <div className="loader-orbit orbit-two" />
-          <div className="loader-core"><img src="/faultline-logo.svg" alt="" /></div>
-          <span className="loader-node node-one" />
-          <span className="loader-node node-two" />
-          <span className="loader-node node-three" />
-        </div>
-        <p className="loader-eyebrow">CROSS-REPOSITORY INTELLIGENCE</p>
-        <h1>Follow the evidence.<br /><em>Find the fault line.</em></h1>
-        <div className="loader-bottom">
-          <span>INITIALIZING INTERFACE</span>
-          <span className="loader-sequence"><i /><i /><i /></span>
-          <span>PS / 07</span>
-        </div>
-        <div className="loader-progress-track"><span /></div>
+        <img src="/faultline-logo.svg" alt="" width="34" height="34" />
+        <span className="loader-name">FAULTLINE</span>
+        <div className="loader-progress-track" aria-hidden="true"><span /></div>
       </div>
-      <span className="loader-corner loader-corner-left">FAULTLINE SYSTEMS<br />EVIDENCE-FIRST ANALYSIS</span>
-      <span className="loader-corner loader-corner-right">BUILD 01<br />PREVIEW ENVIRONMENT</span>
     </div>
   )
 }
