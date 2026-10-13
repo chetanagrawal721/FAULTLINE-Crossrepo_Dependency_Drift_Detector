@@ -49,7 +49,7 @@ def consumer_pinned(conn: sqlite3.Connection, project_id: str) -> list[PinnedReq
 def artifact_roots(conn: sqlite3.Connection, producer_id: str, extras: frozenset[str]) -> list[tuple[str, frozenset[str]]]:
     """The artifact's own runtime dependencies (main group) plus the optional groups the consumer asked for, from persisted manifests."""
     roots: list[tuple[str, frozenset[str]]] = []
-    for m in conn.execute("SELECT parsed_json FROM manifest WHERE project_id=? AND kind='pyproject'", (producer_id,)):
+    for m in conn.execute("SELECT parsed_json FROM manifest WHERE project_id=? AND kind IN ('pyproject', 'setup_cfg')", (producer_id,)):
         for d in json.loads(m["parsed_json"] or "{}").get("dependencies", []):
             if d["group"] == "main" or (d["group"].startswith("optional:") and d["group"].split(":", 1)[1] in extras):
                 roots.append((d["name"], frozenset(d.get("extras") or ())))

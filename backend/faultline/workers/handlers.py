@@ -145,6 +145,45 @@ def live_analysis(ctx: JobContext) -> dict:
         conn.close()
 
 
+def rerun_witness(ctx: JobContext) -> dict:
+    """Run a witness's oracle again, 3 fresh runs per world, and report whether it still reproduces."""
+    from dataclasses import asdict
+
+    from ..core.config import Settings
+    from ..sandbox.client import SandboxClient
+    from ..sandbox.images import default_image
+    from ..storage.db import connect
+    from ..witnesses.rerun import rerun_witness as run
+
+    conn = connect(Settings.from_env().db_path)
+    try:
+        ctx.progress(0.1, "re-running 3 + 3 fresh executions")
+        return asdict(run(conn, SandboxClient(), default_image(), ctx.payload["witness_id"]))
+    finally:
+        conn.close()
+
+
+def remediate_finding(ctx: JobContext) -> dict:
+    """Propose a constraint for the attributed cause, re-resolve, rebuild and re-run. Produces a diff only: nothing is pushed."""
+    from dataclasses import asdict
+
+    from ..core.config import Settings
+    from ..remediation.minimal import remediate
+    from ..sandbox.client import SandboxClient
+    from ..sandbox.images import default_image
+    from ..storage.db import connect
+    from ..storage.store import Store
+
+    settings = Settings.from_env()
+    conn = connect(settings.db_path)
+    try:
+        ctx.progress(0.1, "re-resolving with the proposed constraint")
+        return asdict(remediate(conn, SandboxClient(), default_image(), Store(settings.store_path), ctx.payload["finding_id"],
+                                constraint=ctx.payload.get("constraint")))
+    finally:
+        conn.close()
+
+
 HANDLERS: dict[str, Callable[[JobContext], dict]] = {
     "noop": noop,
     "sleep": sleep,
@@ -154,4 +193,6 @@ HANDLERS: dict[str, Callable[[JobContext], dict]] = {
     "ingest_repository": ingest_repository,
     "analyze_repository": analyze_repository,
     "live_analysis": live_analysis,
+    "rerun_witness": rerun_witness,
+    "remediate_finding": remediate_finding,
 }
