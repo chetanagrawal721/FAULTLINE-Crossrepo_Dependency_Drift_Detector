@@ -59,10 +59,12 @@ def build_capabilities(mode: Mode, sandbox: SandboxStatus) -> Capabilities:
     if sandbox.verified:
         oracles["o_import"] = on("3 + 3 fresh runs of the modules the consumer imports, in the sandbox")
         oracles["o_tests"] = _off("implemented (M1.5) but not part of the live pipeline: reported NOT_PLANNED per cell", CapabilityState.PARTIAL)
-        for name, phase in (("o_bind", "M4.6 call-site binding"), ("o_contract", "M7.1 contract replay"), ("o_typecheck", "M7.2 type checking")):
+        oracles["o_bind"] = on("call shapes found in the artifact are bound to the current signatures in the sandbox, 3 + 3 fresh runs; calls are not executed, "
+                               "and star-argument, dynamic and instance-method call sites are not checked")
+        for name, phase in (("o_contract", "M7.1 contract replay"), ("o_typecheck", "M7.2 type checking")):
             oracles[name] = _off(f"not built ({phase})")
         features["repository_ingestion"] = on("public GitHub repositories at a pinned commit, fetched in the sandbox into immutable hashed snapshots")
-        features["witness_verification"] = on("O-import witnesses under the 3 + 3 rule; O-bind and O-tests are not in the live pipeline yet")
+        features["witness_verification"] = on("O-import and O-bind witnesses under the 3 + 3 rule; O-tests is not part of the live pipeline")
         features["attribution_ddmin"] = on("two-sided ddmin over the world delta; forced worlds are labelled experiments")
         features["remediation_minimal"] = on("constraint diff, native re-resolution and a 3 + 3 re-run; the result is a diff and nothing is pushed")
     return Capabilities(

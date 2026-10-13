@@ -25,6 +25,11 @@ def headline(verdict: Verdict, *, artifact: str, consumer: str, entry: str | Non
     raise ValueError(f"no Phase 1 template for {verdict.value}")
 
 
+NOT_CHECKED_BIND = (
+    "O-bind checks that each call shape still binds to the current signature; it does not execute the call",
+    "call sites with star arguments, dynamic or unresolved targets, and method calls on instances are not checked",
+)
+
 NOT_CHECKED_LIVE = (
     "static API and usage exposure were not analysed",
     "the artifact's own tests (O-tests) were not run unless listed as exercised",
@@ -35,8 +40,13 @@ NOT_CHECKED_LIVE = (
 
 def live_headline(outcome: str, *, artifact: str, consumers: list[str], entry: str | None = None, exc: str | None = None,
                   message: str | None = None, exercised: tuple[str, ...] = (), reasons: tuple[str, ...] = (),
-                  not_checked: tuple[str, ...] = NOT_CHECKED_LIVE) -> str:
+                  not_checked: tuple[str, ...] = NOT_CHECKED_LIVE, site: dict | None = None) -> str:
     who = ", ".join(consumers) or "the consumer"
+    if outcome == "BREAK_WITNESSED" and site:
+        shape = ", ".join([*(["..."] * site["n_positional"]), *(f"{k}=..." for k in site["keyword_names"])])
+        return (f"Reproduced: the call `{site['callee']}({shape})` at {site['id']} no longer binds to its signature and fails with `{exc}: {message}` when "
+                f"{artifact} runs with the dependencies of {who}. It binds with {artifact}'s own dependencies. 3 of 3 fresh runs on each side. "
+                "The call was checked by binding its shape to the signature; it was not executed.")
     if outcome == "BREAK_WITNESSED":
         return (f"Reproduced: importing `{entry}` fails with `{exc}: {message}` when {artifact} runs with the dependencies of {who}. "
                 f"It passes with {artifact}'s own dependencies. 3 of 3 fresh runs on each side.")

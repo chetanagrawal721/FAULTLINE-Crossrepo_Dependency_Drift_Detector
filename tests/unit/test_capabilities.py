@@ -40,18 +40,19 @@ def test_without_a_verified_sandbox_nothing_that_executes_is_available():
 
 def test_with_a_verified_sandbox_exactly_what_is_built_is_enabled_and_the_rest_says_so():
     c = build_capabilities(Mode.FIXTURE, VERIFIED)
-    assert {n for n, s in c.oracles.items() if s.state == CapabilityState.ENABLED} == {"o_import"}
+    assert {n for n, s in c.oracles.items() if s.state == CapabilityState.ENABLED} == {"o_import", "o_bind"}
     assert c.oracles["o_tests"].state == CapabilityState.PARTIAL and "NOT_PLANNED" in c.oracles["o_tests"].reason     # exists, not in the pipeline
     enabled = {n for n, s in c.features.items() if s.state == CapabilityState.ENABLED}
     assert enabled == {"repository_ingestion", "relationship_discovery", "witness_verification", "attribution_ddmin", "remediation_minimal", "evidence_bundle"}
     assert c.features["llm_assistance"].state == CapabilityState.UNAVAILABLE
     assert "Replay on a different computer is not yet confirmed" in c.features["evidence_bundle"].reason      # an unfinished claim is stated
-    assert "O-bind and O-tests are not in the live pipeline" in c.features["witness_verification"].reason
+    assert "O-tests is not part of the live pipeline" in c.features["witness_verification"].reason
     pypi = next(e for e in c.ecosystems if e.ecosystem.value == "pypi")
     assert pypi.runtime_witness.state == CapabilityState.ENABLED
     assert enabled_ecosystem_dimensions(c) == STATIC_ONLY | {("pypi", "resolve"), ("pypi", "world"), ("pypi", "runtime_witness")}
-    for name in ("o_bind", "o_contract", "o_typecheck"):
-        assert c.oracles[name].state == CapabilityState.UNAVAILABLE and "not built" in c.oracles[name].reason     # unfinished MUSTs are visible, not hidden
+    assert c.oracles["o_bind"].state == CapabilityState.ENABLED and "not executed" in c.oracles["o_bind"].reason           # built, with its limits stated
+    for name in ("o_contract", "o_typecheck"):
+        assert c.oracles[name].state == CapabilityState.UNAVAILABLE and "not built" in c.oracles[name].reason     # unfinished items are visible, not hidden
     npm = next(e for e in c.ecosystems if e.ecosystem.value == "npm")
     assert npm.runtime_witness.state == CapabilityState.UNSUPPORTED
     maven = next(e for e in c.ecosystems if e.ecosystem.value == "maven")

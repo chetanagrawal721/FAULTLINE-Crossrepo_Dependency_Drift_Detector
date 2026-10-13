@@ -13,7 +13,7 @@ class Step:
     entries: tuple[str, ...] = ()
 
 
-def plan(top_level: str, modules: list[str], *, has_tests: bool, test_lock: bool) -> list[Step]:
+def plan(top_level: str, modules: list[str], *, has_tests: bool, test_lock: bool, bind_sites: int = 0) -> list[Step]:
     steps = [Step("o_import", "PLANNED", "", tuple(modules))]
     if not has_tests:
         steps.append(Step("o_tests", "NOT_PLANNED", "the artifact has no tests directory"))
@@ -21,6 +21,10 @@ def plan(top_level: str, modules: list[str], *, has_tests: bool, test_lock: bool
         steps.append(Step("o_tests", "NOT_PLANNED", "no hash-pinned test-only lock to overlay (PC-5)"))
     else:
         steps.append(Step("o_tests", "PLANNED", "", ()))
+    if bind_sites:
+        steps.append(Step("o_bind", "PLANNED", f"{bind_sites} call site(s) into the differing packages", ()))
+    else:
+        steps.append(Step("o_bind", "NOT_PLANNED", "no call site in the artifact calls into a package that differs between the worlds"))
     return steps
 
 
@@ -37,6 +41,10 @@ def after_import(steps: list[Step], top_level: str, v: Verification) -> list[Ste
         else:
             out.append(s)
     return out
+
+
+def mark_ran(steps: list[Step], oracle: str, entries: tuple[str, ...]) -> list[Step]:
+    return [Step(s.oracle, "RAN", "", entries) if s.oracle == oracle else s for s in steps]
 
 
 def as_json(steps: list[Step]) -> list[dict]:

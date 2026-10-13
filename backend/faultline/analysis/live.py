@@ -17,6 +17,9 @@ from ..core.models import OracleRunResult
 from ..ingestion.clone import load_inventory
 from ..oracles import planner
 from ..oracles.artifacts import prepare_artifact
+from ..oracles.o_bind import ORACLE as BIND_ORACLE
+from ..oracles.o_bind import ORACLE_VERSION as BIND_VERSION
+from ..oracles.o_bind import run_o_bind, site_payload
 from ..oracles.o_import import ORACLE, ORACLE_VERSION, plan_modules, run_o_import
 from ..relationships.engine import create_analysis, discover
 from ..resolvers.pinned import render_lock
@@ -29,6 +32,7 @@ from ..verdicts.stats import funnel
 from ..witnesses.verify import INFRA_CLASSES, Verification, verify_cell
 from ..worlds.builder import WorldBuilder, WorldBuildError
 from ..worlds.cells import CellPlan, persist_cell, plan_cells
+from .bind import find_sites
 from .fixture import FixtureCell
 from .lifecycle import mark_partial, reconcile_abandoned
 
@@ -169,6 +173,13 @@ def _run_live(conn, sbx, image, store, analysis_project_id, aid, say) -> LiveRes
     return LiveResult(aid, out_cells, funnel(conn, aid))
 
 
+def _bind_runner(payload: dict):
+    """Attribution re-runs one call site at a time in each forced world; this adapts O-bind to the runner interface attribute() expects."""
+    def runner(sbx, image, *, world_hash, artifact_hash, top_level, modules, pythonpath):
+        return run_o_bind(sbx, image, world_hash=world_hash, artifact_hash=artifact_hash, sites=[payload], top_level=top_level, pythonpath=pythonpath)
+    return runner
+
+
 def execute_cell(conn, sbx, image, store, builder, aid, cell_id, plan, layout, pkg, imported, test_hash, rels, say, base, n, *, prod_root, prod_inv, src_root):
     """Run the oracle 3 + 3 times on one cell, attribute any witness, and write the finding. Returns (finding_id, cell_state)."""
     art_dir = Path(prod_root) / layout["rel_path"] if layout["rel_path"] != "." else Path(prod_root)
@@ -190,15 +201,31 @@ def execute_cell(conn, sbx, image, store, builder, aid, cell_id, plan, layout, p
         v = verify_cell(conn, cell, oracle=ORACLE, version=ORACLE_VERSION, run_in_world=run, args={"modules": modules, "pythonpath": pythonpath}, force=True)
     say(base + 0.09 / n, "recording the verified result")                      # raises Cancelled here, before any finding is written for a killed run
     has_tests = any(e["path"].startswith(("tests/", "test/")) for e in prod_inv["entries"])
+    delta_names = [d.name for d in plan.projection.delta]
+    sites, unchecked = find_sites(conn, art_dir, delta_names, src_root=pyroot, consumer_modules=set(modules))
+    site_by_entry = {"bind:" + s.site_id: s for s in sites}
+    steps = planner.after_import(planner.plan(pkg, modules, has_tests=has_tests, test_lock=False, bind_sites=len(sites)), pkg, v)
+    if any(s.oracle == "o_bind" and s.status == "PLANNED" for s in steps):
+        say(base + 0.095 / n, f"running O-bind (3 + 3 fresh runs) on {len(sites)} call site(s)")
+        payload = [site_payload(s) for s in sites]
+
+        def run_bind(world_hash: str):
+            return retrying(lambda: run_o_bind(sbx, image, world_hash=world_hash, artifact_hash=artifact, sites=payload, top_level=pkg, pythonpath=(pythonpath,)),
+                            checkpoint=lambda: say(base + 0.095 / n, "checking whether the job was cancelled"))()
+        with phase("verify O-bind (3 + 3 fresh runs)", cell=cell_id, sites=len(sites)):
+            vb = verify_cell(conn, cell, oracle=BIND_ORACLE, version=BIND_VERSION, run_in_world=run_bind, args={"sites": [p["id"] for p in payload]}, force=True)
+        v = Verification(v.ref_runs + vb.ref_runs, v.test_runs + vb.test_runs, v.decisions + vb.decisions, v.problem or vb.problem)
+        steps = planner.mark_ran(steps, "o_bind", tuple("bind:" + p["id"] for p in payload))
     for dec in v.witnesses:
         if dec.witness_id and dec.signature is not None:
             say(base + 0.1 / n, f"attributing the break in {dec.entry} (two-sided search)")
+            site = site_by_entry.get(dec.entry)
+            runner = _bind_runner(site_payload(site)) if site is not None else None
             with phase("attribute (two-sided ddmin)", cell=cell_id, entry=dec.entry):
                 a = attribute(sbx, image, builder, artifact_hash=artifact, entry=dec.entry, top_level=pkg, pythonpath=pythonpath, signature=dec.signature,
-                              ref=list(plan.reference.pinned), consumer=list(plan.projection.pinned), delta=[d.name for d in plan.projection.delta])
+                              ref=list(plan.reference.pinned), consumer=list(plan.projection.pinned), delta=delta_names, run=runner)
             persist(conn, dec.witness_id, a)
-    steps = planner.after_import(planner.plan(pkg, modules, has_tests=has_tests, test_lock=False), pkg, v)
-    fid = write_live_finding(conn, aid, cell, v, layout, plan, steps, rels)
+    fid = write_live_finding(conn, aid, cell, v, layout, plan, steps, rels, sites=site_by_entry, unchecked_sites=len(unchecked))
     state = "ANALYZED" if v.decisions else "INCONCLUSIVE"
     conn.execute("UPDATE cell SET state=? WHERE id=?", (state, cell_id))
     return fid, state
@@ -215,7 +242,7 @@ def _env_id(builder: WorldBuilder) -> str:
 
 
 def write_live_finding(conn: sqlite3.Connection, analysis_id: str, cell: FixtureCell, v: Verification, layout: dict, plan: CellPlan,
-                       steps: list[planner.Step], rels) -> str:
+                       steps: list[planner.Step], rels, sites: dict | None = None, unchecked_sites: int = 0) -> str:
     consumers = [conn.execute("SELECT p.rel_path, r.owner, r.name FROM project p JOIN snapshot s ON s.id=p.snapshot_id JOIN repository r ON r.id=s.repository_id "
                               "WHERE p.id=?", (c,)).fetchone() for c, _ in plan.consumers]
     names = [f"{c['owner']}/{c['name']}" for c in consumers]
@@ -223,16 +250,24 @@ def write_live_finding(conn: sqlite3.Connection, analysis_id: str, cell: Fixture
     level = "L2" if all(rel_levels.get(c) in ("L2", "L3", "L4", "L5") for c, _ in plan.consumers) else "L1"
     out = decide(Evidence(relationship_level=level, cell_state="PENDING", decisions=tuple(v.decisions), run_problem=v.problem))
     artifact = layout["name"] or layout["rel_path"]
-    kw = {"artifact": artifact, "consumers": names, "exercised": out.exercised, "reasons": out.reasons}
+    sites = sites or {}
+    ran_bind = any(s.oracle == "o_bind" and s.status == "RAN" for s in steps)
+    not_checked = (*templates.NOT_CHECKED_LIVE, *(templates.NOT_CHECKED_BIND if ran_bind else ()),
+                   *((f"{unchecked_sites} dynamic or unresolved call site(s) were recorded and not checked",) if unchecked_sites else ()))
+    shown = tuple(f"call `{sites[e].callee}` at {sites[e].site_id}" if e in sites else e for e in out.exercised)
+    kw = {"artifact": artifact, "consumers": names, "exercised": shown, "reasons": out.reasons, "not_checked": not_checked}
     if out.outcome == "BREAK_WITNESSED":
         dec = next(x for x in v.decisions if x.entry == out.witness_entries[0])
         kw.update(entry=dec.entry, exc=dec.signature.exc_type, message=dec.signature.message_norm)
+        if dec.entry in sites:
+            s = sites[dec.entry]
+            kw["site"] = {"id": s.site_id, "callee": s.callee, "n_positional": s.n_positional, "keyword_names": list(s.keyword_names)}
     headline = templates.live_headline(out.outcome, **kw)
     conn.execute("DELETE FROM finding_evidence WHERE finding_id IN (SELECT id FROM finding WHERE cell_id=?)", (cell.cell_id,))
     conn.execute("DELETE FROM finding WHERE cell_id=?", (cell.cell_id,))
     fid = new_id("fnd")
     verdict = out.verdict
-    scope = {"exercised": list(out.exercised), "not_applicable": list(out.not_applicable), "not_checked": list(templates.NOT_CHECKED_LIVE),
+    scope = {"exercised": list(out.exercised), "not_applicable": list(out.not_applicable), "not_checked": list(not_checked), "bind_sites": {e: {"id": s.site_id, "callee": s.callee, "n_positional": s.n_positional, "keyword_names": list(s.keyword_names)} for e, s in sites.items()},
              "reasons": list(out.reasons), "policy": LIVE_POLICY_VERSION, "oracle_plan": planner.as_json(steps), "consumers": names,
              "delta": [{"name": d.name, "reference": d.reference, "consumer": d.consumer} for d in plan.projection.delta]}
     conn.execute("INSERT INTO finding(id, analysis_id, scope_kind, cell_id, verdict, sub_label, headline, scope_json, priority, created_at) "
