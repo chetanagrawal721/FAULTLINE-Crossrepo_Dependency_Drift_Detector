@@ -88,7 +88,7 @@ def test_extra_or_missing_files_are_detected_by_verification(ing, remotes):
     sha = r.commit({"a.txt": b"a\n", "b.txt": b"b\n"})
     s = fetch(ing, "rm_tamper", sha)
     unlock(s.path / "b.txt")
-    (s.path / "b.txt").unlink()
+    (s.path / "b.txt").unlink(missing_ok=True)
     (s.path / "injected.py").write_text("print('x')\n")
     assert sorted(verify_snapshot(s.path)) == ["missing file: b.txt", "unexpected file: injected.py"]
 

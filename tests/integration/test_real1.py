@@ -9,7 +9,7 @@ import pytest
 from faultline.analysis.timemachine import run_time_machine
 from faultline.core.scenario import load_scenario
 from faultline.ingestion import service
-from faultline.ingestion.github import GitHubClient
+from faultline.ingestion.github import GitHubClient, GitHubError
 
 pytestmark = pytest.mark.docker
 ROOT = Path(__file__).resolve().parents[2]
@@ -39,7 +39,12 @@ def real1(request, daemon, image):
     migrate(conn)
     sbx = SandboxClient(port=daemon.port, token=TOKEN, timeout=900)
     pid = service.create_project(conn, request.param)
-    rid, resolved, _ = service.add_repository(conn, GitHubClient(), pid, sc.real_source.url, sc.real_source.ref)
+    try:
+        rid, resolved, _ = service.add_repository(conn, GitHubClient(), pid, sc.real_source.url, sc.real_source.ref)
+    except GitHubError as e:
+        if "rate limit" in str(e):
+            pytest.skip("GitHub API rate limit reached (set GITHUB_TOKEN)")
+        raise
     service.ingest(conn, sbx, image, daemon.store, rid)
     analyze_repository(conn, sbx, image, daemon.store, rid, build=False)
     try:

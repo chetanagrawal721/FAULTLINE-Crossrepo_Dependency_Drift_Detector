@@ -23,3 +23,5 @@ jobs:
           npm ci --prefix frontend --no-audit --no-fund
       - name: Faultline CI (lint, pins, tests, type drift, build, boot)
         run: python tools/fl.py ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}      # control-plane GitHub API rate limit only; never passed into a container
