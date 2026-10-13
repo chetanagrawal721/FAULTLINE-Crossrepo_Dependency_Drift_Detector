@@ -5,8 +5,21 @@
 Faultline finds the dependency worlds your consumer repositories actually resolve, checks a shared artifact in each
 one, and backs every failure it reports with a reproducible witness narrowed to the package change responsible.
 
-> Status: Phase 0 (runnable skeleton). The API, worker, schema, job contract and capability banner exist.
-> Nothing is analysed yet, and the sandbox is a stub, so Faultline makes no compatibility claims.
+A **witness** is a failure that reproduces: the artifact passes 3 of 3 fresh runs in its own dependency world and fails 3 of 3
+fresh runs, with the same normalised signature, in a consumer's world. Faultline never says "compatible"; when it cannot
+show a failure it says what it exercised and what it did not check.
+
+## What works today
+
+- Paste public GitHub URLs: refs are pinned to commit SHAs and fetched inside a sandbox into immutable, hashed snapshots.
+- Python (requirements, pyproject, uv.lock, poetry.lock), npm (package-lock v2/v3, per-importer visibility) and Maven (POM inventory)
+  are read as data; Python worlds come from lockfiles or the pinned `uv`, installed offline in the sandbox.
+- Relationships need evidence on both sides (file and line); look-alikes go to a suspected tray and never become findings.
+- Cells deduplicate by projection onto the artifact's runtime closure; the oracle runs 3 + 3 fresh times; an ordered, deterministic
+  verdict table decides; breaks are attributed two-sided (ddmin) and exported as an evidence bundle that can be replayed.
+- The UI shows the funnel, world matrix, witness detail, why-path, findings, suspected tray and inventory graph from persisted records.
+
+See `docs/FAULTLINE_UNDERSTANDING_GUIDE.md` for the problem and the design in plain language.
 
 ## Quick start
 
@@ -14,7 +27,8 @@ one, and backs every failure it reports with a reproducible witness narrowed to 
 python -m pip install uv==0.13.0
 uv sync --frozen                    # Python 3.12 environment from uv.lock
 npm ci --prefix frontend            # UI dependencies
-python tools/fl.py up               # API + worker + UI at http://127.0.0.1:8000
+python scripts/build_images.py      # build the sandbox image (needs Docker)
+python tools/fl.py up               # API + worker + sandbox + UI at http://127.0.0.1:8000
 ```
 
 `make <target>` forwards to `python tools/fl.py <target>`; use whichever your machine has.
@@ -23,7 +37,9 @@ python tools/fl.py up               # API + worker + UI at http://127.0.0.1:8000
 |---|---|
 | `python tools/fl.py ci` | Everything CI runs: lint, pins, tests, API/type drift, UI build, boot check |
 | `python tools/fl.py test` | Unit and integration tests |
-| `python tools/fl.py up --check` | Boot, probe health and the UI, then stop |
+| `python scripts/run_fixtures.py --assert` | Every fixture scenario through the live pipeline against its expected verdict |
+| `python scripts/conformance_report.py` | Traceability of every canonical MUST to a passing test and a retained artifact |
+| `python -m faultline.witnesses.replay bundle.zip` | Replay a witness from its evidence bundle |
 | `python tools/fl.py gen-types` | Regenerate `frontend/openapi.json` and the TypeScript types |
 
 ## How the project is built
@@ -31,4 +47,11 @@ python tools/fl.py up               # API + worker + UI at http://127.0.0.1:8000
 - Specification: `docs/FAULTLINE_MASTER.md`. Build plan: `docs/FAULTLINE_PLAYBOOK.md`.
 - Progress: `CHECKLIST.md` (generated) and `LOGBOOK.md` (append-only), both driven by `python tools/track.py`.
 - Decisions: `docs/adr/`.
-- Working rules for contributors and AI assistants: `CLAUDE.md`.
+
+## Honest limits
+
+- The sandbox is Docker Desktop (shared kernel), not gVisor; the fetch zone has no egress allowlist yet.
+- Python is verified end to end. npm and Maven are inventory only.
+- Scenarios C, E, F, I and J are registered with reasons but are not detectable by the MVP oracles (they need call-site binding,
+  contract replay or static API analysis).
+- Numbers come from scripts, against committed labels, on a small fixture set: they are not an estimate of real-world accuracy.
