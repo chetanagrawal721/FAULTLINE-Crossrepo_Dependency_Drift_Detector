@@ -1040,3 +1040,6 @@ Format: `### <UTC time> | <EVENT> | <id> | by <name>` followed by details.
 
 ### 2026-10-13 22:46 UTC | NOTE | - | by Chetan Agrawal
 - M7.1: contract replay runs in the live pipeline for pydantic models in the modules the consumer imports. Scenario J: T2 input rejected (middle_name: Field required), scenario E: T1 sample read as 42 vs "42" (SILENT_DIVERGENCE_WITNESSED). Serialisation options are assumed (default and exclude_none), not read from call sites. E and J are kept out of the benchmark denominator, fixed before they existed. The harness scripts are baked into the sandbox image, so the image was rebuilt.
+
+### 2026-10-13 22:47 UTC | START | M11.1 | by Chetan Agrawal
+- Final traceability and consistency pass
