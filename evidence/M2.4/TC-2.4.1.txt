@@ -1,0 +1,14 @@
+# TC-2.4.1 live: octocat/Hello-World submitted through POST /api/projects/{id}/repositories (real GitHub, real sandboxed fetch)
+submit:
+{"id":"repo_01M4S0PK39TKFNETRW11T7DAHT","project_id":"ap_01M4S0PHS8FXS1ETCK2X0TM8AK","owner":"octocat","name":"Hello-World","url":"https://github.com/octocat/Hello-World","requested_ref":null,"default_branch":"master","pinned_sha":"7fd1a60b01f91b314f59955a4e4d4e80d8edf11d","committed_at":"2012-03-06T23:06:50Z","is_fork":false,"is_archived":false,"status":"PENDING","error":null,"snapshot":null,"job_id":"job_01M4S0PK3A3ZE5Z0K7543HWN73"}
+ingested:
+{"id":"repo_01M4S0PK39TKFNETRW11T7DAHT","project_id":"ap_01M4S0PHS8FXS1ETCK2X0TM8AK","owner":"octocat","name":"Hello-World","url":"https://github.com/octocat/Hello-World","requested_ref":null,"default_branch":"master","pinned_sha":"7fd1a60b01f91b314f59955a4e4d4e80d8edf11d","committed_at":"2012-03-06T23:06:50Z","is_fork":false,"is_archived":false,"status":"INGESTED","error":null,"snapshot":{"id":"snp_1e199bfdc6e251ad821fe975","sha":"7fd1a60b01f91b314f59955a4e4d4e80d8edf11d","status":"OK","truncated":false,"warnings":[],"file_count":1,"stored_files":1,"manifests":0},"job_id":null}
+files:
+[{"path":"README","kind":"file","size":13,"role":"other","tags":[],"reason":null,"sha256":"03ba204e50d126e4674c005e04d82e84c21366780af1f43bd54a37816b6ab340"}]
+git ls-remote check:
+7fd1a60b01f91b314f59955a4e4d4e80d8edf11d	HEAD
+
+# fixture pipeline after ingestion:
+$ C:\Users\Chetan\Hackethopia\.venv\Scripts\python.exe -m pytest -q tests/e2e
+.....                                                                    [100%]
+5 passed in 62.33s (0:01:02)

@@ -1,0 +1,13 @@
+== D: Transitive world drift: Flask 2.2.2 imports werkzeug.urls.url_quote, removed in Werkzeug 3
+   reference 3/3 as expected: True; consumer 3/3 as expected: True
+== B: API removed: pydantic.BaseSettings moved out of pydantic in v2
+   reference 3/3 as expected: True; consumer 3/3 as expected: True
+== C: Signature changed: urllib3 2.x removed Retry(method_whitelist=...)
+   reference 3/3 as expected: True; consumer 3/3 as expected: True
+== H: Harmless drift: pydantic .dict() still works in v2 (deprecated, warns)
+   reference 3/3 as expected: True; consumer 3/3 as expected: True
+== J: Data contract: Optional field without a default is required in pydantic v2
+   reference 3/3 as expected: True; consumer 3/3 as expected: True
+== E: Silent divergence: Union[int, str] parses '42' as int in v1 and keeps str in v2
+   reference 3/3 as expected: True; consumer 3/3 as expected: True
+NOT VERIFIED: none

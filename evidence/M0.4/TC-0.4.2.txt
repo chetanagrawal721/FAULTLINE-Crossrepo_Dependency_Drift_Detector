@@ -1,0 +1,8 @@
+TC-0.4.2  (2026-10-12 18:49 UTC)
+command: pytest tests/integration/test_workers.py -k tc_0_4_2 or attempts_exhausted or retry_then or permanent or unknown_kind
+tests/integration/test_workers.py::test_tc_0_4_2_stale_lease_is_reclaimed_after_worker_crash PASSED [ 20%]
+tests/integration/test_workers.py::test_attempts_exhausted_after_repeated_crashes_fails_job PASSED [ 40%]
+tests/integration/test_workers.py::test_retry_then_success PASSED        [ 60%]
+tests/integration/test_workers.py::test_permanent_failure_is_not_retried PASSED [ 80%]
+tests/integration/test_workers.py::test_unknown_kind_fails_permanently PASSED [100%]
+======================= 5 passed, 5 deselected in 6.06s =======================

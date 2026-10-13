@@ -1,0 +1,13 @@
+Boundary verification on this deployment (informational)  (2026-10-12 19:53 UTC)  real Docker 29.8.0
+tests/security/test_sandbox.py::test_boundary_verification_passes_on_this_deployment PASSED [ 50%]
+tests/security/test_sandbox.py::test_status_reports_verified_only_after_real_checks PASSED [100%]
+====================== 2 passed, 24 deselected in 15.80s ======================
+verified: True - all boundary checks passed
+  PASS non-root user -> 65534
+  PASS no capabilities -> 0000000000000000
+  PASS no-new-privileges -> 1
+  PASS seccomp filter active -> 2
+  PASS root filesystem read-only -> True
+  PASS docker socket absent -> False
+  PASS no network -> {'connected': False, 'dns': False}
+  PASS cannot write to /etc -> {'written': False}

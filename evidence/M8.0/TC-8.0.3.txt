@@ -1,0 +1,2 @@
+tests/integration/test_remediation.py::test_tc_8_0_3_remediation_never_pushes_or_writes_to_the_network PASSED [ 57%]
+pytest tests/integration/test_remediation.py (5 passed, 2 xfailed REAL1) 2026-10-13

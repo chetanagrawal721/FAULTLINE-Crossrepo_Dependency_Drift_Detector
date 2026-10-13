@@ -1,0 +1,4 @@
+tests/unit/test_npm.py::test_tc_3_6_2_workspace_importers_and_sibling_links PASSED [ 33%]
+tests/unit/test_npm.py::test_nested_projects_and_ignored_directories PASSED [ 66%]
+tests/integration/test_npm_api.py::test_workspace_world_and_failures_through_the_api PASSED [100%]
+====================== 3 passed, 17 deselected in 0.34s =======================

@@ -1,0 +1,2 @@
+tests/integration/test_relationships.py::test_tc_4_1_1_positive_relationship_has_evidence_in_both_manifests PASSED [100%]
+======================= 1 passed, 4 deselected in 0.29s =======================

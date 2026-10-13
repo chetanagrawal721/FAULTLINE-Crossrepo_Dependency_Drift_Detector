@@ -1,0 +1,2 @@
+tests/unit/test_maven.py::test_tc_3_7_4_no_maven_or_any_process_is_started PASSED [100%]
+====================== 1 passed, 10 deselected in 0.24s =======================

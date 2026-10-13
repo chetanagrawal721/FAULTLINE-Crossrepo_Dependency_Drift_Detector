@@ -1,0 +1,24 @@
+# TC-2.4.2 live: a repository that does not exist
+HTTP/1.1 404 Not Found
+date: Mon, 12 Oct 2026 21:36:24 GMT
+server: uvicorn
+content-length: 130
+content-type: application/json
+
+{"error":{"code":"REPOSITORY_NOT_FOUND","message":"repository or ref not found, or not accessible","details":{"retryable":false}}}
+# bad ref
+HTTP/1.1 404 Not Found
+date: Mon, 12 Oct 2026 21:36:25 GMT
+server: uvicorn
+content-length: 110
+content-type: application/json
+
+{"error":{"code":"REF_NOT_FOUND","message":"GitHub could not resolve that ref","details":{"retryable":false}}}
+# not a github url
+HTTP/1.1 400 Bad Request
+date: Mon, 12 Oct 2026 21:36:26 GMT
+server: uvicorn
+content-length: 106
+content-type: application/json
+
+{"error":{"code":"INVALID_REPOSITORY","message":"only https://github.com URLs are accepted","details":{}}}

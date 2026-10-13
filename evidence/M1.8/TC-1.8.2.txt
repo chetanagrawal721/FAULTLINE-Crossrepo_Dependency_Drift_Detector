@@ -1,0 +1,10 @@
+TC-1.8.2 no false live claim  (2026-10-13)
+Method: read every label on the home page and on the finding page of the running UI (page text captured with the in-app browser).
+
+Home page (before any run):  badge "REPRODUCIBLE FIXTURE"; scenario panel text: "The mode stays FIXTURE; this is not analysis of a live repository."; findings panel: "No findings yet. Nothing has been analysed, so Faultline makes no compatibility claims."
+Finding page: badge "REPRODUCIBLE FIXTURE" next to the verdict "BREAK WITNESSED"; every finding row in the list also carries the FIXTURE badge; dependency difference is captioned "Candidate causes only. This list is not a finding and not an attribution."; the scope panel lists five things not checked.
+Search of all visible text for: live analysis / real-time / compatible / proof / guarantee.
+  - "live" appears once, in the negation "not analysis of a live repository".
+  - "compatible" appears only in the NO DIVERGENCE OBSERVED template as "This is not a statement that they are compatible" (not shown for this break finding).
+  - "proof", "guarantee", "real-time": none.
+Result: nothing on the page says or implies live analysis. A test (test_fixture_e2e) also asserts every finding's mode is FIXTURE and the UI renders the mode from the API.

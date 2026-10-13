@@ -1,0 +1,6 @@
+Name                                   Stmts   Miss Branch BrPart  Cover   Missing
+----------------------------------------------------------------------------------
+backend\faultline\verdicts\engine.py      88     13     26      0    85%   27-39
+----------------------------------------------------------------------------------
+TOTAL                                     88     13     26      0    85%
+# decide() is fully covered (branch coverage, 0 partial branches). The 13 missed lines (27-39) are the older fixture_verdict, covered by the fixture suites.

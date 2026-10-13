@@ -1,0 +1,4 @@
+TC-1.5.3  (2026-10-12 20:19 UTC)  real Docker, real pytest runs inside the sandbox
+tests/integration/test_o_tests.py::test_tc_1_5_3_missing_pytest_is_a_harness_failure_not_a_break PASSED [100%]
+====================== 1 passed, 6 deselected in 51.03s =======================
+A runtime world without the overlay has no pytest: the harness reports 'pytest is not installed in this world' and the run is classified HARNESS_FAILURE with zero entries, so no witness candidate can exist.

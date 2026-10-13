@@ -1,0 +1,2 @@
+tests/unit/test_discover.py::test_tc_3_1_2_setup_py_is_never_executed PASSED [100%]
+======================= 1 passed, 3 deselected in 0.16s =======================

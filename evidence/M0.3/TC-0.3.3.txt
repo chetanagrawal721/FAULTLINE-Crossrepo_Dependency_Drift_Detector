@@ -1,0 +1,6 @@
+TC-0.3.3  (2026-10-12 18:49 UTC)
+command: pytest tests/unit/test_hashing.py -k tc_0_3_3 or unsupported_types
+tests/unit/test_hashing.py::test_tc_0_3_3_nan_and_infinity_rejected PASSED [ 33%]
+tests/unit/test_hashing.py::test_tc_0_3_3_float_edge_cases_are_deterministic PASSED [ 66%]
+tests/unit/test_hashing.py::test_unsupported_types_rejected PASSED       [100%]
+====================== 3 passed, 10 deselected in 0.03s =======================

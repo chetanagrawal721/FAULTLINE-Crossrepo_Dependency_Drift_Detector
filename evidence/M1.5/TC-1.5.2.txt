@@ -1,0 +1,5 @@
+TC-1.5.2  (2026-10-12 20:18 UTC)  real Docker, real pytest runs inside the sandbox
+tests/integration/test_o_tests.py::test_tc_1_5_2_overlay_does_not_change_runtime_versions PASSED [ 50%]
+tests/integration/test_o_tests.py::test_tc_1_5_2_conflicting_overlay_keeps_runtime_and_is_flagged_forced PASSED [100%]
+====================== 2 passed, 5 deselected in 50.85s =======================
+Overlay packages added to every runtime world: iniconfig, packaging, pluggy, pytest (scope=test); runtime versions unchanged; world_hash differs from the runtime-only world; conflicts keep the runtime version and set forced=True.

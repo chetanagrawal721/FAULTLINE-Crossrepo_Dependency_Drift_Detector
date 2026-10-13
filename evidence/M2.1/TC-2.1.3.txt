@@ -1,0 +1,2 @@
+tests/integration/test_ingestion.py::test_tc_2_1_3_retry_after_a_failure_keeps_the_same_sha PASSED [100%]
+======================= 1 passed, 7 deselected in 3.02s =======================

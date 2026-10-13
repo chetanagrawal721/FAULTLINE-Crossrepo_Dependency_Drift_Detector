@@ -1,0 +1,25 @@
+TC-1.5.1  (2026-10-12 20:17 UTC)  real Docker, real pytest runs inside the sandbox
+tests/integration/test_o_tests.py::test_tc_1_5_1_per_test_differential PASSED [ 25%]
+tests/integration/test_o_tests.py::test_tc_1_5_1_tests_for_an_absent_extra_are_skipped_not_failed PASSED [ 50%]
+tests/integration/test_o_tests.py::test_o_tests_runs_are_fresh_and_independent PASSED [ 75%]
+tests/integration/test_o_tests.py::test_a_test_that_writes_files_runs_in_a_scratch_copy PASSED [100%]
+================= 4 passed, 3 deselected in 74.17s (0:01:14) ==================
+
+
+== REFERENCE: runtime world w_05d2ed2b2d77  +overlay(iniconfig, packaging, pluggy, pytest) -> w_8fe8511f036d  forced=False
+   run FY04B1DX FRESH_EXECUTION 4250ms class=NONE  (3 passed, 73 warnings in 1.02s)
+   PASS    test_customer.py::test_round_trip          NONE              
+   PASS    test_customer.py::test_default_points      NONE              
+   PASS    test_web.py::test_show_customer            NONE              
+
+== CONSUMER notify-svc (scenario D): runtime world w_e2281df044ed  +overlay(iniconfig, packaging, pluggy, pytest) -> w_09f8e92d1354  forced=False
+   run JBZW03CF FRESH_EXECUTION 4156ms class=ARTIFACT_FAILURE  (1 failed, 2 passed in 0.94s)
+   PASS    test_customer.py::test_round_trip          NONE              
+   PASS    test_customer.py::test_default_points      NONE              
+   FAIL    test_web.py::test_show_customer            ARTIFACT_FAILURE  ImportError: ImportError: cannot import name 'url_quote' from 'werkzeug.urls' (/opt/world/lib/python3.1 [in flask.app]
+
+== CONSUMER billing-svc (scenario H, no Flask): runtime world w_421cfed594a7  +overlay(iniconfig, packaging, pluggy, pytest) -> w_3427bfd71be5  forced=False
+   run 5CNAS7AF FRESH_EXECUTION 3531ms class=NONE  (2 passed, 1 skipped, 1 warning in 0.39s)
+   PASS    test_customer.py::test_round_trip          NONE              
+   PASS    test_customer.py::test_default_points      NONE              
+   SKIPPED test_web.py::test_show_customer            NONE              

@@ -1,0 +1,14 @@
+TC-0.1.2 pins are real  (2026-10-12 18:48 UTC)
+--- scripts/check_pins.py on the project:
+checked: 10 python_deps, 8 npm_deps, 0 images, 3 actions
+pins ok
+exit=0
+
+--- negative tests (the check must fail on unpinned input):
+tests/unit/test_check_pins.py::test_unpinned_image_is_reported PASSED    [ 25%]
+tests/unit/test_check_pins.py::test_pinned_image_passes_and_build_stage_alias_is_ignored PASSED [ 50%]
+tests/unit/test_check_pins.py::test_floating_npm_and_python_versions_are_reported PASSED [ 75%]
+tests/unit/test_check_pins.py::test_unpinned_github_action_is_reported PASSED [100%]
+============================== 4 passed in 0.10s ==============================
+
+NOTE: 0 container image references exist yet (images arrive with M1.2); the @sha256 rule is proven by test_unpinned_image_is_reported and test_pinned_image_passes_..., and will be exercised for real from M1.2.

@@ -1,0 +1,1 @@
+# TC-4.7.2: the analysis response is intercepted and the world hash replaced by a random unseen value; the UI must display exactly that value

@@ -1,0 +1,4 @@
+tests/integration/test_replay_mode.py::test_the_pack_marks_every_analysis_as_a_recording_and_keeps_where_it_came_from PASSED [ 33%]
+tests/integration/test_replay_mode.py::test_replay_serves_records_and_refuses_every_action PASSED [ 66%]
+tests/integration/test_replay_mode.py::test_tc_12_2_3_the_mode_shown_is_the_mode_stored_with_the_evidence_not_the_requested_one PASSED [100%]
+============================== 3 passed in 7.16s ==============================

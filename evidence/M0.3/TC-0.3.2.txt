@@ -1,0 +1,9 @@
+TC-0.3.2  (2026-10-12 18:49 UTC)
+command: pytest tests/unit/test_hashing.py -k tc_0_3_2 or nested
+tests/unit/test_hashing.py::test_tc_0_3_2_semantic_changes_change_hash[<lambda>0] PASSED [ 16%]
+tests/unit/test_hashing.py::test_tc_0_3_2_semantic_changes_change_hash[<lambda>1] PASSED [ 33%]
+tests/unit/test_hashing.py::test_tc_0_3_2_semantic_changes_change_hash[<lambda>2] PASSED [ 50%]
+tests/unit/test_hashing.py::test_tc_0_3_2_semantic_changes_change_hash[<lambda>3] PASSED [ 66%]
+tests/unit/test_hashing.py::test_tc_0_3_2_non_semantic_data_is_ignored PASSED [ 83%]
+tests/unit/test_hashing.py::test_nested_instances_stay_distinct PASSED   [100%]
+======================= 6 passed, 7 deselected in 0.03s =======================

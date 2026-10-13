@@ -1,0 +1,9 @@
+TC-1.0.2 reference world passes outside Faultline  (2026-10-13)
+Same script and command as TC-1.0.1, reference pins, 3 runs each, all passed:
+D  flask 2.2.2 + werkzeug 2.2.3     -> "ok 2.2.2"
+B  pydantic 1.10.13                 -> "ok"
+C  urllib3 1.26.18                  -> "ok" (DeprecationWarning for method_whitelist)
+H  pydantic 1.10.13                 -> "{'a': 1}"
+J  pydantic 1.10.13                 -> "accepted" (producer bytes equal {"customer_id": 1, "loyalty_points": 0})
+E  pydantic 1.10.13                 -> "int 42"
+Exact package lists per environment: fixtures/verification/results.json (ref_freeze).

@@ -1,0 +1,2 @@
+tests/integration/test_relationships.py::test_tc_4_1_3_every_evidence_row_points_at_a_real_file_and_line PASSED [100%]
+======================= 1 passed, 4 deselected in 0.35s =======================

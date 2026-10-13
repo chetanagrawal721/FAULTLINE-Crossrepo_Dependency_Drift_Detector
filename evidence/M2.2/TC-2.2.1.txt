@@ -1,0 +1,2 @@
+tests/integration/test_ingestion.py::test_tc_2_2_1_hostile_repository PASSED [100%]
+======================= 1 passed, 7 deselected in 4.13s =======================

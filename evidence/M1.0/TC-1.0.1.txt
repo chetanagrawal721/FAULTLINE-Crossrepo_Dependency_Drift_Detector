@@ -1,0 +1,12 @@
+TC-1.0.1 break reproduces outside Faultline  (2026-10-13)
+Method: scripts/verify_fixture_facts.py builds plain virtualenvs with uv (wheels only, Python 3.12.15), no Faultline code involved.
+Full output: evidence/M1.0/verify_fixture_facts.txt; per-scenario records: fixtures/verification/{D,B,C,H,J,E}.md; raw runs and exact package lists: fixtures/verification/results.json
+
+Consumer-world results (3 runs each, all as expected):
+D  flask 2.2.2 + werkzeug 3.0.6:  ImportError: cannot import name 'url_quote' from 'werkzeug.urls'
+B  pydantic 2.7.4:               PydanticImportError: `BaseSettings` has been moved to the `pydantic-settings` package
+C  urllib3 2.0.7:                TypeError: Retry.__init__() got an unexpected keyword argument 'method_whitelist'
+J  pydantic 2.7.4 parsing the bytes a v1 producer sends with exclude_none=True: ValidationError on middle_name (required in v2)
+E  pydantic 2.7.4: Union[int, str] keeps '42' as str (v1 gives int 42): silent divergence
+H  pydantic 2.7.4: .dict() still works (DeprecationWarning only): harmless drift
+Expected signature in each case matches the expectation written in scripts/verify_fixture_facts.py. NOT verified (not used yet): PyJWT scenario F, uv flag behaviours (verified separately in M3.3).

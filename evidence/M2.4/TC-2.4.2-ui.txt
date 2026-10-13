@@ -1,0 +1,6 @@
+# TC-2.4.2 UI (in-app browser, http://localhost:8000/): submitting a nonexistent repository
+Shown: 'Repository not found - It does not exist, or it was deleted. Check the owner and name. Retrying will not help until the input changes.'
+The octocat/Hello-World card stays INGESTED with its pinned commit 7fd1a60b01 and snapshot summary.
+Distinct API states covered by tests/integration/test_projects_api.py::test_tc_2_4_2_failure_states_are_distinct (not found, not accessible, rate limited retryable, ref not found, upstream failure retryable).
+tests/integration/test_projects_api.py::test_tc_2_4_2_failure_states_are_distinct PASSED [100%]
+======================= 1 passed, 9 deselected in 0.13s =======================

@@ -1,0 +1,79 @@
+TC-0.1.1 clean checkout boots  (2026-10-12 18:47 UTC)
+Procedure: copy the working tree (without .venv, node_modules, dist, var) into a THROWAWAY directory outside this repository, git init + commit there, git clone that, then install pinned dependencies and run 'fl.py up --check'. No commit is made in the project repository.
+temp dir: /tmp/tmp.XtTqG6CRs6
+warning: in the working copy of '.github/workflows/ci.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'CLAUDE.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Makefile', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/api/deps.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/api/main.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/api/routers/jobs.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/api/routers/system.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/capabilities.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/core/config.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/core/enums.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/core/errors.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/core/hashing.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/core/ids.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/core/models.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/sandbox/stub.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/storage/db.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/storage/migrations/0002_jobs.sql', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/faultline/workers/handlers.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/FAULTLINE_MASTER.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/adr/0001-tooling-and-runtime.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/adr/0002-generic-job-table.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/adr/0003-world-identity.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'evidence/M0.1/TC-0.1.1.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'evidence/M0.6/local-ci-run.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/package-lock.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/App.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/api/client.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/api/schema.d.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/CapabilityBanner.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/ModeBadge.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/main.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/styles.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/tsconfig.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/vite.config.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'playbook/outro.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'playbook/phases.yaml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'playbook/phases/phase00.yaml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'playbook/phases/phase01.yaml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'playbook/phases/phase02.yaml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'playbook/phases/phase03.yaml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'playbook/phases/phase04.yaml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'playbook/phases/phase05.yaml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/check_pins.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/export_openapi.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/conftest.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/integration/test_api.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/integration/test_workers.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/unit/test_check_pins.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/unit/test_hashing.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/unit/test_migrations.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/unit/test_models.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'uv.lock', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'versions.toml', LF will be replaced by CRLF the next time Git touches it
+committed in throwaway repo
+cloned: 84 tracked files
+ + typing-inspection==0.4.4
+ + uv==0.13.0
+ + uvicorn==0.52.3
+
+added 54 packages in 3s
+computing gzip size...
+dist/index.html                   0.40 kB │ gzip:  0.27 kB
+dist/assets/index-Be5G7ESc.css    3.00 kB │ gzip:  1.22 kB
+dist/assets/index-hPmMcDdY.js   223.23 kB │ gzip: 69.95 kB
+
+[32m✓ built in 429ms[39m
+2026-10-13 00:18:00,125 faultline.worker worker DESKTOP-RB3D7O0:19756 started (db=C:\Users\Chetan\AppData\Local\Temp\faultline-up-kbbvu_ap\faultline.db)
+INFO:     Started server process [25340]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8124 (Press CTRL+C to quit)
+API ok (schema v2, mode FIXTURE), sandbox stub, UI 406 bytes at http://127.0.0.1:8124/
+exit code: 0

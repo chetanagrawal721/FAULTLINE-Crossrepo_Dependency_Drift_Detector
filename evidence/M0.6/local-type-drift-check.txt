@@ -1,0 +1,13 @@
+Local demonstration of the drift check (the same command CI runs inside 'fl.py ci'): 2026-10-12 18:52 UTC
+--- before any change:
+🚀 ./openapi.json → C:\Users\Chetan\AppData\Local\Temp\fl-types-v90kecg6\schema.d.ts [40.9ms]
+TypeScript types are current
+exit=0
+--- after adding a field to the Health model without regenerating types:
+$ C:\Users\Chetan\Hackethopia\.venv\Scripts\python.exe scripts/export_openapi.py --check
+frontend/openapi.json is stale: run `python tools/fl.py gen-types`
+exit=1
+--- after reverting:
+TypeScript types are current
+exit=0
+NOTE: this proves the check detects drift locally. It does NOT prove CI runs it; that is TC-0.6.1/TC-0.6.2 and needs the first push to GitHub.

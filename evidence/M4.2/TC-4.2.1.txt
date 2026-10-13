@@ -1,0 +1,5 @@
+tests/integration/test_projection.py::test_tc_4_2_1_projection_equals_the_scenario_yaml_exactly[A] PASSED [ 25%]
+tests/integration/test_projection.py::test_tc_4_2_1_projection_equals_the_scenario_yaml_exactly[D] PASSED [ 50%]
+tests/integration/test_projection.py::test_tc_4_2_1_projection_equals_the_scenario_yaml_exactly[H] PASSED [ 75%]
+tests/integration/test_projection.py::test_equal_consumers_share_a_projection_key_and_different_ones_do_not PASSED [100%]
+======================= 4 passed, 8 deselected in 0.15s =======================

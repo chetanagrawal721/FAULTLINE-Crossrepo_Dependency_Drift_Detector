@@ -1,0 +1,6 @@
+tests/integration/test_replay.py::test_replay_on_the_same_machine_is_an_exact_reproduction PASSED [ 20%]
+tests/integration/test_replay.py::test_tc_5_2_3_a_missing_artifact_is_restored_from_the_bundle_never_fetched PASSED [ 40%]
+tests/integration/test_replay.py::test_a_tampered_but_rehashed_artifact_tree_is_non_reproducible_and_names_the_hash PASSED [ 60%]
+tests/integration/test_replay.py::test_a_different_environment_image_is_environment_limited PASSED [ 80%]
+tests/integration/test_replay.py::test_a_witness_that_no_longer_reproduces_is_non_reproducible PASSED [100%]
+================= 5 passed, 2 deselected in 200.69s (0:03:20) =================

@@ -1,0 +1,4 @@
+tests/unit/test_discover.py::test_tc_3_1_1_multi_project_repository PASSED [ 33%]
+tests/unit/test_discover.py::test_native_code_is_not_pure_python PASSED  [ 66%]
+tests/unit/test_discover.py::test_unreadable_pyproject_is_reported_not_dropped PASSED [100%]
+======================= 3 passed, 1 deselected in 0.17s =======================

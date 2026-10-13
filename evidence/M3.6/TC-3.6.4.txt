@@ -1,0 +1,12 @@
+# TC-3.6.4 (manual): capability banner for npm, text read from the rendered page at http://localhost:8000/ (in-app browser)
+Sandbox: verified - isolation verified - boundary checks passed (8 checks) on the running deployment
+ECOSYSTEM  INVENTORY  RESOLVE      WORLD        RUNTIME WITNESS
+pypi       enabled    enabled      enabled      partial
+npm        enabled    enabled      enabled      unsupported
+maven      enabled    unsupported  unsupported  unsupported
+Result: npm inventory, resolve (committed lockfile only) and world (inventory world, no runtime claim) are enabled;
+the npm runtime witness is shown as unsupported, not available.
+Live check on mochajs/mocha: root lockfile world = 743 package instances; docs = 619; repro = 9 (rendered per instance with "visible to" importers).
+Two real-world defects found by this check and fixed with a regression test (tests/unit/test_npm.py::test_root_dev_dependencies_and_unversioned_workspace_members_are_accepted):
+ - devDependencies live in the lockfile root entry (were reported as lock_out_of_sync);
+ - workspace members need not have a version (were reported as a malformed lock).

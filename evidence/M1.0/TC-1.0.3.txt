@@ -1,0 +1,1 @@
+ok: all fixture verification records are complete

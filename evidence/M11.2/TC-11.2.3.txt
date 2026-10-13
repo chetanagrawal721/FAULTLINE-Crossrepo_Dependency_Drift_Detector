@@ -1,0 +1,12 @@
+scenarios evaluated: 6 of 12 registered; not evaluated: ['C', 'E', 'F', 'I', 'J', 'REAL1']
+  A version-only               TP=2 FP=1 FN=0 TN=3 (n=6)
+  B API diff                   not computed: static API analysis is not built (M6.2)
+  C API diff + usage           not computed: the usage index is not built (M6.3)
+  D author-selected matrix     TP=0 FP=0 FN=2 TN=4 (n=6)
+  E consumer-derived worlds    TP=2 FP=0 FN=0 TN=4 (n=6)
+  F + witness discipline       TP=2 FP=0 FN=0 TN=4 (n=6)
+  G + ddmin attribution        TP=2 FP=0 FN=0 TN=4 (n=6)
+breaks found only by consumer-derived worlds (E) and missed by the author-selected matrix (D): 2 of 2 ['B', 'D']
+reproducible across 2 pass(es): True
+done
+exit 0

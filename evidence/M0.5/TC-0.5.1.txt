@@ -1,0 +1,9 @@
+TC-0.5.1  (2026-10-12 18:49 UTC)
+command: pytest tests/integration/test_api.py -k tc_0_5_1 or no_finding or health or openapi or error_envelope or admin_token
+tests/integration/test_api.py::test_health PASSED                        [ 16%]
+tests/integration/test_api.py::test_tc_0_5_1_capabilities_are_truthful PASSED [ 33%]
+tests/integration/test_api.py::test_no_finding_endpoints_exist_in_phase_0 PASSED [ 50%]
+tests/integration/test_api.py::test_error_envelope PASSED                [ 66%]
+tests/integration/test_api.py::test_admin_token_required_for_mutations_when_configured PASSED [ 83%]
+tests/integration/test_api.py::test_openapi_documents_core_contracts PASSED [100%]
+======================= 6 passed, 3 deselected in 0.42s =======================

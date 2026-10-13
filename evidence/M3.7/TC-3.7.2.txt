@@ -1,0 +1,5 @@
+tests/unit/test_maven.py::test_tc_3_7_2_external_parent_and_bom_are_unsupported_and_unresolved PASSED [100%]
+====================== 1 passed, 10 deselected in 0.11s =======================
+# live check: spring-projects/spring-petclinic (parent spring-boot-starter-parent 4.1.0 is external)
+28 declared dependencies shown; every managed version left unresolved with the note "no version here and no managed version in this
+repository (an external parent may manage it)"; diagnostics EXTERNAL_PARENT and PATH_ESCAPE (relativePath ../pom.xml leaves the repository).

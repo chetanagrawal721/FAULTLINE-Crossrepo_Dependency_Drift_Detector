@@ -1,0 +1,4 @@
+TC-1.2.1  (2026-10-12 19:51 UTC)  real Docker 29.8.0, image sha256:91452abe0b81
+command: pytest tests/security/test_sandbox.py -k "tc_1_2_1"
+tests/security/test_sandbox.py::test_tc_1_2_1_no_network_to_internet_or_metadata_endpoint PASSED [100%]
+====================== 1 passed, 25 deselected in 10.47s ======================

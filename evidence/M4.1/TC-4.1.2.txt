@@ -1,0 +1,4 @@
+tests/integration/test_relationships.py::test_tc_4_1_2_unrelated_project_and_look_alike_model_are_not_actionable PASSED [ 33%]
+tests/integration/test_relationships.py::test_same_name_package_from_another_source_is_a_suspected_collision PASSED [ 66%]
+tests/integration/test_relationships.py::test_relationships_are_cross_repository_only PASSED [100%]
+======================= 3 passed, 2 deselected in 0.44s =======================

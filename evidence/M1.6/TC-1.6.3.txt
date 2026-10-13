@@ -1,0 +1,4 @@
+TC-1.6.3  (2026-10-12 20:37 UTC)  real Docker; integration tests execute 6 real container runs per verification
+tests/integration/test_witness.py::test_tc_1_6_3_cache_cannot_fake_repeats PASSED [ 21%]
+tests/unit/test_witness_decision.py::test_cached_results_never_count_as_fresh_repeats PASSED [ 73%]
+Integration test: first verify = 6 fresh records; second (cache warm) = 6 REUSED_RESULT records with new run ids, decision REUSED_ONLY pointing at the existing witness; forced = 6 new FRESH records; 18 distinct run ids in total; one witness row (re-verification recorded in its body).

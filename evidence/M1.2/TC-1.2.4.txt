@@ -1,0 +1,5 @@
+TC-1.2.4  (2026-10-12 19:52 UTC)  real Docker 29.8.0
+Procedure (automated): start a real sandboxd subprocess, start a 60 s job, force-kill sandboxd and its process tree mid-job, confirm the container is orphaned and still running, start a new sandboxd, confirm its startup sweep removes it.
+tests/security/test_sandbox.py::test_tc_1_2_4_no_orphans_after_sandboxd_crash PASSED [100%]
+====================== 1 passed, 25 deselected in 9.89s =======================
+labelled containers left afterwards: 0

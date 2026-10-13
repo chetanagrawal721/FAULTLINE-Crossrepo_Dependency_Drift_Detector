@@ -1,0 +1,7 @@
+TC-0.3.1  (2026-10-12 18:49 UTC)
+command: pytest tests/unit/test_hashing.py -k tc_0_3_1 or key_order or hash_policy or stable
+tests/unit/test_hashing.py::test_tc_0_3_1_order_independence PASSED      [ 25%]
+tests/unit/test_hashing.py::test_canonical_json_key_order_independent PASSED [ 50%]
+tests/unit/test_hashing.py::test_object_hash_is_stable PASSED            [ 75%]
+tests/unit/test_hashing.py::test_hash_policy_only_core_hashing_and_migration_checksums_use_hashlib PASSED [100%]
+======================= 4 passed, 9 deselected in 0.04s =======================

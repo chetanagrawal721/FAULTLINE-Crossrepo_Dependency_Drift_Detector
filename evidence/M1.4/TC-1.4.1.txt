@@ -1,0 +1,19 @@
+TC-1.4.1  (2026-10-12 20:08 UTC)  real Docker, real wheels, worlds built offline from the fixture locks
+tests/integration/test_o_import.py::test_tc_1_4_1_reference_passes_consumer_fails PASSED [ 50%]
+tests/integration/test_o_import.py::test_import_runs_have_unique_run_ids_and_no_network PASSED [100%]
+====================== 2 passed, 5 deselected in 37.90s =======================
+
+Observed (scripts run, same code):
+artifact content hash: a_1aae8507be1bf881734d5026e8ef9dbd8aabc7be
+
+== REFERENCE world  world_hash=w_755473bc6ec8a47aecbfe9e24347185ee4dcf39e  werkzeug=2.2.3
+   run_id=run_01M4RVN9FRYZXVQN4F8ZC5158V provenance=FRESH_EXECUTION duration=3594ms run_failure_class=NONE
+   acme_models            passed=True class=NONE n/a=False 
+   acme_models.web        passed=True class=NONE n/a=False 
+
+== CONSUMER world (notify-svc, scenario D)  world_hash=w_8da5bb1476c1f05c631c2c8c366cb22adf1fa42a  werkzeug=3.0.6
+   run_id=run_01M4RVND126G86JRYP3HTJPWSY provenance=FRESH_EXECUTION duration=2954ms run_failure_class=ARTIFACT_FAILURE
+   acme_models            passed=True class=NONE n/a=False 
+   acme_models.web        passed=False class=ARTIFACT_FAILURE n/a=False 
+      ImportError: cannot import name 'url_quote' from 'werkzeug.urls' (/opt/world/lib/python3.12/site-packages/werkzeug/urls.py)
+      innermost frame: flask.app (<module>, line 30)

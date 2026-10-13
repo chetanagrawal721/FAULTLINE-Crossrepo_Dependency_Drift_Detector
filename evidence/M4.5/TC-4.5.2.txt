@@ -1,0 +1,2 @@
+tests/unit/test_verdict_table.py::test_tc_4_5_2_same_evidence_gives_the_same_verdict_across_processes PASSED [100%]
+====================== 1 passed, 23 deselected in 3.09s =======================

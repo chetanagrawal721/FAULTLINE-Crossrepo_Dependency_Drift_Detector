@@ -1,0 +1,2 @@
+tests/integration/test_remediation.py::test_tc_8_0_1_the_fix_verifies_with_fresh_runs PASSED [ 28%]
+pytest tests/integration/test_remediation.py (5 passed, 2 xfailed REAL1) 2026-10-13

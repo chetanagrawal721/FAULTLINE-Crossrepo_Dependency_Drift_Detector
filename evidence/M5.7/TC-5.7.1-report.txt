@@ -1,0 +1,8 @@
+NOT_IMPLEMENTED  NFR-6        durable worker behaviour (M5.3) and observability (M5.4) are not built yet
+
+NOT conformant: 3 of 34 MUST rows are not PASS (FR-9c, SR-4, NFR-6). Gate D is blocked. Not release-hardened (Gate E).
+  - FR-9c: NOT_IMPLEMENTED: M4.6 call-site extractor and O-bind are not built yet
+  - SR-4: NOT_IMPLEMENTED: the fetch zone has network access but no egress allowlist yet (documented limit; M11.3)
+  - NFR-6: NOT_IMPLEMENTED: durable worker behaviour (M5.3) and observability (M5.4) are not built yet
+exit 1
+18:54

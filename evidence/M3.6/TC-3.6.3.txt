@@ -1,0 +1,13 @@
+tests/unit/test_npm.py::test_tc_3_6_3_unsupported_lockfile_version_is_not_a_partial_result[1] PASSED [  8%]
+tests/unit/test_npm.py::test_tc_3_6_3_unsupported_lockfile_version_is_not_a_partial_result[4] PASSED [ 16%]
+tests/unit/test_npm.py::test_tc_3_6_3_unsupported_lockfile_version_is_not_a_partial_result[99] PASSED [ 25%]
+tests/unit/test_npm.py::test_tc_3_6_3_unsupported_lockfile_version_is_not_a_partial_result[3] PASSED [ 33%]
+tests/unit/test_npm.py::test_tc_3_6_3_unsupported_lockfile_version_is_not_a_partial_result[None] PASSED [ 41%]
+tests/unit/test_npm.py::test_malformed_locks_fail[{not json-lock_failed] PASSED [ 50%]
+tests/unit/test_npm.py::test_malformed_locks_fail[[]-lock_failed] PASSED [ 58%]
+tests/unit/test_npm.py::test_malformed_locks_fail[{"lockfileVersion": 3, "packages": {}}-lock_failed] PASSED [ 66%]
+tests/unit/test_npm.py::test_malformed_locks_fail[{"lockfileVersion": 3, "packages": {"": {}, "node_modules/x": {}}}-lock_failed] PASSED [ 75%]
+tests/unit/test_npm.py::test_no_lockfile_and_stale_lockfile_are_failures_not_guesses PASSED [ 83%]
+tests/unit/test_npm.py::test_package_json_variants PASSED                [ 91%]
+tests/integration/test_npm_api.py::test_unsupported_lockfile_world_is_failed_not_clean PASSED [100%]
+====================== 12 passed, 8 deselected in 0.37s =======================

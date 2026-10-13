@@ -1,0 +1,2 @@
+tests/integration/test_resolver.py::test_tc_3_3_4_a_wheel_that_does_not_match_its_hash_blocks_the_world PASSED [100%]
+======================= 1 passed, 8 deselected in 3.39s =======================

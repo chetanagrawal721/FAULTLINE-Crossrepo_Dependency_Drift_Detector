@@ -1,0 +1,16 @@
+TC-1.4.2  (2026-10-12 20:08 UTC)  real Docker, real wheels, worlds built offline from the fixture locks
+tests/integration/test_o_import.py::test_tc_1_4_2_harness_crash_is_not_a_break PASSED [  7%]
+tests/integration/test_o_import.py::test_tc_1_4_2_nothing_in_an_infrastructure_failure_looks_like_a_witness_candidate PASSED [ 14%]
+tests/integration/test_o_import.py::test_import_runs_have_unique_run_ids_and_no_network PASSED [ 21%]
+tests/unit/test_classify.py::test_pass_is_none PASSED                    [ 28%]
+tests/unit/test_classify.py::test_import_error_inside_the_world_is_an_artifact_failure PASSED [ 35%]
+tests/unit/test_classify.py::test_error_in_harness_code_is_a_harness_failure_never_a_break PASSED [ 42%]
+tests/unit/test_classify.py::test_network_errors_need_external_resources[gaierror] PASSED [ 50%]
+tests/unit/test_classify.py::test_network_errors_need_external_resources[ConnectionRefusedError] PASSED [ 57%]
+tests/unit/test_classify.py::test_network_errors_need_external_resources[URLError] PASSED [ 64%]
+tests/unit/test_classify.py::test_network_errors_need_external_resources[MaxRetryError] PASSED [ 71%]
+tests/unit/test_classify.py::test_missing_third_party_package_is_not_applicable_not_a_failure PASSED [ 78%]
+tests/unit/test_classify.py::test_missing_artifact_internal_module_is_a_real_failure PASSED [ 85%]
+tests/unit/test_classify.py::test_run_class_precedence PASSED            [ 92%]
+tests/unit/test_classify.py::test_plan_modules_dedupes_and_keeps_top_level_first PASSED [100%]
+====================== 14 passed, 4 deselected in 33.88s ======================

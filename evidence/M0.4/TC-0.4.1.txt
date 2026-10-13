@@ -1,0 +1,5 @@
+TC-0.4.1  (2026-10-12 18:49 UTC)
+command: pytest tests/integration/test_workers.py -k tc_0_4_1 or contention
+tests/integration/test_workers.py::test_tc_0_4_1_atomic_claim_two_workers_fifty_jobs PASSED [ 50%]
+tests/integration/test_workers.py::test_contention_four_workers_no_lost_or_duplicated_work PASSED [100%]
+======================= 2 passed, 8 deselected in 3.38s =======================

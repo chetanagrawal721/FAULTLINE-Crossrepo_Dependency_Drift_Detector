@@ -1,0 +1,3 @@
+tests/integration/test_resolver.py::test_tc_3_3_2_needs_build_is_classified_and_nothing_is_built PASSED [ 50%]
+tests/integration/test_resolver.py::test_needs_build_from_a_lockfile_names_the_package PASSED [100%]
+======================= 2 passed, 7 deselected in 2.42s =======================

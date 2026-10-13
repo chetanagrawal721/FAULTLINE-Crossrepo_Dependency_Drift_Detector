@@ -1,0 +1,16 @@
+artifact a_b52d4d29d5fa2ca3c31b6b1e9f16298b66f23624 
+reference world w_8511168f2c60a07ee7f7619a7fa81678bb84824e 
+consumer world  w_46bfce3e9bd6dc4c8679280100e34f853297f018 
+
+ref   run 1  run_01M4RX3EHGVN8FZF95NP3QDSGQ  FRESH_EXECUTION  run_class=NONE              3641ms
+ref   run 2  run_01M4RX3J3K5GYT3B7PJ7JRETR7  FRESH_EXECUTION  run_class=NONE              3890ms
+ref   run 3  run_01M4RX3NXW60TTG95TQM6MDMPK  FRESH_EXECUTION  run_class=NONE              3905ms
+test  run 1  run_01M4RX3SRKR9RNBFEPRYSK63SN  FRESH_EXECUTION  run_class=ARTIFACT_FAILURE  3984ms
+test  run 2  run_01M4RX3XNBCWV04YXEN6JJY32B  FRESH_EXECUTION  run_class=ARTIFACT_FAILURE  3265ms
+test  run 3  run_01M4RX40W609GJN8JN1SKG3TDX  FRESH_EXECUTION  run_class=ARTIFACT_FAILURE  3217ms
+
+acme_models        -> NO_DIVERGENCE  passed 3/3 in both worlds
+acme_models.web    -> WITNESS        reference passed 3/3, consumer failed 3/3 with an identical signature
+
+witness row: {'id': 'wit_01M4RX4416DEEFCGAFEEMJ9AGH', 'class': 'BREAK', 'divergence': 'IMPORT_ERROR', 'oracle': 'o_import', 'entry_point': 'acme_models.web', 'ref_pass': 3, 'test_fail': 3, 'witness_key': 'wk_9563652d667a329bcdb3b172ddfb7e10a1beedec'}
+signature  : {"exc_type":"ImportError","message_norm":"cannot import name 'url_quote' from 'werkzeug.urls' (<site>/werkzeug/urls.py)","origin_module":"flask.app","origin_package":"flask","entry_point":"acme_models.web"}

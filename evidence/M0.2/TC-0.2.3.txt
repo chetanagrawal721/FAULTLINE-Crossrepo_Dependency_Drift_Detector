@@ -1,0 +1,6 @@
+TC-0.2.3  (2026-10-12 18:49 UTC)
+command: pytest tests/unit/test_migrations.py -k tc_0_2_3
+tests/unit/test_migrations.py::test_tc_0_2_3_invalid_transition_rejected PASSED [ 33%]
+tests/unit/test_migrations.py::test_tc_0_2_3_queued_cannot_jump_to_done PASSED [ 66%]
+tests/unit/test_migrations.py::test_tc_0_2_3_unknown_enum_rejected PASSED [100%]
+======================= 3 passed, 5 deselected in 0.15s =======================

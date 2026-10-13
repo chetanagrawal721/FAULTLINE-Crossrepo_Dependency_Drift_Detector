@@ -1,0 +1,4 @@
+TC-0.2.1  (2026-10-12 18:48 UTC)
+command: pytest tests/unit/test_migrations.py -k tc_0_2_1
+tests/unit/test_migrations.py::test_tc_0_2_1_migration_clean_and_idempotent PASSED [100%]
+======================= 1 passed, 7 deselected in 0.10s =======================

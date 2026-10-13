@@ -1,0 +1,12 @@
+TC-0.5.2 banner renders from the API with no analyses  (2026-10-13)
+Method: started the real stack (API + worker + built UI) and opened http://127.0.0.1:8000/ in the in-app browser. Screenshot: TC-0.5.2-screenshot.jpg
+
+Observed (page text):
+- Header: "Faultline", "Witnesses, not warnings.", badge "REPRODUCIBLE FIXTURE", "API ok · schema v2"
+- Capabilities panel: "Sandbox: stub · isolation not verified — sandbox not verified: Phase 0 stub, no isolation is provided and none is claimed"
+- Table pypi / npm / maven x inventory / resolve / world / runtime witness: all "unavailable" (runtime witness for npm and maven "unsupported")
+- Oracles o_import, o_tests, o_bind, o_contract, o_typecheck: all "unavailable"
+- Features repository ingestion, relationship discovery, witness verification, attribution ddmin, evidence bundle, llm assistance: all "unavailable"
+- Panel "No analyses yet": "Nothing has been analysed, so there are no findings to show ... Faultline makes no compatibility claims."
+Expected: mode badge and per-ecosystem and per-oracle states visible, and no finding displayed. Result: matches.
+Checked wording: nothing on the page says "live" analysis, "compatible", or "proof".

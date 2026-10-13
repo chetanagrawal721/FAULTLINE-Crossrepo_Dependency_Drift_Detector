@@ -1,0 +1,9 @@
+tests/integration/test_projection.py::test_tc_4_2_3_reference_failures_are_inconclusive_with_provenance[no_manifest] PASSED [ 12%]
+tests/integration/test_projection.py::test_tc_4_2_3_reference_failures_are_inconclusive_with_provenance[needs_build] PASSED [ 25%]
+tests/integration/test_projection.py::test_tc_4_2_3_reference_failures_are_inconclusive_with_provenance[non_registry_source] PASSED [ 37%]
+tests/integration/test_projection.py::test_tc_4_2_3_reference_failures_are_inconclusive_with_provenance[private_index_without_lock] PASSED [ 50%]
+tests/integration/test_projection.py::test_tc_4_2_3_reference_failures_are_inconclusive_with_provenance[setup_py_not_executed] PASSED [ 62%]
+tests/integration/test_projection.py::test_unresolved_and_partial_references_are_failures_too PASSED [ 75%]
+tests/unit/test_witness_decision.py::test_reference_failing_three_times_discards_never_witnesses PASSED [ 87%]
+tests/unit/test_witness_decision.py::test_baseline_that_fails_its_own_import_yields_inconclusive_never_a_consumer_break PASSED [100%]
+====================== 8 passed, 18 deselected in 0.92s =======================

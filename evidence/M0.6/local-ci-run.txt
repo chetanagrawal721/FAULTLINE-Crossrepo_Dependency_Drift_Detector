@@ -1,0 +1,52 @@
+
+=== lint ===
+$ C:\Users\Chetan\Hackethopia\.venv\Scripts\python.exe -m ruff check backend tests tools scripts
+All checks passed!
+
+=== pins ===
+$ C:\Users\Chetan\Hackethopia\.venv\Scripts\python.exe scripts/check_pins.py
+checked: 10 python_deps, 8 npm_deps, 0 images, 3 actions
+pins ok
+
+=== tests ===
+$ C:\Users\Chetan\Hackethopia\.venv\Scripts\python.exe -m pytest -q tests/unit tests/integration
+...........................................                              [100%]
+43 passed in 12.38s
+
+=== openapi/types current ===
+$ C:\Users\Chetan\Hackethopia\.venv\Scripts\python.exe scripts/export_openapi.py --check
+openapi.json is current
+$ C:\Program Files\nodejs\npm.CMD exec -- openapi-typescript ./openapi.json -o C:\Users\Chetan\AppData\Local\Temp\fl-types-q0_hl7k4\schema.d.ts
+✨ openapi-typescript 7.13.0
+🚀 ./openapi.json → C:\Users\Chetan\AppData\Local\Temp\fl-types-q0_hl7k4\schema.d.ts [42ms]
+TypeScript types are current
+
+=== frontend build ===
+$ C:\Program Files\nodejs\npm.CMD run build
+
+> faultline-ui@0.1.0 build
+> tsc --noEmit && vite build
+
+[36mvite v8.3.4 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 19 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.39 kB │ gzip:  0.26 kB
+dist/assets/index-Be5G7ESc.css    3.00 kB │ gzip:  1.22 kB
+dist/assets/index-hPmMcDdY.js   223.23 kB │ gzip: 69.95 kB
+
+[32m✓ built in 144ms[39m
+
+=== boot ===
+2026-10-13 00:17:10,455 faultline.worker worker DESKTOP-RB3D7O0:1596 started (db=C:\Users\Chetan\AppData\Local\Temp\faultline-up-uhgffnc0\faultline.db)
+INFO:     Started server process [11728]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8123 (Press CTRL+C to quit)
+INFO:     127.0.0.1:58324 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58325 - "GET /api/capabilities HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58326 - "GET / HTTP/1.1" 200 OK
+API ok (schema v2, mode FIXTURE), sandbox stub, UI 394 bytes at http://127.0.0.1:8123/
+
+CI: all steps passed

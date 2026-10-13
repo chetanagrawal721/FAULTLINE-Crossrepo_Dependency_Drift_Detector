@@ -1,0 +1,12 @@
+# TC-3.5.2 (manual, in-app browser, psf/requests@v2.32.3, dependencies declared only in setup.py) - text captured from the rendered page
+project (pypi, ., setup_py)
+setup.py is never executed; the distribution name and dependencies are unknown
+Manifests: pyproject.toml (pyproject, UNSUPPORTED), requirements-dev.txt (requirements, OK), setup.cfg (setup_cfg, UNSUPPORTED), setup.py (setup_py, UNSUPPORTED)
+No world: resolution failed (setup_py_not_executed)
+RESOLUTION_FAILED: dependencies are declared by setup.py, which Faultline never executes; provide a lockfile or a pyproject.toml
+A failed resolution is not an empty or clean world. Nothing from this project can be compared until this is resolved.
+No package table is rendered for the failed project.
+Automated: 
+tests/integration/test_world_inspector.py::test_tc_3_5_2_failed_resolution_is_a_failure_not_an_empty_world PASSED [ 50%]
+tests/integration/test_world_inspector.py::test_analyze_endpoint_queues_a_job_only_for_an_ingested_repository PASSED [100%]
+====================== 2 passed, 1 deselected in 10.97s =======================

@@ -1,0 +1,2 @@
+tests/integration/test_cells.py::test_tc_4_3_1_identical_projections_share_one_cell_with_two_links PASSED [100%]
+======================= 1 passed, 3 deselected in 0.24s =======================

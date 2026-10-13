@@ -1,0 +1,4 @@
+TC-1.6.4  (2026-10-12 20:37 UTC)  real Docker; integration tests execute 6 real container runs per verification
+tests/integration/test_witness.py::test_tc_1_6_4_negative_controls_stay_clean PASSED [ 26%]
+tests/unit/test_witness_decision.py::test_both_pass_means_no_divergence_observed_for_this_entry PASSED [ 68%]
+Scenario H (pydantic 2, deprecated .dict()): acme_models and acme_models.customer NO_DIVERGENCE, acme_models.web NOT_APPLICABLE (no Flask), zero witness rows. Scenario A (consumer lock identical to the reference) is a NO_DRIFT cell, proven by tests/unit/test_scenarios.py and scripts/validate_scenarios.py; its world hash equals the reference world hash so there is nothing to run.

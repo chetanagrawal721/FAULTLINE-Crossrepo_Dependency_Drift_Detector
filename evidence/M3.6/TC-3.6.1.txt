@@ -1,0 +1,6 @@
+tests/unit/test_npm.py::test_tc_3_6_1_nested_versions_are_preserved_and_visibility_is_per_importer PASSED [ 20%]
+tests/unit/test_npm.py::test_scoped_names_scopes_and_source_identity PASSED [ 40%]
+tests/unit/test_npm.py::test_install_scripts_are_reported_and_never_run PASSED [ 60%]
+tests/unit/test_npm.py::test_candidate_dirs_skip_node_modules_components PASSED [ 80%]
+tests/integration/test_npm_api.py::test_npm_world_is_persisted_and_inspectable_per_instance PASSED [100%]
+====================== 5 passed, 15 deselected in 0.29s =======================

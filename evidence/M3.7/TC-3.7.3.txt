@@ -1,0 +1,7 @@
+tests/unit/test_maven.py::test_tc_3_7_3_hostile_xml_is_rejected_without_reading_files_or_touching_the_network PASSED [ 16%]
+tests/unit/test_maven.py::test_deeply_nested_and_oversized_poms_are_rejected_not_crashed PASSED [ 33%]
+tests/unit/test_maven.py::test_odd_poms_do_not_crash[] PASSED            [ 50%]
+tests/unit/test_maven.py::test_odd_poms_do_not_crash[   ] PASSED         [ 66%]
+tests/unit/test_maven.py::test_odd_poms_do_not_crash[\x00] PASSED        [ 83%]
+tests/unit/test_maven.py::test_odd_poms_do_not_crash[<project] PASSED    [100%]
+======================= 6 passed, 5 deselected in 3.26s =======================

@@ -1,0 +1,8 @@
+TC-1.8.1 end to end from a scenario id to a displayed finding  (2026-10-12 20:56 UTC)
+command: python tools/fl.py e2e D   (runs tests/e2e with FAULTLINE_SCENARIO=D; A,D,H also run in the full suite)
+3 passed in 27.28s
+
+Full suite incl. scenarios A, D, H: 172 passed in 7 min (real Docker).
+What the test does: POST /api/scenarios/D/run -> job row -> the worker's real run_one() -> handler -> sandbox -> DB -> GET /api/findings, /api/findings/{id}, /api/witnesses/{id}/bundle; compares verdict, signature, delta, 6 fresh runs and bundle integrity with fixtures/scenarios/D.yaml (written before any code existed).
+
+Browser check on the real running stack (API + worker + sandboxd + built UI) with the in-app browser: clicked Run on scenario D, job went RUNNING -> DONE, finding appeared as BREAK WITNESSED / REPRODUCIBLE FIXTURE; detail page shows worlds, dependency difference, 6 run rows, witness, bundle link and scope. Screenshots: evidence/M1.8/finding-detail-*.jpg

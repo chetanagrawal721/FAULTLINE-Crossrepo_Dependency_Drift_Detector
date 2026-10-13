@@ -1,0 +1,11 @@
+TC-1.2.5  (2026-10-12 19:52 UTC)  real Docker 29.8.0
+Docker daemon is not stopped (Docker Desktop restarts take minutes); instead Docker is made unreachable by pointing the docker client at a closed port, and sandboxd is made unreachable by using a closed port. Both are the failure paths a real outage takes.
+tests/security/test_sandbox.py::test_tc_1_2_5_docker_unreachable_disables_execution PASSED [ 12%]
+tests/security/test_sandbox.py::test_tc_1_2_5_sandboxd_down_reports_unavailable_and_raises PASSED [ 25%]
+tests/security/test_sandbox.py::test_unlisted_or_mutable_images_are_rejected PASSED [ 37%]
+tests/security/test_sandbox.py::test_unknown_limits_scripts_and_mounts_are_rejected PASSED [ 50%]
+tests/security/test_sandbox.py::test_limits_are_clamped_to_hard_ceilings PASSED [ 62%]
+tests/security/test_sandbox.py::test_wrong_token_is_rejected PASSED      [ 75%]
+tests/security/test_sandbox.py::test_unknown_probe_is_refused_by_the_harness PASSED [ 87%]
+tests/security/test_sandbox.py::test_container_profile_flags_contain_the_required_hardening PASSED [100%]
+====================== 8 passed, 18 deselected in 8.19s =======================

@@ -1,0 +1,2 @@
+tests/unit/test_verdict_table.py::test_tc_4_5_4_no_divergence_wording_is_scoped_and_never_says_compatible PASSED [100%]
+====================== 1 passed, 23 deselected in 0.04s =======================

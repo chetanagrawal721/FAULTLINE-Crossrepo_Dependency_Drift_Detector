@@ -1,0 +1,12 @@
+TC-1.2.2  (2026-10-12 19:51 UTC)  real Docker 29.8.0, image sha256:91452abe0b81
+command: pytest tests/security/test_sandbox.py -k "tc_1_2_2 or tmpfs_scratch"
+tests/security/test_sandbox.py::test_tc_1_2_2_identity_is_unprivileged_and_isolated PASSED [ 11%]
+tests/security/test_sandbox.py::test_tc_1_2_2_cannot_write_outside_tmpfs[/faultline_probe] PASSED [ 22%]
+tests/security/test_sandbox.py::test_tc_1_2_2_cannot_write_outside_tmpfs[/etc/faultline_probe] PASSED [ 33%]
+tests/security/test_sandbox.py::test_tc_1_2_2_cannot_write_outside_tmpfs[/usr/faultline_probe] PASSED [ 44%]
+tests/security/test_sandbox.py::test_tc_1_2_2_cannot_write_outside_tmpfs[/faultline_harness/probe.py] PASSED [ 55%]
+tests/security/test_sandbox.py::test_tc_1_2_2_cannot_write_outside_tmpfs[/opt/faultline_probe] PASSED [ 66%]
+tests/security/test_sandbox.py::test_tmpfs_scratch_is_writable[/tmp/ok] PASSED [ 77%]
+tests/security/test_sandbox.py::test_tmpfs_scratch_is_writable[/work/ok] PASSED [ 88%]
+tests/security/test_sandbox.py::test_tc_1_2_2_docker_socket_and_host_files_unreadable PASSED [100%]
+====================== 9 passed, 17 deselected in 28.82s ======================

@@ -1,0 +1,7 @@
+tests/unit/test_bundle.py::test_tc_1_7_2_one_changed_byte_is_detected_and_the_file_is_named PASSED [ 16%]
+tests/unit/test_bundle.py::test_tampered_manifest_and_changed_witness_are_rejected PASSED [ 33%]
+tests/unit/test_bundle.py::test_missing_extra_duplicate_and_unsafe_entries_are_rejected PASSED [ 50%]
+tests/unit/test_bundle.py::test_unknown_schema_version_not_a_zip_and_oversize_are_rejected PASSED [ 66%]
+tests/integration/test_replay.py::test_the_bundle_carries_pinned_provenance_verdict_and_attribution PASSED [ 83%]
+tests/integration/test_replay.py::test_tc_5_2_1_replay_refuses_every_kind_of_bad_bundle PASSED [100%]
+================ 6 passed, 11 deselected in 171.99s (0:02:51) =================

@@ -1,0 +1,2 @@
+2f27b87 17:28 M11.2: benchmark and ablation harness, CI-world detector and first measured report (6 of 12 scenarios, denominators included)
+0200f20 16:28 M11.2: committed ground-truth labels for the benchmark scenarios (before any results)

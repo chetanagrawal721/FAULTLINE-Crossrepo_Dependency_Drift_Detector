@@ -1,0 +1,5 @@
+TC-0.4.3  (2026-10-12 18:49 UTC)
+command: pytest tests/integration/test_api.py -k tc_0_4_3 or immediately
+tests/integration/test_api.py::test_tc_0_4_3_idempotent_submission PASSED [ 50%]
+tests/integration/test_api.py::test_submission_returns_immediately_with_queued_status PASSED [100%]
+======================= 2 passed, 7 deselected in 0.22s =======================

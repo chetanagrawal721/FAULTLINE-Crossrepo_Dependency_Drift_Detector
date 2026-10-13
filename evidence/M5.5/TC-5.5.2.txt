@@ -1,0 +1,6 @@
+# TC-5.5.2: controls produce no witness (A, G, H and the look-alike control L), from the same run
+(see TC-5.5.1.txt for the full output)
+A: predicted_positive=False verdicts=['NO_DRIFT'] match=True
+G: predicted_positive=False verdicts=['NO_DRIFT'] match=True
+H: predicted_positive=False verdicts=['NO_DIVERGENCE_OBSERVED'] match=True
+L: predicted_positive=False verdicts=['(no cells)'] match=True

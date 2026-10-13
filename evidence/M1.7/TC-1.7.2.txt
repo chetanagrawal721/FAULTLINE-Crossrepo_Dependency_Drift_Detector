@@ -1,0 +1,8 @@
+TC-1.7.2  (2026-10-12 20:41 UTC)
+tests/unit/test_bundle.py::test_tc_1_7_2_one_changed_byte_is_detected_and_the_file_is_named PASSED [ 33%]
+tests/unit/test_bundle.py::test_tampered_manifest_and_changed_witness_are_rejected PASSED [ 41%]
+tests/unit/test_bundle.py::test_missing_extra_duplicate_and_unsafe_entries_are_rejected PASSED [ 50%]
+tests/unit/test_bundle.py::test_unknown_schema_version_not_a_zip_and_oversize_are_rejected PASSED [ 58%]
+tests/unit/test_bundle.py::test_consistency_checks_catch_a_bundle_whose_hashes_were_recomputed_but_content_lies PASSED [ 66%]
+
+Example verifier output after flipping one byte of runs/test-1.json:  ERROR: modified file (sha256 differs): runs/test-1.json

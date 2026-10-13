@@ -1,0 +1,19 @@
+TC-0.1.3 make targets fail loudly  (2026-10-12 18:48 UTC)
+--- with a deliberately failing test:
+=========================== short test summary info ===========================
+FAILED tests/unit/test_zz_deliberate_failure.py::test_deliberate_failure - As...
+1 failed, 47 passed in 12.13s
+exit code: 1
+--- after removing it:
+...............................................                          [100%]
+47 passed in 13.03s
+exit code: 0
+--- targets that are not available yet must also fail loudly:
+fixtures are not available yet: scripts/run_fixtures.py arrives with milestone M1.1
+fixtures exit code: 2
+no end-to-end tests yet: the first arrives with milestone M1.8
+e2e exit code: 2
+--- lint failure propagates:
+Found 1 error.
+[*] 1 fixable with the `--fix` option.
+lint exit code: 1

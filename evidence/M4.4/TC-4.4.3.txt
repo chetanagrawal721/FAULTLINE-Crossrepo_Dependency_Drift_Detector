@@ -1,0 +1,4 @@
+tests/integration/test_live_failures.py::test_infrastructure_failures_are_retried_and_a_recovery_is_used PASSED [ 33%]
+tests/integration/test_live_failures.py::test_persistent_infrastructure_failure_is_inconclusive_never_a_witness PASSED [ 66%]
+tests/integration/test_live_failures.py::test_tc_4_4_3_killing_the_container_during_a_run_is_a_sandbox_failure PASSED [100%]
+======================= 3 passed, 1 deselected in 2.41s =======================

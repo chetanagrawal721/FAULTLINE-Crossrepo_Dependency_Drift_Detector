@@ -1,0 +1,3 @@
+$ C:\Users\Chetan\Hackethopia\.venv\Scripts\python.exe -m pytest -q tests/e2e
+.....                                                                    [100%]
+5 passed in 62.33s (0:01:02)

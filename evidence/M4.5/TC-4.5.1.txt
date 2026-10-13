@@ -1,0 +1,28 @@
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[row0 below L2] PASSED [  4%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[row0 L0] PASSED [  9%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[row1 no drift] PASSED [ 14%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[row2 nothing applicable] PASSED [ 19%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[row3 break] PASSED [ 23%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[row3 beats row4] PASSED [ 28%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[row4 silent] PASSED [ 33%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[row5 exposures matched] PASSED [ 38%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[row6 exposed] PASSED [ 42%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[row6 static confirmed] PASSED [ 47%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[row7 potential] PASSED [ 52%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[row8 not exposed] PASSED [ 57%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[row8 low coverage is not enough] PASSED [ 61%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[mvp oracle only] PASSED [ 66%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[unknown: nothing exercised] PASSED [ 71%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[unknown: inconclusive entry] PASSED [ 76%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[unknown: discarded baseline] PASSED [ 80%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[unknown: reused only] PASSED [ 85%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[unknown: run problem] PASSED [ 90%]
+tests/unit/test_verdict_table.py::test_tc_4_5_1_every_row_and_unknown_combination[unknown: weird state] PASSED [ 95%]
+tests/unit/test_verdict_table.py::test_sub_labels_and_coverage_are_carried PASSED [100%]
+====================== 21 passed, 3 deselected in 0.05s =======================
+Name                                   Stmts   Miss Branch BrPart  Cover   Missing
+----------------------------------------------------------------------------------
+backend\faultline\verdicts\engine.py      88     13     26      0    85%   27-39
+----------------------------------------------------------------------------------
+TOTAL                                     88     13     26      0    85%
+# decide() is fully covered (branch coverage, 0 partial branches). The 13 missed lines (27-39) are the older fixture_verdict, covered by the fixture suites.

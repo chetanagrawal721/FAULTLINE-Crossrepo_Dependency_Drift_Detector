@@ -1,0 +1,3 @@
+tests/integration/test_projection.py::test_tc_4_2_2_consumer_import_scan_lists_exactly_the_modules_imported PASSED [ 50%]
+tests/integration/test_projection.py::test_tc_4_2_2_a_module_needing_an_absent_extra_is_not_applicable PASSED [100%]
+====================== 2 passed, 10 deselected in 16.77s ======================

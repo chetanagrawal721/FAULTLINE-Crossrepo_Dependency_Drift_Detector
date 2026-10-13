@@ -1,0 +1,2 @@
+tests/integration/test_attribution.py::test_tc_5_1_2_attribution_finds_the_one_cause_among_irrelevant_differences PASSED [100%]
+================= 1 passed, 2 deselected in 77.90s (0:01:17) ==================

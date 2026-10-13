@@ -1,0 +1,3 @@
+tests/e2e/test_dashboard.py::test_tc_5_6_7_every_state_renders_a_distinct_truthful_message PASSED [100%]
+# Playwright + Chromium against the real API over a real multi-ecosystem analysis (8 repositories); full run: 7 passed
+======================== 7 passed in 158.62s (0:02:38) ========================

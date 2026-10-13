@@ -1,0 +1,42 @@
+# TC-4.4.1 live analysis on two REAL public repositories (GitHub): pallets/flask@3.0.3 (producer) and maxcountryman/flask-login (consumer)
+{"id":"ap_01M4T3P9P36VAGZE3HA3NYR6K1","name":"live flask check","mode":"LIVE","created_at":"2026-10-13T07:47:34Z","repositories":[{"id":"repo_01M4T3PAKSN9724YSKYNHD4QQ8","project_id":"ap_01M4T3P9P36VAGZE3HA3NYR6K1","owner":"pallets","name":"flask","url":"https://github.com/pallets/flask","requested_ref":"3.0.3","default_branch":"main","pinned_sha":"c12a5d874c5a014495eb2db8a73f40037bc813ac","committed_at":"2024-04-07T19:17:41Z","is_fork":false,"is_archived":false,"status":"INGESTED","error":null,"snapshot":{"id":"snp_512efa9dc39d75e91ec28b8c","sha":"c12a5d874c5a014495eb2db8a73f40037bc813ac","status":"OK","truncated":false,"warnings":[],"file_count":249,"stored_files":249,"manifests":15},"job_id":null},{"id":"repo_01M4T3VHKJRYPE05YAYQQEGFG6","project_id":"ap_01M4T3P9P36VAGZE3HA3NYR6K1","owner":"maxcountryman","name":"flask-login","url":"https://github.com/maxcountryman/flask-login","requested_ref":null,"default_branch":"main","pinned_sha":"c8bba84b9ba6768e878317fc46c54bd13fa1ac07","committed_at":"2025-08-27T03:00:09Z","is_fork":false,"is_archived":false,"status":"INGESTED","error":null,"snapshot":{"id":"snp_d08e6995712a132f6962b46e","sha":"c8bba84b9ba6768e878317fc46c54bd13fa1ac07","status":"OK","truncated":false,"warnings":[],"file_count":41,"stored_files":41,"manifests":7},"job_id":null}]}
+{
+ "analysis_id": "an_137e515ae1ad6843dc5f33ce",
+ "cells": [
+  {
+   "cell_id": "cell_5dc11b6457276032cf5d92a0",
+   "state": "ANALYZED",
+   "finding_id": "fnd_01M4T3Y4FAZ96MG89AC3HWAMQD",
+   "consumers": [
+    "prj_a95ded784029d584ac25706e"
+   ]
+  }
+ ],
+ "funnel": {
+  "relationships_discovered": 1,
+  "relationships_actionable": 1,
+  "suspected": 0,
+  "consumers_discovered": 1,
+  "consumers_analysed": 1,
+  "consumers_failed": [],
+  "cells": 1,
+  "cells_by_state": {
+   "ANALYZED": 1
+  }
+ }
+}
+{
+ "finding_id": "fnd_01M4T3Y4FAZ96MG89AC3HWAMQD",
+ "analysis_id": "an_137e515ae1ad6843dc5f33ce",
+ "cell_id": "cell_5dc11b6457276032cf5d92a0",
+ "mode": "LIVE",
+ "verdict": "NO_DIVERGENCE_OBSERVED",
+ "headline": "No difference observed in 4 exercised interaction(s) (flask, flask.signals, flask.testing, flask.views) between flask's own dependencies and those of maxcountryman/flask-login. Not checked: static API and usage exposure were not analysed; the artifact's own tests (O-tests) were not run unless listed as exercised; data-contract replay was not run; consumers and dependency worlds other than the ones named were not analysed. This is not a statement that they are compatible.",
+ "artifact": "flask",
+ "consumer": "consumer",
+ "created_at": "2026-10-13T07:51:51Z",
+ "witness_ids": []
+}
+tests/integration/test_live.py::test_tc_4_4_1_live_analysis_stores_per_world_outcomes_with_stable_fingerprints PASSED [ 50%]
+tests/integration/test_live.py::test_orders_svc_matching_the_reference_queued_no_oracle_jobs PASSED [100%]
+============================= 2 passed in 44.55s ==============================

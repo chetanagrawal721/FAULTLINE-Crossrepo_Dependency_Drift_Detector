@@ -1,0 +1,2 @@
+tests/integration/test_ingestion.py::test_tc_2_2_2_limits_produce_a_partial_snapshot_and_a_warning PASSED [100%]
+======================= 1 passed, 7 deselected in 4.38s =======================

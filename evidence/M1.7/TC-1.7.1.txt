@@ -1,0 +1,8 @@
+TC-1.7.1  (2026-10-12 20:41 UTC)
+tests/unit/test_bundle.py::test_tc_1_7_1_bundle_validates_against_the_schema_and_carries_a_version PASSED [  8%]
+tests/unit/test_bundle.py::test_bundle_contents_are_what_the_witness_says PASSED [ 16%]
+tests/unit/test_bundle.py::test_same_content_gives_identical_bytes PASSED [ 25%]
+
+Real bundle from the real scenario-D witness (scripts/export_demo_bundle.py):
+OK  bdl_76d74b2a2380d7c72ca51130  witness wit_01M4RXJBDYPJ1BE7K708DGWXX6 (BREAK)  files: 28  mode: FIXTURE
+Schema: docs/schemas/evidence-bundle-v1.json  (manifest field schema_version = "1", validated with jsonschema in the tests and in the verifier)

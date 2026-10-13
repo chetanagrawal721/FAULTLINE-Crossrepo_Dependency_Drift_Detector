@@ -586,3 +586,246 @@ Format: `### <UTC time> | <EVENT> | <id> | by <name>` followed by details.
 ### 2026-10-12 22:40 UTC | DONE | M4.1 | by Claude
 - Relationship evidence
 - test cases passed: 3/3
+
+### 2026-10-13 07:08 UTC | START | M4.2 | by Claude
+- Reference world, projection, test overlay and consumer-import scan
+
+### 2026-10-13 07:08 UTC | TC PASS | TC-4.2.1 | by Claude
+- Exact projection
+- evidence: evidence/M4.2/TC-4.2.1.txt
+
+### 2026-10-13 07:08 UTC | TC PASS | TC-4.2.2 | by Claude
+- Consumer-import scan
+- evidence: evidence/M4.2/TC-4.2.2.txt
+
+### 2026-10-13 07:08 UTC | TC PASS | TC-4.2.3 | by Claude
+- Reference failure policy
+- evidence: evidence/M4.2/TC-4.2.3.txt
+
+### 2026-10-13 07:08 UTC | DONE | M4.2 | by Claude
+- Reference world, projection, test overlay and consumer-import scan
+- test cases passed: 3/3
+
+### 2026-10-13 07:11 UTC | START | M4.3 | by Claude
+- Cells, deltas and world coverage
+
+### 2026-10-13 07:11 UTC | TC PASS | TC-4.3.1 | by Claude
+- Dedup and links
+- evidence: evidence/M4.3/TC-4.3.1.txt
+
+### 2026-10-13 07:11 UTC | TC PASS | TC-4.3.2 | by Claude
+- NO_DRIFT cell
+- evidence: evidence/M4.3/TC-4.3.2.txt
+
+### 2026-10-13 07:11 UTC | TC PASS | TC-4.3.3 | by Claude
+- Failed cell counted
+- evidence: evidence/M4.3/TC-4.3.3.txt
+
+### 2026-10-13 07:11 UTC | DONE | M4.3 | by Claude
+- Cells, deltas and world coverage
+- test cases passed: 3/3
+
+### 2026-10-13 07:43 UTC | START | M4.5 | by Claude
+- Witness and ordered verdict engine
+
+### 2026-10-13 07:43 UTC | TC PASS | TC-4.5.1 | by Claude
+- Decision table coverage
+- evidence: evidence/M4.5/TC-4.5.1.txt
+
+### 2026-10-13 07:43 UTC | TC PASS | TC-4.5.2 | by Claude
+- Determinism
+- evidence: evidence/M4.5/TC-4.5.2.txt
+
+### 2026-10-13 07:43 UTC | TC PASS | TC-4.5.3 | by Claude
+- No LLM input
+- evidence: evidence/M4.5/TC-4.5.3.txt
+
+### 2026-10-13 07:43 UTC | TC PASS | TC-4.5.4 | by Claude
+- Scoped wording
+- evidence: evidence/M4.5/TC-4.5.4.txt
+
+### 2026-10-13 07:43 UTC | DONE | M4.5 | by Claude
+- Witness and ordered verdict engine
+- test cases passed: 4/4
+
+### 2026-10-13 07:53 UTC | START | M4.4 | by Claude
+- Live oracle execution
+
+### 2026-10-13 07:53 UTC | TC PASS | TC-4.4.1 | by Claude
+- Live import oracle
+- evidence: evidence/M4.4/TC-4.4.1.txt
+- real public pallets/flask + maxcountryman/flask-login end to end (NO DIVERGENCE OBSERVED, scoped); scenario D live from git remotes: BREAK WITNESSED, ref fingerprint identical
+
+### 2026-10-13 07:53 UTC | TC PASS | TC-4.4.2 | by Claude
+- Short-circuit
+- evidence: evidence/M4.4/TC-4.4.2.txt
+
+### 2026-10-13 07:53 UTC | TC PASS | TC-4.4.3 | by Claude
+- Infrastructure failure is not evidence
+- evidence: evidence/M4.4/TC-4.4.3.txt
+
+### 2026-10-13 07:53 UTC | DONE | M4.4 | by Claude
+- Live oracle execution
+- test cases passed: 3/3
+
+### 2026-10-13 08:01 UTC | START | M4.7 | by Claude
+- MVP UI against persisted API records
+
+### 2026-10-13 08:01 UTC | TC PASS | TC-4.7.1 | by Claude
+- Two-URL end to end
+- evidence: evidence/M4.7/TC-4.7.1.txt
+- Playwright, real Chromium, real GitHub repos
+
+### 2026-10-13 08:01 UTC | TC PASS | TC-4.7.2 | by Claude
+- Mock-free proof
+- evidence: evidence/M4.7/TC-4.7.2.txt
+
+### 2026-10-13 08:01 UTC | DONE | M4.7 | by Claude
+- MVP UI against persisted API records
+- test cases passed: 2/2
+
+### 2026-10-13 10:15 UTC | START | M5.1 | by Claude
+- Two-sided ddmin attribution
+
+### 2026-10-13 10:15 UTC | TC PASS | TC-5.1.1 | by Claude
+- ddmin on a mock oracle
+- evidence: evidence/M5.1/TC-5.1.1.txt
+
+### 2026-10-13 10:15 UTC | TC PASS | TC-5.1.2 | by Claude
+- Real scenario attribution
+- evidence: evidence/M5.1/TC-5.1.2.txt
+
+### 2026-10-13 10:15 UTC | TC PASS | TC-5.1.3 | by Claude
+- One-sided is labelled
+- evidence: evidence/M5.1/TC-5.1.3.txt
+
+### 2026-10-13 10:15 UTC | TC PASS | TC-5.1.4 | by Claude
+- Forced worlds are never presented as observed
+- evidence: evidence/M5.1/TC-5.1.4.txt
+
+### 2026-10-13 10:15 UTC | TC PASS | TC-5.1.5 | by Claude
+- Budget honesty
+- evidence: evidence/M5.1/TC-5.1.5.txt
+
+### 2026-10-13 10:15 UTC | DONE | M5.1 | by Claude
+- Two-sided ddmin attribution
+- test cases passed: 5/5
+
+### 2026-10-13 10:28 UTC | START | M5.2 | by Claude
+- Portable evidence bundle, verifier and replay
+
+### 2026-10-13 10:28 UTC | TC PASS | TC-5.2.1 | by Claude
+- Verifier rejects bad bundles
+- evidence: evidence/M5.2/TC-5.2.1.txt
+
+### 2026-10-13 10:28 UTC | TC PASS | TC-5.2.3 | by Claude
+- No moving refs
+- evidence: evidence/M5.2/TC-5.2.3.txt
+- restored from bundle, hash verified; sandbox scripts recorded: no fetch_repo
+
+### 2026-10-13 10:28 UTC | NOTE | - | by Claude
+- M5.2: TC-5.2.2 (replay on a DIFFERENT computer) is manual and still pending: run 'python -m faultline.witnesses.replay <bundle.zip>' on another machine and record the outcome.
+
+### 2026-10-13 10:47 UTC | START | M5.5 | by Claude
+- Scenario set and false-positive controls
+
+### 2026-10-13 10:47 UTC | TC PASS | TC-5.5.1 | by Claude
+- All scenarios match expected verdicts
+- evidence: evidence/M5.5/TC-5.5.1.txt
+- 6 evaluated scenarios (A,B,D,G,H,L) all match; C,E,F,I,J registered with reasons and NOT evaluated
+
+### 2026-10-13 10:48 UTC | TC PASS | TC-5.5.2 | by Claude
+- Controls produce no witness
+- evidence: evidence/M5.5/TC-5.5.2.txt
+
+### 2026-10-13 10:48 UTC | DONE | M5.5 | by Claude
+- Scenario set and false-positive controls
+- test cases passed: 2/2
+
+### 2026-10-13 11:09 UTC | START | M5.6 | by Claude
+- Complete MUST dashboard (eight views, all states)
+
+### 2026-10-13 11:09 UTC | TC PASS | TC-5.6.1 | by Claude
+- Funnel counts
+- evidence: evidence/M5.6/TC-5.6.1.txt
+
+### 2026-10-13 11:09 UTC | TC PASS | TC-5.6.2 | by Claude
+- World matrix
+- evidence: evidence/M5.6/TC-5.6.2.txt
+
+### 2026-10-13 11:09 UTC | TC PASS | TC-5.6.3 | by Claude
+- Witness detail
+- evidence: evidence/M5.6/TC-5.6.3.txt
+
+### 2026-10-13 11:10 UTC | TC PASS | TC-5.6.4 | by Claude
+- Why-path
+- evidence: evidence/M5.6/TC-5.6.4.txt
+
+### 2026-10-13 11:10 UTC | TC PASS | TC-5.6.5 | by Claude
+- Findings and suspected tray
+- evidence: evidence/M5.6/TC-5.6.5.txt
+
+### 2026-10-13 11:10 UTC | TC PASS | TC-5.6.6 | by Claude
+- Inventory graph
+- evidence: evidence/M5.6/TC-5.6.6.txt
+
+### 2026-10-13 11:10 UTC | TC PASS | TC-5.6.7 | by Claude
+- State coverage
+- evidence: evidence/M5.6/TC-5.6.7.txt
+
+### 2026-10-13 11:10 UTC | DONE | M5.6 | by Claude
+- Complete MUST dashboard (eight views, all states)
+- test cases passed: 7/7
+
+### 2026-10-13 11:20 UTC | START | M12.2 | by Claude
+- Demo modes, warm caches and fallbacks
+
+### 2026-10-13 11:20 UTC | TC PASS | TC-12.2.3 | by Claude
+- Badge cannot lie
+- evidence: evidence/M12.2/TC-12.2.3.txt
+- REPLAY pack: stored mode REPLAY shown as RECORDED even with ?mode=LIVE and mode headers; actions refused with 409; works with DOCKER_HOST unreachable
+
+### 2026-10-13 11:20 UTC | NOTE | - | by Claude
+- M12.2: TC-12.2.1 (network unplugged) and TC-12.2.2 (Docker stopped) are manual and still pending: follow docs/demo_drill.md and record the outcomes with track.py note.
+
+### 2026-10-13 11:30 UTC | TC PASS | TC-8.0.1 | by Chetan Agrawal
+- Fix verifies
+- evidence: evidence/M8.0/TC-8.0.1.txt
+
+### 2026-10-13 11:30 UTC | TC PASS | TC-8.0.2 | by Chetan Agrawal
+- Bad fix is not verified
+- evidence: evidence/M8.0/TC-8.0.2.txt
+
+### 2026-10-13 11:30 UTC | TC PASS | TC-8.0.3 | by Chetan Agrawal
+- No auto-push
+- evidence: evidence/M8.0/TC-8.0.3.txt
+
+### 2026-10-13 11:30 UTC | DONE | M8.0 | by Chetan Agrawal
+- Demo-minimal remediation: pin and re-run
+- test cases passed: 3/3
+
+### 2026-10-13 11:30 UTC | NOTE | - | by Chetan Agrawal
+- REAL1 (Flask 2.2.2, werkzeug 3.0.0) is true historically but NOT reproducible by the pipeline: MarkupSafe 2.1.x has no CPython 3.12 wheel before 2024 and Faultline never builds from source (needs_build -> RESOLUTION_FAILED). M12.1 stays open; TC-12.1.2 not claimed. Needs a different public case with 3.12 wheels (after Oct 2023).
+
+### 2026-10-13 11:58 UTC | TC PASS | TC-11.2.1 | by Chetan Agrawal
+- Reproducible report
+- evidence: evidence/M11.2/TC-11.2.1.txt
+
+### 2026-10-13 11:58 UTC | TC PASS | TC-11.2.2 | by Chetan Agrawal
+- Labels precede results
+- evidence: evidence/M11.2/TC-11.2.2.txt
+
+### 2026-10-13 11:58 UTC | TC PASS | TC-11.2.3 | by Chetan Agrawal
+- Ablation D vs E is reported
+- evidence: evidence/M11.2/TC-11.2.3.txt
+
+### 2026-10-13 11:58 UTC | DONE | M11.2 | by Chetan Agrawal
+- Evaluation protocol, benchmark and ablation
+- test cases passed: 3/3
+
+### 2026-10-13 13:24 UTC | NOTE | - | by Chetan Agrawal
+- Conformance report 2026-10-13: 31/34 rows PASS; FR-9c, SR-4, NFR-6 are NOT_IMPLEMENTED (Gate D blocked, honestly). Docker/network-dependent tests failed intermittently in two earlier full runs (PC-10 test_world_builder, wheel fetch) and passed alone and on re-run; cause not proven. Report now runs each test target once (~23 min instead of ~40).
+
+### 2026-10-13 13:24 UTC | TC PASS | TC-5.7.2 | by Chetan Agrawal
+- Report fails when a row fails
+- evidence: evidence/M5.7/TC-5.7.2.txt

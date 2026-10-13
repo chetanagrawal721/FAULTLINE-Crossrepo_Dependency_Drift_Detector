@@ -1,0 +1,3 @@
+tests/integration/test_ingestion.py::test_snapshot_is_complete_hashed_read_only_and_cached PASSED [ 50%]
+tests/integration/test_ingestion.py::test_snapshot_persisted_with_classification PASSED [100%]
+======================= 2 passed, 6 deselected in 5.80s =======================

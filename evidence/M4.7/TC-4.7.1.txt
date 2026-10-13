@@ -1,0 +1,4 @@
+# TC-4.7.1: Playwright + Chromium drives the real UI against a running stack and REAL GitHub repos (pallets/flask@3.0.3 as producer, maxcountryman/flask-login as consumer)
+# fills both URLs into the form, waits for pinned SHAs and INGESTED, runs the analysis, asserts funnel, relationship evidence, matrix delta, verdict and that data-analysis-id / world hash equal the API records
+tests/e2e/test_ui_browser.py::test_tc_4_7_1_two_urls_end_to_end_in_a_real_browser PASSED [100%]
+====================== 1 passed, 1 deselected in 52.67s =======================

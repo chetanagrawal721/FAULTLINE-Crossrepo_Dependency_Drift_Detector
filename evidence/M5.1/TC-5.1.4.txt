@@ -1,0 +1,5 @@
+# TC-5.1.4 (manual-style, automated here): Chromium opens the Why-path of the real scenario-D attribution
+tests/integration/test_live.py::test_live_break_is_attributed_two_sided_and_served_with_forced_world_labels PASSED [ 50%]
+tests/integration/test_live.py::test_tc_5_1_4_the_ui_labels_every_forced_world_in_the_why_path PASSED [100%]
+================= 2 passed, 3 deselected in 82.16s (0:01:22) ==================
+Observed text: every attempt carries the pill 'attribution experiment (forced world)'; 'minimal' wording appears only for COMPLETE two-sided; PARTIAL/BUDGET_LIMITED print 'Not claimed as minimal'.

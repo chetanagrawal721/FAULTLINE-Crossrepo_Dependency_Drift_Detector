@@ -1,0 +1,2 @@
+tests/unit/test_parsers_python.py::test_tc_3_2_3_name_normalisation PASSED [100%]
+====================== 1 passed, 36 deselected in 0.09s =======================

@@ -1,0 +1,103 @@
+
+=== lint ===
+$ C:\Users\Chetan\Hackethopia\.venv\Scripts\python.exe -m ruff check backend tests tools scripts
+All checks passed!
+
+=== pins ===
+$ C:\Users\Chetan\Hackethopia\.venv\Scripts\python.exe scripts/check_pins.py
+checked: 11 python_deps, 8 npm_deps, 1 images, 3 actions
+pins ok
+
+=== images ===
+$ C:\Users\Chetan\Hackethopia\.venv\Scripts\python.exe scripts/build_images.py
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 999B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.12.15-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
+#2 DONE 0.1s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/python:3.12.15-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
+#4 resolve docker.io/library/python:3.12.15-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 684B done
+#5 DONE 0.0s
+
+#6 [2/5] RUN pip install uv==0.13.0
+#6 CACHED
+
+#7 [3/5] RUN mkdir -p /opt/world /wheelhouse && chown 65534:65534 /opt/world /wheelhouse
+#7 CACHED
+
+#8 [4/5] COPY backend/faultline/oracles/harness/ /faultline_harness/
+#8 CACHED
+
+#9 [5/5] WORKDIR /work
+#9 CACHED
+
+#10 exporting to image
+#10 exporting layers done
+#10 exporting manifest sha256:273cbdfc8571101ae09112235c42112e1e5c5d37d29e4a292386efa5a19d0505 done
+#10 exporting config sha256:fe89a4d3dbf4839a4e488a86bccd1dec95ad38d23b44beef53f9bdd181723558 done
+#10 exporting attestation manifest sha256:3e01031ccf7a6f62d36b45a0240d3b70a15ae22c573e5b276224a58e67df4018
+#10 exporting attestation manifest sha256:3e01031ccf7a6f62d36b45a0240d3b70a15ae22c573e5b276224a58e67df4018 0.0s done
+#10 exporting manifest list sha256:d269c7f56808963e6979ccb9c114586fcdee07dca66c92261a0043d987fd8ab3 0.0s done
+#10 naming to docker.io/faultline/exec-python:0.1.0 done
+#10 unpacking to docker.io/faultline/exec-python:0.1.0 0.0s done
+#10 DONE 0.1s
+exec-python: sha256:d269c7f56808963e6979ccb9c114586fcdee07dca66c92261a0043d987fd8ab3
+
+=== tests ===
+$ C:\Users\Chetan\Hackethopia\.venv\Scripts\python.exe -m pytest -q tests/unit tests/integration tests/security
+........................................................................ [ 43%]
+........................................................................ [ 86%]
+.......................                                                  [100%]
+167 passed in 369.90s (0:06:09)
+
+=== openapi/types current ===
+$ C:\Users\Chetan\Hackethopia\.venv\Scripts\python.exe scripts/export_openapi.py --check
+openapi.json is current
+$ C:\Program Files\nodejs\npm.CMD exec -- openapi-typescript ./openapi.json -o C:\Users\Chetan\AppData\Local\Temp\fl-types-uiz1h8zz\schema.d.ts
+✨ openapi-typescript 7.13.0
+🚀 ./openapi.json → C:\Users\Chetan\AppData\Local\Temp\fl-types-uiz1h8zz\schema.d.ts [76.5ms]
+TypeScript types are current
+
+=== frontend build ===
+$ C:\Program Files\nodejs\npm.CMD run build
+
+> faultline-ui@0.1.0 build
+> tsc --noEmit && vite build
+
+[36mvite v8.3.4 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 23 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.39 kB │ gzip:  0.26 kB
+dist/assets/index-vGDvlA7F.css    5.16 kB │ gzip:  1.74 kB
+dist/assets/index-CJdYeVIG.js   234.12 kB │ gzip: 72.66 kB
+
+[32m✓ built in 201ms[39m
+
+=== boot ===
+2026-10-13 02:33:55,811 faultline.worker worker DESKTOP-RB3D7O0:5676 started (db=C:\Users\Chetan\AppData\Local\Temp\faultline-up-yazw56g_\faultline.db)
+INFO:     Started server process [20588]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8123 (Press CTRL+C to quit)
+INFO:     127.0.0.1:60206 - "GET /api/health HTTP/1.1" 200 OK
+2026-10-13 02:33:59,078 faultline.sandboxd boundary verification: verified=True (all boundary checks passed)
+2026-10-13 02:33:59,079 faultline.sandboxd sandboxd listening on 127.0.0.1:8787
+INFO:     127.0.0.1:60209 - "GET /api/capabilities HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60211 - "GET / HTTP/1.1" 200 OK
+API ok (schema v2, mode FIXTURE), sandbox verified, UI 394 bytes at http://127.0.0.1:8123/
+
+CI: all steps passed

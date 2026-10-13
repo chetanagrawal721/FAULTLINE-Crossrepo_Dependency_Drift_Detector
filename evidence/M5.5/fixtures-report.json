@@ -1,0 +1,124 @@
+{
+  "all_match": true,
+  "confusion": {
+    "FN": 0,
+    "FP": 0,
+    "TN": 4,
+    "TP": 2
+  },
+  "labelled_samples": 6,
+  "rows": [
+    {
+      "differences": [],
+      "evaluated": true,
+      "id": "A",
+      "label": "no_break",
+      "match": true,
+      "predicted_positive": false,
+      "title": "No drift (control)",
+      "verdicts": [
+        "NO_DRIFT"
+      ]
+    },
+    {
+      "differences": [],
+      "evaluated": true,
+      "id": "B",
+      "label": "break",
+      "match": true,
+      "predicted_positive": true,
+      "title": "API removed (BaseSettings moved out of pydantic 2)",
+      "verdicts": [
+        "BREAK_WITNESSED"
+      ]
+    },
+    {
+      "evaluated": false,
+      "id": "C",
+      "label": null,
+      "reason": "needs O-bind call-site checking (M4.6); import-only checks cannot see a changed keyword",
+      "title": "Signature changed (urllib3 Retry keyword)"
+    },
+    {
+      "differences": [],
+      "evaluated": true,
+      "id": "D",
+      "label": "break",
+      "match": true,
+      "predicted_positive": true,
+      "title": "Transitive dependency drift (Werkzeug 3 under Flask 2.2.2)",
+      "verdicts": [
+        "BREAK_WITNESSED",
+        "NO_DRIFT"
+      ]
+    },
+    {
+      "evaluated": false,
+      "id": "E",
+      "label": null,
+      "reason": "needs data-contract replay (M7.1); the MVP only imports and runs the artifact's own code",
+      "title": "Silent divergence (Union[int, str] parsed differently by pydantic 1 and 2)"
+    },
+    {
+      "evaluated": false,
+      "id": "F",
+      "label": null,
+      "reason": "needs static API and usage analysis (M6.2 to M6.4)",
+      "title": "Static exposure, runtime inconclusive (PyJWT decode without algorithms)"
+    },
+    {
+      "differences": [],
+      "evaluated": true,
+      "id": "G",
+      "label": "not_a_finding",
+      "match": true,
+      "predicted_positive": false,
+      "title": "Unrelated drift (requests is outside the artifact's closure)",
+      "verdicts": [
+        "NO_DRIFT"
+      ]
+    },
+    {
+      "differences": [],
+      "evaluated": true,
+      "id": "H",
+      "label": "no_break",
+      "match": true,
+      "predicted_positive": false,
+      "title": "Harmless drift (pydantic 2, only deprecated .dict() used)",
+      "verdicts": [
+        "NO_DIVERGENCE_OBSERVED"
+      ]
+    },
+    {
+      "evaluated": false,
+      "id": "I",
+      "label": null,
+      "reason": "needs the usage index and ApiDelta (M6.3); without them the MVP reports INCONCLUSIVE at best",
+      "title": "Dynamic usage (getattr on a dependency)"
+    },
+    {
+      "evaluated": false,
+      "id": "J",
+      "label": null,
+      "reason": "needs data-contract replay (M7.1)",
+      "title": "Data contract drift (Optional field without default, pydantic 1 vs 2)"
+    },
+    {
+      "differences": [],
+      "evaluated": true,
+      "id": "L",
+      "label": "not_a_finding",
+      "match": true,
+      "predicted_positive": false,
+      "title": "Look-alike model (suspected twin control)",
+      "verdicts": [
+        "(no cells)"
+      ]
+    }
+  ],
+  "scenarios_evaluated": 6,
+  "scenarios_not_evaluated": 5,
+  "scenarios_total": 11,
+  "scope": "Measured only on the committed fixture scenarios, against their committed ground-truth labels. This is NOT an estimate of accuracy on real-world repositories."
+}

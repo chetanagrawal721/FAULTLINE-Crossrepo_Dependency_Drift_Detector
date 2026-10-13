@@ -1,0 +1,7 @@
+TC-1.7.3  (2026-10-12 20:41 UTC)
+tests/unit/test_bundle.py::test_tc_1_7_3_no_secrets_in_the_bundle PASSED [ 75%]
+tests/unit/test_bundle.py::test_a_witness_without_three_fresh_runs_cannot_be_exported PASSED [ 83%]
+tests/unit/test_scrub.py::test_secret_env_values_and_token_shapes_are_removed PASSED [ 91%]
+tests/unit/test_scrub.py::test_scrub_obj_walks_nested_structures PASSED  [100%]
+
+Canaries injected into the control-plane environment and into the run output (FAULTLINE_ADMIN_TOKEN, GITHUB_TOKEN-shaped value, a *_SECRET value, a Bearer token); none appears in any file of the exported bundle; the output was redacted to [REDACTED].

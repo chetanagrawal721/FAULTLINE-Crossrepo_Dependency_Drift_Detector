@@ -1,0 +1,2 @@
+tests/integration/test_cells.py::test_tc_4_3_2_a_consumer_matching_the_reference_is_no_drift_and_queues_no_oracle PASSED [100%]
+======================= 1 passed, 3 deselected in 0.22s =======================
