@@ -16,3 +16,4 @@ docker/images.lock.json
 # local assistant/working files, not part of the submission
 CLAUDE.md
 .claude/
+release/
