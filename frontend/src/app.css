@@ -1,0 +1,80 @@
+/* Additions for the pieces of the workspace the design did not draw (selects, code, nested records). They use the design's own tokens. */
+
+.project-select,
+.filter-select,
+.dependency-toolbar-actions select {
+  min-height: 38px;
+  border: 1px solid var(--work-border);
+  background: var(--work-surface);
+  color: var(--work-text);
+  padding: 0 28px 0 11px;
+  font-family: var(--font-interface);
+  font-size: 9px;
+  max-width: 260px;
+}
+.filter-select { align-self: stretch; }
+.project-select:focus-visible, .filter-select:focus-visible { outline: 2px solid var(--copper); outline-offset: 2px; }
+
+.code-block {
+  margin: 14px 18px 18px;
+  padding: 14px;
+  background: var(--work-bg);
+  border: 1px solid var(--work-border);
+  color: var(--work-text);
+  font-family: var(--font-interface);
+  font-size: 9px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.why-items { margin: 8px 18px 16px; padding-left: 16px; list-style: disc; color: var(--work-muted); font-size: 9px; line-height: 1.7; }
+.why-items code { color: var(--work-text); overflow-wrap: anywhere; }
+
+.suspected-item { padding: 6px 0 14px; border-top: 1px solid var(--work-border); }
+.suspected-item:first-child { border-top: 0; }
+.suspected-item .panel-copy { padding-bottom: 6px; }
+
+.project-card { border-top: 1px solid var(--work-border); padding: 18px 0 6px; }
+.project-card-title { font-size: 12px; margin: 0 18px 6px; display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; }
+.project-card .data-table-wrap { margin: 6px 0 12px; }
+.project-card .panel-copy, .project-card .panel-note { padding-inline: 18px; }
+
+.inline-choice { display: flex; flex-wrap: wrap; gap: 18px; padding: 14px 18px 4px; font-size: 9px; color: var(--work-muted); }
+.inline-choice label { display: flex; align-items: center; gap: 7px; cursor: pointer; }
+
+.attribution-details { margin: 12px 18px 6px; border: 1px solid var(--work-border); background: var(--work-bg); }
+.attribution-details > summary { cursor: pointer; padding: 11px 14px; font-size: 9px; font-weight: 600; }
+.attribution-details > .panel-copy, .attribution-details > .panel-note { padding-inline: 14px; }
+
+.matrix-failed-note { font-size: 8px; color: var(--work-muted); overflow-wrap: anywhere; }
+
+a.app-action { display: inline-flex; align-items: center; text-decoration: none; }
+
+.filter-bar .filter-select { flex: 0 0 auto; }
+
+.suspected-item .evidence-row, .evidence-row code { overflow-wrap: anywhere; }
+
+/* the workspace links in the finding detail should not look like body copy */
+.verdict-summary p[data-testid="headline"] { font-size: 11px; }
+
+@media (max-width: 760px) {
+  .project-select { max-width: 160px; }
+  .code-block { margin-inline: 12px; }
+}
+
+/* inline state notes: one message per state, tinted so empty, failed, unsupported and inconclusive are never confused */
+.state-note { border-left: 3px solid var(--work-border); margin: 14px 18px; padding: 10px 14px; text-align: left; }
+.state-note h3 { font-size: 11px; margin: 0 0 4px; }
+.state-note p { font-size: 9px; margin: 0; color: var(--work-muted); }
+.state-note .state-note-detail { margin-top: 6px; overflow-wrap: anywhere; color: var(--work-text); }
+.state-note-failed { border-left-color: #c0392b; }
+.state-note-unsupported, .state-note-inconclusive { border-left-color: var(--copper); }
+
+.run-board article dl div { gap: 14px; }
+
+/* identifiers (commits, hashes, run ids, paths) are shown exactly as stored so they can be copied and compared */
+.review-inputs code, .data-table code, .key-values code, .manifest-grid code, .repository-title code, .dependency-node code, .run-board code,
+.review-inputs span[data-testid="pinned-sha"], .evidence-row code, .why-items code { text-transform: none; letter-spacing: normal; }
