@@ -15,13 +15,15 @@ from tests.unit.test_witness_decision import NAME, bad, ok, runs
 
 
 def test_tc_4_4_2_a_failing_top_level_import_blocks_downstream_oracles():
-    steps = planner.plan(NAME, [NAME, "acme_models.web"], has_tests=True, test_lock=True)
-    assert [s.status for s in steps] == ["PLANNED", "PLANNED"]
+    steps = planner.plan(NAME, [NAME, "acme_models.web"], has_tests=True, test_lock=True, bind_sites=2)
+    assert [s.oracle for s in steps] == ["o_import", "o_tests", "o_bind"] and [s.status for s in steps] == ["PLANNED", "PLANNED", "PLANNED"]
+    assert planner.plan(NAME, [NAME], has_tests=True, test_lock=True)[2].status == "NOT_PLANNED"                        # no call site into a differing package: O-bind is not planned
     witness = decide_entry(NAME, runs("ref", [ok()] * 3), runs("test", [bad()] * 3))
     assert witness.decision == Decision.WITNESS
     after = planner.after_import(steps, NAME, Verification([], [], [witness]))
     assert after[0].status == "RAN"
     assert after[1].status == "BLOCKED" and after[1].reason.startswith("blocked_by_import") and NAME in after[1].reason
+    assert after[2].status == "BLOCKED" and after[2].reason.startswith("blocked_by_import")                           # O-bind is blocked the same way: one cause is not reported twice
     # a passing top-level import blocks nothing, and a missing test lock is reported, not silently skipped
     fine = decide_entry(NAME, runs("ref", [ok()] * 3), runs("test", [ok()] * 3))
     assert planner.after_import(steps, NAME, Verification([], [], [fine]))[1].status == "PLANNED"
