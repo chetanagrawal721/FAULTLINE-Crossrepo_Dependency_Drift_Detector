@@ -98,6 +98,8 @@ def fetch_snapshot(sbx: SandboxClient, image: str, store: Store, owner: str, nam
         code = ErrorCode(data["code"]) if data.get("code") in ErrorCode._value2member_map_ else (
             ErrorCode.TIMEOUT if r["failure_class"] == "TIMEOUT" else ErrorCode.FETCH_FAILED)
         msg = data.get("message") or r.get("error") or r["failure_class"]
+        if not data.get("message") and r.get("stderr_tail"):                   # the harness died before it could report: say what it printed
+            msg = f"{msg} (exit {r.get('exit_code')}): {r['stderr_tail'].strip()[-400:]}"
         raise FetchError(f"could not fetch {owner}/{name}@{sha[:10]}: {msg}", code,
                          retryable=code in (ErrorCode.FETCH_FAILED, ErrorCode.TIMEOUT))
     (dest / COMPLETE).write_text(content_hash((dest / INVENTORY).read_bytes()), encoding="utf-8")
