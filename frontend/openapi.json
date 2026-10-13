@@ -1,0 +1,2794 @@
+{
+  "components": {
+    "schemas": {
+      "Capabilities": {
+        "additionalProperties": false,
+        "properties": {
+          "api_version": {
+            "title": "Api Version",
+            "type": "string"
+          },
+          "capability_version": {
+            "title": "Capability Version",
+            "type": "string"
+          },
+          "ecosystems": {
+            "items": {
+              "$ref": "#/components/schemas/EcosystemCapability"
+            },
+            "title": "Ecosystems",
+            "type": "array"
+          },
+          "features": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CapabilityStatus"
+            },
+            "title": "Features",
+            "type": "object"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/Mode"
+          },
+          "oracles": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CapabilityStatus"
+            },
+            "title": "Oracles",
+            "type": "object"
+          },
+          "sandbox": {
+            "$ref": "#/components/schemas/SandboxStatus"
+          }
+        },
+        "required": [
+          "capability_version",
+          "api_version",
+          "mode",
+          "sandbox",
+          "ecosystems",
+          "oracles",
+          "features"
+        ],
+        "title": "Capabilities",
+        "type": "object"
+      },
+      "CapabilityState": {
+        "enum": [
+          "enabled",
+          "partial",
+          "unsupported",
+          "unavailable"
+        ],
+        "title": "CapabilityState",
+        "type": "string"
+      },
+      "CapabilityStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "state": {
+            "$ref": "#/components/schemas/CapabilityState"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "title": "CapabilityStatus",
+        "type": "object"
+      },
+      "DeclaredView": {
+        "additionalProperties": false,
+        "properties": {
+          "group": {
+            "title": "Group",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "marker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Marker"
+          },
+          "origin": {
+            "title": "Origin",
+            "type": "string"
+          },
+          "spec": {
+            "title": "Spec",
+            "type": "string"
+          }
+        },
+        "required": [
+          "spec",
+          "group",
+          "marker",
+          "origin",
+          "kind"
+        ],
+        "title": "DeclaredView",
+        "type": "object"
+      },
+      "DeltaItem": {
+        "additionalProperties": false,
+        "properties": {
+          "consumer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consumer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          }
+        },
+        "required": [
+          "name",
+          "reference",
+          "consumer"
+        ],
+        "title": "DeltaItem",
+        "type": "object"
+      },
+      "Ecosystem": {
+        "enum": [
+          "pypi",
+          "npm",
+          "maven"
+        ],
+        "title": "Ecosystem",
+        "type": "string"
+      },
+      "EcosystemCapability": {
+        "additionalProperties": false,
+        "properties": {
+          "ecosystem": {
+            "$ref": "#/components/schemas/Ecosystem"
+          },
+          "inventory": {
+            "$ref": "#/components/schemas/CapabilityStatus"
+          },
+          "resolve": {
+            "$ref": "#/components/schemas/CapabilityStatus"
+          },
+          "runtime_witness": {
+            "$ref": "#/components/schemas/CapabilityStatus"
+          },
+          "world": {
+            "$ref": "#/components/schemas/CapabilityStatus"
+          }
+        },
+        "required": [
+          "ecosystem",
+          "inventory",
+          "resolve",
+          "world",
+          "runtime_witness"
+        ],
+        "title": "EcosystemCapability",
+        "type": "object"
+      },
+      "EntryView": {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "title": "Entry",
+            "type": "string"
+          },
+          "exc_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exc Type"
+          },
+          "failure_class": {
+            "title": "Failure Class",
+            "type": "string"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "not_applicable": {
+            "title": "Not Applicable",
+            "type": "boolean"
+          },
+          "origin_module": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin Module"
+          },
+          "passed": {
+            "title": "Passed",
+            "type": "boolean"
+          },
+          "skipped": {
+            "title": "Skipped",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "entry",
+          "passed",
+          "skipped",
+          "not_applicable",
+          "failure_class",
+          "exc_type",
+          "message",
+          "origin_module"
+        ],
+        "title": "EntryView",
+        "type": "object"
+      },
+      "FailureSignature": {
+        "additionalProperties": false,
+        "properties": {
+          "entry_point": {
+            "title": "Entry Point",
+            "type": "string"
+          },
+          "exc_type": {
+            "title": "Exc Type",
+            "type": "string"
+          },
+          "message_norm": {
+            "title": "Message Norm",
+            "type": "string"
+          },
+          "origin_module": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin Module"
+          },
+          "origin_package": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin Package"
+          }
+        },
+        "required": [
+          "exc_type",
+          "message_norm",
+          "entry_point"
+        ],
+        "title": "FailureSignature",
+        "type": "object"
+      },
+      "FileView": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256"
+          },
+          "size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "path",
+          "kind",
+          "size",
+          "role",
+          "tags",
+          "reason",
+          "sha256"
+        ],
+        "title": "FileView",
+        "type": "object"
+      },
+      "FindingDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "analysis_id": {
+            "title": "Analysis Id",
+            "type": "string"
+          },
+          "artifact": {
+            "title": "Artifact",
+            "type": "string"
+          },
+          "bundle_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bundle Url"
+          },
+          "cell_id": {
+            "title": "Cell Id",
+            "type": "string"
+          },
+          "consumer": {
+            "title": "Consumer",
+            "type": "string"
+          },
+          "consumer_world": {
+            "$ref": "#/components/schemas/WorldView"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "delta": {
+            "items": {
+              "$ref": "#/components/schemas/DeltaItem"
+            },
+            "title": "Delta",
+            "type": "array"
+          },
+          "finding_id": {
+            "title": "Finding Id",
+            "type": "string"
+          },
+          "fresh_runs": {
+            "title": "Fresh Runs",
+            "type": "integer"
+          },
+          "headline": {
+            "title": "Headline",
+            "type": "string"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "reference": {
+            "$ref": "#/components/schemas/WorldView"
+          },
+          "reused_runs": {
+            "title": "Reused Runs",
+            "type": "integer"
+          },
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/RunView"
+            },
+            "title": "Runs",
+            "type": "array"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          },
+          "verdict": {
+            "title": "Verdict",
+            "type": "string"
+          },
+          "witness_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Witness Ids",
+            "type": "array"
+          },
+          "witnesses": {
+            "items": {
+              "$ref": "#/components/schemas/WitnessView"
+            },
+            "title": "Witnesses",
+            "type": "array"
+          }
+        },
+        "required": [
+          "finding_id",
+          "analysis_id",
+          "cell_id",
+          "mode",
+          "verdict",
+          "headline",
+          "artifact",
+          "consumer",
+          "created_at",
+          "witness_ids",
+          "reference",
+          "consumer_world",
+          "delta",
+          "runs",
+          "witnesses",
+          "scope",
+          "fresh_runs",
+          "reused_runs",
+          "bundle_url"
+        ],
+        "title": "FindingDetail",
+        "type": "object"
+      },
+      "FindingSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "analysis_id": {
+            "title": "Analysis Id",
+            "type": "string"
+          },
+          "artifact": {
+            "title": "Artifact",
+            "type": "string"
+          },
+          "cell_id": {
+            "title": "Cell Id",
+            "type": "string"
+          },
+          "consumer": {
+            "title": "Consumer",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "finding_id": {
+            "title": "Finding Id",
+            "type": "string"
+          },
+          "headline": {
+            "title": "Headline",
+            "type": "string"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "verdict": {
+            "title": "Verdict",
+            "type": "string"
+          },
+          "witness_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Witness Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "finding_id",
+          "analysis_id",
+          "cell_id",
+          "mode",
+          "verdict",
+          "headline",
+          "artifact",
+          "consumer",
+          "created_at",
+          "witness_ids"
+        ],
+        "title": "FindingSummary",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "Health": {
+        "additionalProperties": false,
+        "properties": {
+          "auth": {
+            "enum": [
+              "token",
+              "disabled"
+            ],
+            "title": "Auth",
+            "type": "string"
+          },
+          "db": {
+            "enum": [
+              "ok",
+              "error"
+            ],
+            "title": "Db",
+            "type": "string"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/Mode"
+          },
+          "schema_version": {
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "degraded"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "time": {
+            "format": "date-time",
+            "title": "Time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "db",
+          "schema_version",
+          "mode",
+          "auth",
+          "time"
+        ],
+        "title": "Health",
+        "type": "object"
+      },
+      "InventoryDep": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "scope": {
+            "title": "Scope",
+            "type": "string"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "version_source": {
+            "title": "Version Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "version",
+          "scope",
+          "version_source",
+          "note"
+        ],
+        "title": "InventoryDep",
+        "type": "object"
+      },
+      "Job": {
+        "additionalProperties": false,
+        "properties": {
+          "attempts": {
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "cancel_requested": {
+            "title": "Cancel Requested",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
+          },
+          "job_id": {
+            "title": "Job Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "max_attempts": {
+            "title": "Max Attempts",
+            "type": "integer"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "progress": {
+            "title": "Progress",
+            "type": "number"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id",
+          "kind",
+          "status",
+          "idempotency_key",
+          "attempts",
+          "max_attempts",
+          "progress",
+          "message",
+          "cancel_requested",
+          "result",
+          "error",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Job",
+        "type": "object"
+      },
+      "JobCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "JobCreate",
+        "type": "object"
+      },
+      "JobStatus": {
+        "enum": [
+          "QUEUED",
+          "RUNNING",
+          "DONE",
+          "FAILED",
+          "CANCELLED"
+        ],
+        "title": "JobStatus",
+        "type": "string"
+      },
+      "ManifestView": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "parse_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parse Error"
+          },
+          "parse_status": {
+            "title": "Parse Status",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "kind",
+          "parse_status",
+          "parse_error"
+        ],
+        "title": "ManifestView",
+        "type": "object"
+      },
+      "Mode": {
+        "enum": [
+          "LIVE",
+          "FIXTURE",
+          "REPLAY"
+        ],
+        "title": "Mode",
+        "type": "string"
+      },
+      "PackageView": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artifact Sha256"
+          },
+          "declared": {
+            "items": {
+              "$ref": "#/components/schemas/DeclaredView"
+            },
+            "title": "Declared",
+            "type": "array"
+          },
+          "locator": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locator"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "resolved": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope"
+          },
+          "source_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Kind"
+          },
+          "visible": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visible"
+          },
+          "visible_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visible Source"
+          },
+          "visible_to": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Visible To",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "declared",
+          "resolved",
+          "visible",
+          "visible_source",
+          "scope",
+          "source_kind",
+          "artifact_sha256"
+        ],
+        "title": "PackageView",
+        "type": "object"
+      },
+      "ProjectCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ProjectCreate",
+        "type": "object"
+      },
+      "ProjectDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "ecosystem": {
+            "title": "Ecosystem",
+            "type": "string"
+          },
+          "inventory": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/InventoryDep"
+            },
+            "title": "Inventory",
+            "type": "array"
+          },
+          "manifests": {
+            "items": {
+              "$ref": "#/components/schemas/ManifestView"
+            },
+            "title": "Manifests",
+            "type": "array"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          },
+          "rel_path": {
+            "title": "Rel Path",
+            "type": "string"
+          },
+          "world": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorldDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "project_id",
+          "rel_path",
+          "ecosystem",
+          "name",
+          "origin",
+          "notes",
+          "manifests",
+          "world"
+        ],
+        "title": "ProjectDetail",
+        "type": "object"
+      },
+      "ProjectView": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "repositories": {
+            "items": {
+              "$ref": "#/components/schemas/RepositoryView"
+            },
+            "title": "Repositories",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "mode",
+          "created_at",
+          "repositories"
+        ],
+        "title": "ProjectView",
+        "type": "object"
+      },
+      "RepositoryCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ref"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "RepositoryCreate",
+        "type": "object"
+      },
+      "RepositoryView": {
+        "additionalProperties": false,
+        "properties": {
+          "committed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Committed At"
+          },
+          "default_branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Branch"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "is_archived": {
+            "title": "Is Archived",
+            "type": "boolean"
+          },
+          "is_fork": {
+            "title": "Is Fork",
+            "type": "boolean"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "owner": {
+            "title": "Owner",
+            "type": "string"
+          },
+          "pinned_sha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pinned Sha"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          },
+          "requested_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Ref"
+          },
+          "snapshot": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SnapshotSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "project_id",
+          "owner",
+          "name",
+          "url",
+          "requested_ref",
+          "default_branch",
+          "pinned_sha",
+          "committed_at",
+          "is_fork",
+          "is_archived",
+          "status",
+          "error",
+          "snapshot"
+        ],
+        "title": "RepositoryView",
+        "type": "object"
+      },
+      "RunView": {
+        "additionalProperties": false,
+        "properties": {
+          "duration_ms": {
+            "title": "Duration Ms",
+            "type": "integer"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/EntryView"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "failure_class": {
+            "title": "Failure Class",
+            "type": "string"
+          },
+          "provenance": {
+            "title": "Provenance",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "run_index": {
+            "title": "Run Index",
+            "type": "integer"
+          },
+          "side": {
+            "title": "Side",
+            "type": "string"
+          },
+          "stderr_tail": {
+            "title": "Stderr Tail",
+            "type": "string"
+          },
+          "stdout_tail": {
+            "title": "Stdout Tail",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "side",
+          "run_index",
+          "provenance",
+          "failure_class",
+          "duration_ms",
+          "entries",
+          "stdout_tail",
+          "stderr_tail"
+        ],
+        "title": "RunView",
+        "type": "object"
+      },
+      "SandboxState": {
+        "enum": [
+          "verified",
+          "stub",
+          "unavailable"
+        ],
+        "title": "SandboxState",
+        "type": "string"
+      },
+      "SandboxStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "state": {
+            "$ref": "#/components/schemas/SandboxState"
+          },
+          "verified": {
+            "title": "Verified",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "state",
+          "verified",
+          "reason"
+        ],
+        "title": "SandboxStatus",
+        "type": "object"
+      },
+      "ScenarioConsumer": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_state": {
+            "title": "Expected State",
+            "type": "string"
+          },
+          "expected_verdict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Verdict"
+          },
+          "expects_witness": {
+            "title": "Expects Witness",
+            "type": "boolean"
+          },
+          "repo": {
+            "title": "Repo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "repo",
+          "expected_state",
+          "expected_verdict",
+          "expects_witness"
+        ],
+        "title": "ScenarioConsumer",
+        "type": "object"
+      },
+      "ScenarioInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact": {
+            "title": "Artifact",
+            "type": "string"
+          },
+          "consumers": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioConsumer"
+            },
+            "title": "Consumers",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "kind",
+          "artifact",
+          "consumers"
+        ],
+        "title": "ScenarioInfo",
+        "type": "object"
+      },
+      "Scope": {
+        "additionalProperties": false,
+        "properties": {
+          "exercised": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Exercised",
+            "type": "array"
+          },
+          "not_applicable": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Not Applicable",
+            "type": "array"
+          },
+          "not_checked": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Not Checked",
+            "type": "array"
+          },
+          "policy": {
+            "title": "Policy",
+            "type": "string"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          }
+        },
+        "required": [
+          "exercised",
+          "not_applicable",
+          "not_checked",
+          "reasons",
+          "policy"
+        ],
+        "title": "Scope",
+        "type": "object"
+      },
+      "SnapshotSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "file_count": {
+            "title": "File Count",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "manifests": {
+            "title": "Manifests",
+            "type": "integer"
+          },
+          "sha": {
+            "title": "Sha",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "stored_files": {
+            "title": "Stored Files",
+            "type": "integer"
+          },
+          "truncated": {
+            "title": "Truncated",
+            "type": "boolean"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "sha",
+          "status",
+          "truncated",
+          "warnings",
+          "file_count",
+          "stored_files",
+          "manifests"
+        ],
+        "title": "SnapshotSummary",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "WitnessView": {
+        "additionalProperties": false,
+        "properties": {
+          "divergence": {
+            "title": "Divergence",
+            "type": "string"
+          },
+          "entry_point": {
+            "title": "Entry Point",
+            "type": "string"
+          },
+          "oracle": {
+            "title": "Oracle",
+            "type": "string"
+          },
+          "oracle_version": {
+            "title": "Oracle Version",
+            "type": "string"
+          },
+          "ref_pass": {
+            "title": "Ref Pass",
+            "type": "integer"
+          },
+          "ref_run_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ref Run Ids",
+            "type": "array"
+          },
+          "reverifications": {
+            "title": "Reverifications",
+            "type": "integer"
+          },
+          "signature": {
+            "$ref": "#/components/schemas/FailureSignature"
+          },
+          "test_fail": {
+            "title": "Test Fail",
+            "type": "integer"
+          },
+          "test_run_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Test Run Ids",
+            "type": "array"
+          },
+          "witness_class": {
+            "title": "Witness Class",
+            "type": "string"
+          },
+          "witness_id": {
+            "title": "Witness Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "witness_id",
+          "witness_class",
+          "oracle",
+          "oracle_version",
+          "entry_point",
+          "divergence",
+          "ref_pass",
+          "test_fail",
+          "signature",
+          "ref_run_ids",
+          "test_run_ids",
+          "reverifications"
+        ],
+        "title": "WitnessView",
+        "type": "object"
+      },
+      "WorldDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "cutoff": {
+            "title": "Cutoff",
+            "type": "string"
+          },
+          "failure": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure"
+          },
+          "packages": {
+            "items": {
+              "$ref": "#/components/schemas/PackageView"
+            },
+            "title": "Packages",
+            "type": "array"
+          },
+          "private": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Private",
+            "type": "array"
+          },
+          "reproducibility": {
+            "additionalProperties": true,
+            "title": "Reproducibility",
+            "type": "object"
+          },
+          "resolver": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolver"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          },
+          "world_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "World Hash"
+          }
+        },
+        "required": [
+          "status",
+          "source",
+          "world_hash",
+          "resolver",
+          "cutoff",
+          "failure",
+          "warnings",
+          "private",
+          "reproducibility",
+          "packages"
+        ],
+        "title": "WorldDetail",
+        "type": "object"
+      },
+      "WorldView": {
+        "additionalProperties": false,
+        "properties": {
+          "env_profile_id": {
+            "title": "Env Profile Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "package_count": {
+            "title": "Package Count",
+            "type": "integer"
+          },
+          "runtime": {
+            "title": "Runtime",
+            "type": "string"
+          },
+          "world_hash": {
+            "title": "World Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "world_hash",
+          "kind",
+          "runtime",
+          "env_profile_id",
+          "package_count"
+        ],
+        "title": "WorldView",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Witnesses, not warnings.",
+    "title": "Faultline",
+    "version": "1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/capabilities": {
+      "get": {
+        "operationId": "capabilities_api_capabilities_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Capabilities"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Capabilities",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/findings": {
+      "get": {
+        "operationId": "list_findings_api_findings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FindingSummary"
+                  },
+                  "title": "Response List Findings Api Findings Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Findings",
+        "tags": [
+          "findings"
+        ]
+      }
+    },
+    "/api/findings/{finding_id}": {
+      "get": {
+        "operationId": "get_finding_api_findings__finding_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "finding_id",
+            "required": true,
+            "schema": {
+              "title": "Finding Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindingDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Finding",
+        "tags": [
+          "findings"
+        ]
+      }
+    },
+    "/api/health": {
+      "get": {
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/jobs": {
+      "get": {
+        "operationId": "list_jobs_api_jobs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Job"
+                  },
+                  "title": "Response List Jobs Api Jobs Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Jobs",
+        "tags": [
+          "jobs"
+        ]
+      },
+      "post": {
+        "description": "Enqueue a job and return immediately. Poll GET /api/jobs/{id} for progress.",
+        "operationId": "create_job_api_jobs_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Job",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/jobs/{job_id}": {
+      "get": {
+        "operationId": "get_job_api_jobs__job_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Job",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/jobs/{job_id}/cancel": {
+      "post": {
+        "operationId": "cancel_job_api_jobs__job_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel Job",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/projects": {
+      "get": {
+        "description": "Newest first. The fixture pipeline keeps its own FIXTURE projects; pass mode=LIVE for user-submitted repositories.",
+        "operationId": "list_projects_api_projects_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "mode",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(LIVE|FIXTURE|REPLAY)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Mode"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectView"
+                  },
+                  "title": "Response List Projects Api Projects Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Projects",
+        "tags": [
+          "projects"
+        ]
+      },
+      "post": {
+        "operationId": "create_project_api_projects_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Project",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/projects/{project_id}": {
+      "get": {
+        "operationId": "get_project_api_projects__project_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Project",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/projects/{project_id}/repositories": {
+      "post": {
+        "description": "Validate the URL, resolve the ref to a commit SHA now, then ingest that SHA in a background job.",
+        "operationId": "add_repository_api_projects__project_id__repositories_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Repository",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/projects/{project_id}/world": {
+      "get": {
+        "operationId": "project_world_api_projects__project_id__world_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Project World",
+        "tags": [
+          "worlds"
+        ]
+      }
+    },
+    "/api/repositories/{repository_id}": {
+      "get": {
+        "operationId": "get_repository_api_repositories__repository_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "repository_id",
+            "required": true,
+            "schema": {
+              "title": "Repository Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Repository",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/repositories/{repository_id}/analyze": {
+      "post": {
+        "description": "Discover projects in the pinned snapshot and resolve their dependency worlds (a background job).",
+        "operationId": "analyze_api_repositories__repository_id__analyze_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "repository_id",
+            "required": true,
+            "schema": {
+              "title": "Repository Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Analyze",
+        "tags": [
+          "worlds"
+        ]
+      }
+    },
+    "/api/repositories/{repository_id}/files": {
+      "get": {
+        "operationId": "list_files_api_repositories__repository_id__files_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "repository_id",
+            "required": true,
+            "schema": {
+              "title": "Repository Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "role",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 40,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Role"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 500,
+              "maximum": 5000,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FileView"
+                  },
+                  "title": "Response List Files Api Repositories  Repository Id  Files Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Files",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/repositories/{repository_id}/projects": {
+      "get": {
+        "operationId": "projects_api_repositories__repository_id__projects_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "repository_id",
+            "required": true,
+            "schema": {
+              "title": "Repository Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectDetail"
+                  },
+                  "title": "Response Projects Api Repositories  Repository Id  Projects Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Projects",
+        "tags": [
+          "worlds"
+        ]
+      }
+    },
+    "/api/repositories/{repository_id}/retry": {
+      "post": {
+        "description": "Re-run ingestion for the SAME pinned SHA. To pick up a moved ref, submit the repository again.",
+        "operationId": "retry_ingest_api_repositories__repository_id__retry_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "repository_id",
+            "required": true,
+            "schema": {
+              "title": "Repository Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Retry Ingest",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/scenarios": {
+      "get": {
+        "operationId": "list_scenarios_api_scenarios_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ScenarioInfo"
+                  },
+                  "title": "Response List Scenarios Api Scenarios Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Scenarios",
+        "tags": [
+          "findings"
+        ]
+      }
+    },
+    "/api/scenarios/{scenario_id}/run": {
+      "post": {
+        "description": "Queue a fixture scenario. The worker executes it; poll GET /api/jobs/{id}.",
+        "operationId": "run_scenario_api_scenarios__scenario_id__run_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Scenario",
+        "tags": [
+          "findings"
+        ]
+      }
+    },
+    "/api/witnesses/{witness_id}/bundle": {
+      "get": {
+        "description": "The evidence bundle for a witness, generated from the stored records and verified before it is served.",
+        "operationId": "witness_bundle_api_witnesses__witness_id__bundle_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "witness_id",
+            "required": true,
+            "schema": {
+              "title": "Witness Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Witness Bundle",
+        "tags": [
+          "findings"
+        ]
+      }
+    }
+  }
+}

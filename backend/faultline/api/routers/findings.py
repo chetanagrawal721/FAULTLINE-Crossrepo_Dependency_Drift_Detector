@@ -1,0 +1,75 @@
+import tempfile
+from pathlib import Path
+
+from fastapi import APIRouter, Depends
+from fastapi.responses import Response
+
+from ...core.config import Settings
+from ...core.errors import NotFoundError
+from ...core.models import Job
+from ...core.scenario import load_scenario
+from ...core.views import FindingDetail, FindingSummary, ScenarioConsumer, ScenarioInfo
+from ...storage import findings as finding_store
+from ...storage import jobs
+from ...storage.store import Store
+from ...witnesses.bundle import write_bundle
+from ..deps import get_conn, get_settings, require_token
+
+router = APIRouter(prefix="/api", tags=["findings"])
+
+
+def _scenario_dir() -> Path:
+    from ...core.config import repo_root
+    return repo_root() / "fixtures" / "scenarios"
+
+
+@router.get("/scenarios", response_model=list[ScenarioInfo])
+def list_scenarios() -> list[ScenarioInfo]:
+    out = []
+    for f in sorted(_scenario_dir().glob("*.yaml")):
+        sc = load_scenario(f)
+        cells = {c.consumer: c for c in sc.expect.cells}
+        out.append(ScenarioInfo(
+            id=sc.id, title=sc.title, kind=sc.kind, artifact=sc.artifact.repo,
+            consumers=[ScenarioConsumer(repo=c.repo, expected_state=cells[c.repo].state,
+                                        expected_verdict=cells[c.repo].verdict.value if cells[c.repo].verdict else None,
+                                        expects_witness=cells[c.repo].witness) for c in sc.consumers]))
+    return out
+
+
+@router.post("/scenarios/{scenario_id}/run", response_model=Job, status_code=202, dependencies=[Depends(require_token)])
+def run_scenario(scenario_id: str, conn=Depends(get_conn)) -> Job:
+    """Queue a fixture scenario. The worker executes it; poll GET /api/jobs/{id}."""
+    if not (_scenario_dir() / f"{scenario_id}.yaml").exists():
+        raise NotFoundError(f"scenario {scenario_id} not found")
+    job, _ = jobs.create_job(conn, "fixture_scenario", {"scenario_id": scenario_id})
+    return job
+
+
+@router.get("/findings", response_model=list[FindingSummary])
+def list_findings(conn=Depends(get_conn)) -> list[FindingSummary]:
+    return finding_store.list_findings(conn)
+
+
+@router.get("/findings/{finding_id}", response_model=FindingDetail)
+def get_finding(finding_id: str, conn=Depends(get_conn)) -> FindingDetail:
+    return finding_store.get_finding(conn, finding_id, bundle_url=None)
+
+
+@router.get("/witnesses/{witness_id}/bundle")
+def witness_bundle(witness_id: str, conn=Depends(get_conn), settings: Settings = Depends(get_settings)) -> Response:
+    """The evidence bundle for a witness, generated from the stored records and verified before it is served."""
+    from ...witnesses.bundle import verify_bundle
+    row = conn.execute("SELECT w.id, a.mode FROM witness w JOIN analysis a ON a.id = w.analysis_id WHERE w.id=?",
+                       (witness_id,)).fetchone()
+    if row is None:
+        raise NotFoundError(f"witness {witness_id} not found")
+    with tempfile.TemporaryDirectory() as d:
+        path = Path(d) / "bundle.zip"
+        write_bundle(conn, witness_id, path, Store(settings.store_path), mode=row["mode"])
+        check = verify_bundle(path)
+        if not check.ok:
+            raise RuntimeError(f"generated bundle failed verification: {check.errors}")
+        data = path.read_bytes()
+    return Response(content=data, media_type="application/zip",
+                    headers={"Content-Disposition": f'attachment; filename="faultline-evidence-{witness_id}.zip"'})
