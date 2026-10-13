@@ -173,3 +173,30 @@ def test_a_witness_without_three_fresh_runs_cannot_be_exported(conn, tmp_path):
     conn.execute("UPDATE oracle_run SET provenance='REUSED_RESULT' WHERE id IN (SELECT id FROM oracle_run LIMIT 1)")
     with pytest.raises(B.BundleError):
         write_bundle(conn, w.wid, tmp_path / "x.zip", w.store)
+
+
+def test_a_decompression_bomb_is_rejected_before_anything_is_read(exported, tmp_path):
+    """TC-11.3.3: a few kilobytes that expand to far beyond the ratio limit."""
+    _w, info = exported
+    bomb = tmp_path / "bomb.zip"
+    with zipfile.ZipFile(info.path) as src, zipfile.ZipFile(bomb, "w", zipfile.ZIP_DEFLATED) as z:
+        for i in src.infolist():
+            z.writestr(i.filename, src.read(i.filename))
+        z.writestr("filler.bin", b"\0" * 5_000_000)                    # ~5 KB compressed, 5 MB expanded
+    res = verify_bundle(bomb)
+    assert not res.ok and any("suspicious compression ratio" in e for e in res.errors)
+
+
+def test_symlink_and_device_entries_in_a_bundle_are_rejected(exported, tmp_path):
+    """TC-11.3.3: a zip can carry a symbolic link; extracting one could point outside the work directory."""
+    _w, info = exported
+    link = tmp_path / "link.zip"
+    with zipfile.ZipFile(info.path) as src, zipfile.ZipFile(link, "w", zipfile.ZIP_DEFLATED) as z:
+        for i in src.infolist():
+            z.writestr(i.filename, src.read(i.filename))
+        zi = zipfile.ZipInfo("provenance/evil-link")
+        zi.create_system = 3
+        zi.external_attr = (0o120777 << 16)                            # a symlink to wherever its content says
+        z.writestr(zi, "/etc/passwd")
+    res = verify_bundle(link)
+    assert not res.ok and any("special file entries" in e for e in res.errors)

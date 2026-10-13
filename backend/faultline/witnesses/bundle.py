@@ -264,6 +264,8 @@ def verify_bundle(path: str | Path) -> VerifyResult:
         for i in infos:
             if not _safe_name(i.filename):
                 errors.append(f"unsafe path in bundle: {i.filename!r}")
+            if (i.external_attr >> 16) & 0o170000 in (0o120000, 0o060000, 0o020000, 0o010000):      # symlink, block or char device, fifo
+                errors.append(f"{i.filename}: special file entries (links, devices) are not allowed")
             if i.file_size > MAX_FILE_BYTES:
                 errors.append(f"{i.filename}: larger than {MAX_FILE_BYTES} bytes")
             if i.compress_size and i.file_size / max(i.compress_size, 1) > MAX_COMPRESSION_RATIO and i.file_size > 100_000:
