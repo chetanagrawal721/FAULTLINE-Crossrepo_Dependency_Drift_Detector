@@ -18,6 +18,7 @@ from ..parsers.python.locks import LockedPackage, parse_poetry_lock, parse_uv_lo
 from ..parsers.python.pyproject import parse_pyproject
 from ..parsers.python.requirements import parse_requirements
 from ..parsers.python.setup_cfg import parse_setup_cfg
+from ..parsers.python.setup_py import parse_setup_py
 from ..sandbox.client import SandboxClient
 from .pinned import PinnedRequirement, render_lock
 
@@ -26,7 +27,7 @@ TARGET = {"python_version": "3.12", "python_full_version": "3.12.15", "sys_platf
           "os_name": "posix", "platform_machine": "x86_64", "implementation_name": "cpython",
           "platform_python_implementation": "CPython", "implementation_version": "3.12.15", "extra": ""}
 PLATFORM = "x86_64-unknown-linux-gnu"
-LOGIC_VERSION = "5"      # bump whenever which-files-count or lock-reading rules change: part of every cache key
+LOGIC_VERSION = "6"      # bump whenever which-files-count or lock-reading rules change: part of every cache key
 RESOLVER_FLAGS = ("--no-build", "--generate-hashes", "--no-config", f"--python-platform={PLATFORM}")
 
 
@@ -90,22 +91,22 @@ def _declared(project: PythonProject, fs: SnapshotFS) -> tuple[list[Dependency],
     meta: dict = {}
     problems: list[str] = []
     authoritative = False
-    for kind in ("pyproject", "setup_cfg", "requirements", "constraints"):
-        if authoritative and kind not in ("pyproject", "setup_cfg"):      # requirements files next to a described project are dev/test pins
+    for kind in ("pyproject", "setup_cfg", "setup_py", "requirements", "constraints"):
+        if authoritative and kind not in ("pyproject", "setup_cfg", "setup_py"):      # requirements files next to a described project are dev/test pins
             continue
         paths = project.manifests.get(kind, [])
         if kind == "requirements":
             # a fully hash-pinned file is a LOCK (output of a resolution), not a declaration: it never feeds a new resolution
             paths = [p for p in runtime_requirement_files(project) if not _is_hash_pinned(parse_requirements(fs, p))]
         for path in paths:
-            r = parse_pyproject(fs, path) if kind == "pyproject" else parse_setup_cfg(fs, path) if kind == "setup_cfg" else parse_requirements(fs, path)
+            r = parse_pyproject(fs, path) if kind == "pyproject" else parse_setup_cfg(fs, path) if kind == "setup_cfg" else parse_setup_py(fs, path) if kind == "setup_py" else parse_requirements(fs, path)
             if r.status in ("FAILED", "TOO_LARGE"):
                 problems.append(f"{path}: {r.diagnostics[0].message}")
                 continue
             if r.status == "PARTIAL":
                 problems += [f"{path}: {d.message}" for d in r.diagnostics]
             meta.setdefault("used_files", []).append(path)
-            authoritative = authoritative or (kind in ("pyproject", "setup_cfg") and r.status != "UNSUPPORTED" and _states_its_dependencies(r))
+            authoritative = authoritative or (kind in ("pyproject", "setup_cfg", "setup_py") and r.status != "UNSUPPORTED" and _states_its_dependencies(r))
             deps += [d for d in r.dependencies if d.group == "main" and marker_applies(d.marker)]
             cons += [d for d in r.constraints if marker_applies(d.marker)]
             for k in ("index_urls", "extra_index_urls", "find_links"):
@@ -238,8 +239,8 @@ def _from_uv(sbx: SandboxClient, image: str, project: PythonProject, fs: Snapsho
                        "the project declares a non-public index or find-links; without a lockfile Faultline will not guess "
                        "which packages come from where, and will not query the public index for them", prov, indexes=sorted(custom))
     if not deps and project.origin == "setup_py":
-        return _failed("resolver", "setup_py_not_executed", "dependencies are declared by setup.py, which Faultline never executes; "
-                       "provide a lockfile or a pyproject.toml", prov)
+        return _failed("resolver", "setup_py_not_executed", "no literal dependencies could be read from setup.py (it is parsed, never executed); "
+                       "provide a lockfile, a pyproject.toml or a setup.cfg", prov)
     if not deps:
         return _failed("resolver", "no_declared_dependencies", "no resolvable dependencies were declared for the main group", prov)
     prov = {**prov, "extra_constraints": list(extra_constraints or []), "dropped": sorted(drop or []), "inputs": sorted(_requirement_line(d) for d in deps), "declared_from": meta.get("used_files", [])}
@@ -275,7 +276,7 @@ def resolve_project(sbx: SandboxClient, image: str, fs: SnapshotFS, project: Pyt
     out = _from_pinned_requirements(project, fs, prov)
     if out is not None:
         return out
-    if not any(project.manifests.get(k) for k in ("pyproject", "setup_cfg", "requirements")):
+    if not any(project.manifests.get(k) for k in ("pyproject", "setup_cfg", "setup_py", "requirements")):
         return _failed("resolver", "no_manifest", "no dependency manifest was found for this project", prov)
     return _from_uv(sbx, image, project, fs, cutoff, prov, **uv_kw)
 

@@ -132,9 +132,12 @@ def discover_python(snapshot: Path, inventory: dict) -> Discovery:
                 projects[d] = PythonProject(d, canonical_name(nm), nm, "setup_cfg", cp.get("metadata", "version", fallback=None),
                                             cp.get("options", "python_requires", fallback=None))
         elif base == "setup.py" and d not in projects:
-            nm = posixpath.basename(d) if d != "." else "project"
-            projects[d] = PythonProject(d, canonical_name(nm), nm, "setup_py",
-                                        notes=["setup.py is never executed; the distribution name and dependencies are unknown"])
+            from .setup_py import parse_setup_py
+            sp = parse_setup_py(fs, p)
+            nm = sp.meta.get("name") or (posixpath.basename(d) if d != "." else "project")
+            projects[d] = PythonProject(d, canonical_name(nm), nm, "setup_py", sp.meta.get("version") if isinstance(sp.meta.get("version"), str) else None,
+                                        sp.meta.get("requires_python") if isinstance(sp.meta.get("requires_python"), str) else None,
+                                        notes=["setup.py is read statically (parsed to an AST, never executed): only literal arguments are used"])
 
     # 2. manifests, assigned to the nearest enclosing project or to a requirement-only project
     unassigned: list[str] = []

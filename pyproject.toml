@@ -19,6 +19,8 @@ dev = [
   "httpx2==2.13.0",
   "ruff==0.16.3",
   "uv==0.13.0",
+  "coverage==7.16.2",
+  "playwright==1.63.0",
 ]
 
 [build-system]

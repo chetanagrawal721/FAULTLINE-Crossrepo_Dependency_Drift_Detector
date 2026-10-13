@@ -21,6 +21,7 @@ from ..parsers.python.locks import parse_poetry_lock, parse_uv_lock
 from ..parsers.python.pyproject import parse_pyproject
 from ..parsers.python.requirements import parse_requirements
 from ..parsers.python.setup_cfg import parse_setup_cfg
+from ..parsers.python.setup_py import parse_setup_py
 from ..resolvers.pinned import PinnedRequirement
 from ..resolvers.python import LOGIC_VERSION, PLATFORM, RESOLVER_FLAGS, ResolveOutcome, resolve_project
 
@@ -92,7 +93,7 @@ def project_id_for(snapshot_id: str, rel_path: str) -> str:
     return "prj_" + object_hash([snapshot_id, rel_path, "pypi"])[:24]
 
 
-PARSERS = {"setup_cfg": parse_setup_cfg, "requirements": parse_requirements, "constraints": parse_requirements, "pyproject": parse_pyproject,
+PARSERS = {"setup_py": parse_setup_py, "setup_cfg": parse_setup_cfg, "requirements": parse_requirements, "constraints": parse_requirements, "pyproject": parse_pyproject,
            "uv_lock": parse_uv_lock, "poetry_lock": parse_poetry_lock}
 
 

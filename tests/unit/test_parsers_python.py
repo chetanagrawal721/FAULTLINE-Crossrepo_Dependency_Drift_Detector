@@ -165,3 +165,20 @@ def test_setup_cfg_declarative_metadata_is_read_and_dynamic_parts_are_not_evalua
     assert r.dependencies[2].marker == 'python_version < "3.10"'
     assert r.meta["dynamic_version"] is True and r.status == "OK"                         # attr: is reported, never evaluated, and does not block resolution
     assert parse_setup_cfg(snap(tmp_path / "x", {"setup.cfg": "[broken"}), "setup.cfg").status == "FAILED"
+
+
+def test_setup_py_is_parsed_to_an_ast_and_never_executed(tmp_path):
+    """Flask 2.2.x and requests declare dependencies in setup.py. Literals are read; anything computed is reported, not run."""
+    from faultline.parsers.python.setup_py import parse_setup_py
+    canary = tmp_path / "CANARY"
+    src = (f"import pathlib\npathlib.Path({str(canary)!r}).write_text('executed')\nfrom setuptools import setup\n"
+           "requires = ['charset_normalizer>=2,<4', 'idna>=2.5,<4']\nextra = {'socks': ['PySocks>=1.5.6,!=1.5.7']}\n"
+           "setup(name='requests', version='2.32.3', python_requires='>=3.8', install_requires=requires + ['urllib3>=1.21.1'], extras_require=extra)\n")
+    r = parse_setup_py(snap(tmp_path / "s", {"setup.py": src}), "setup.py")
+    assert not canary.exists()                                                           # nothing was executed
+    assert r.meta["name"] == "requests" and r.meta["requires_python"] == ">=3.8" and r.status == "OK"
+    assert [(d.name, d.group) for d in r.dependencies] == [("charset-normalizer", "main"), ("idna", "main"), ("urllib3", "main"), ("pysocks", "optional:socks")]
+    computed = parse_setup_py(snap(tmp_path / "c", {"setup.py": "from setuptools import setup\nimport os\nsetup(name='x', install_requires=open('r.txt').read().split())\n"}), "setup.py")
+    assert computed.dependencies == [] and any(d.code == "NON_LITERAL_ARGUMENT" for d in computed.diagnostics) and computed.status == "PARTIAL"
+    assert parse_setup_py(snap(tmp_path / "n", {"setup.py": "print('hi')\n"}), "setup.py").status == "UNSUPPORTED"
+    assert parse_setup_py(snap(tmp_path / "b", {"setup.py": "def ("}), "setup.py").status == "FAILED"
