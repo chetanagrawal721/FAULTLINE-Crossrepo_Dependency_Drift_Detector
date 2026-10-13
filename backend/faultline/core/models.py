@@ -255,3 +255,7 @@ class Job(Frozen):
     error: dict | None
     created_at: datetime
     updated_at: datetime
+    duration_ms: int | None = None      # time actually spent running (all attempts); for a running job, so far
+    queue_wait_ms: int | None = None    # created until the first attempt started
+    failure_class: str | None = None    # error code of a failed job, CANCELLED, or None
+    retried_after: str | None = None    # how an earlier attempt ended (LEASE_LOST, RETRY, ...) when a later attempt was needed

@@ -43,16 +43,27 @@ def _guard(conn: sqlite3.Connection, sql: str, params: tuple = ()) -> sqlite3.Cu
         raise
 
 
+def _with_timing(conn: sqlite3.Connection, job: Job) -> Job:
+    """Add what the UI shows for every job: how long it ran, how long it waited, and how it failed."""
+    attempts = conn.execute("SELECT attempt, started_at, finished_at, outcome FROM job_attempt WHERE job_id=? ORDER BY attempt", (job.job_id,)).fetchall()
+    now = time.time()
+    duration = int(sum(((a["finished_at"] or now) - a["started_at"]) * 1000 for a in attempts)) if attempts else None
+    wait = int(max(0.0, attempts[0]["started_at"] - job.created_at.timestamp()) * 1000) if attempts else None
+    failure = (job.error or {}).get("code") if job.status.value in ("FAILED", "DEAD") else ("CANCELLED" if job.status.value == "CANCELLED" else None)
+    earlier = [a["outcome"] for a in attempts[:-1] if a["outcome"] and a["outcome"] != "DONE"]
+    return job.model_copy(update={"duration_ms": duration, "queue_wait_ms": wait, "failure_class": failure, "retried_after": earlier[-1] if earlier else None})
+
+
 def get_job(conn: sqlite3.Connection, job_id: str) -> Job:
     r = conn.execute("SELECT * FROM job WHERE job_id=?", (job_id,)).fetchone()
     if r is None:
         raise NotFoundError(f"job {job_id} not found")
-    return _row_to_job(r)
+    return _with_timing(conn, _row_to_job(r))
 
 
 def list_jobs(conn: sqlite3.Connection, limit: int = 50) -> list[Job]:
     rows = conn.execute("SELECT * FROM job ORDER BY created_at DESC, job_id DESC LIMIT ?", (limit,)).fetchall()
-    return [_row_to_job(r) for r in rows]
+    return [_with_timing(conn, _row_to_job(r)) for r in rows]
 
 
 def create_job(conn: sqlite3.Connection, kind: str, payload: dict | None = None,

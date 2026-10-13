@@ -2,6 +2,7 @@
 
     uvicorn faultline.api.main:app_factory --factory   (reads FAULTLINE_* environment variables)
 """
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -30,6 +31,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(title="Faultline", version=API_VERSION, lifespan=lifespan,
                   description="Witnesses, not warnings.")
     app.state.settings = settings
+
+    @app.middleware("http")
+    async def _correlate(request: Request, call_next):
+        """Every request gets a correlation id (the caller's X-Request-ID, if it is a sane value) that appears on its log lines and in the response."""
+        import re
+        import time
+
+        from ..core.ids import new_id
+        from ..core.logging import correlated
+        rid = request.headers.get("x-request-id", "")
+        rid = rid if re.fullmatch(r"[A-Za-z0-9_.-]{6,64}", rid) else new_id("req")
+        t0 = time.monotonic()
+        with correlated(rid):
+            response = await call_next(request)
+            logging.getLogger("faultline.api").info("%s %s -> %d in %d ms", request.method, request.url.path, response.status_code,
+                                                    int((time.monotonic() - t0) * 1000), extra={"fl": {"phase": "request", "status": response.status_code}})
+        response.headers["X-Request-ID"] = rid
+        return response
 
     @app.exception_handler(FaultlineError)
     async def _faultline_error(_: Request, exc: FaultlineError) -> JSONResponse:
