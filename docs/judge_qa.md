@@ -1,0 +1,24 @@
+# Judge Q&A (answers match what the product does today)
+
+Rules: never say "compatible", "proof", "guarantee" or "AI detected". If something is not built, say it is not built.
+
+| Question | Honest answer |
+|---|---|
+| Dependabot already does this. | Dependabot works one repository at a time and proposes updates. It does not compute the dependency world your shared code runs in across your other repositories, and it does not produce a reproducible failure. We complement it. |
+| Isn't this just version comparison? | Version comparison is only the top of our funnel. A difference becomes a finding only when the artifact, run in the consumer's world, actually fails 3 of 3 times with one signature. Differences without a relationship are not findings. |
+| Can you prove compatibility? | No, and we never claim it. Our reassuring verdict is NO DIVERGENCE OBSERVED, always with the list of what was exercised and a "not checked" list. |
+| Aren't relationships guessed? | Findings need an actionable L2 relationship with evidence on both sides (file and line at a pinned commit). Look-alike classes and same-name packages from another source go to a suspected tray and cannot produce a finding. |
+| Where is the AI? | There is none in the decision path. The verdict is a deterministic ordered table (tests prove it imports no LLM client and is reproducible across processes). The product works with no LLM at all. |
+| Is it secure? You run untrusted code. | Untrusted code runs only inside the sandbox: no network, non-root, read-only filesystem, dropped capabilities, resource limits, only an allowlisted image, and only one component (`sandboxd`) talks to Docker. Resolution never builds or runs install scripts. Limits we state openly: Docker Desktop shares the host kernel (it is not gVisor) and the fetch zone has no egress allowlist yet. |
+| Is the demo staged? | The fixture repositories are labelled FIXTURE on screen and re-runs are live. We also show a real historical case (Flask 2.2.2 resolved before and after Werkzeug 3.0.0, with the public issue linked) and ran live analyses on real public repositories. Every witness ships a bundle you can verify and replay. |
+| Why only Python? | Python is verified end to end. npm and Maven are read and shown as inventory (npm lockfile worlds with per-importer visibility; Maven declared dependencies), and the capability banner says runtime verification is not available for them. |
+| How do you know which package caused it? | Two-sided ddmin. Adding only that package to the reference world reproduces the failure with the exact signature, and reverting only it in the consumer world removes it. If one direction cannot be built we say PARTIAL and name the missing direction. Forced worlds are labelled attribution experiments. |
+| What if the reference world is broken? | Then the same interaction fails in both worlds and is discarded as INCONCLUSIVE; the reference must pass 3 of 3. A missing or unresolvable reference world is INCONCLUSIVE with the reason, never a consumer-caused break. |
+| Replay: is it synthetic? | The MVP exercises the artifact by importing the modules the consumer actually imports. It does not generate inputs, and it does not yet check call signatures or data contracts: scenarios that need that (signature change, silent divergence) are registered but not evaluated. |
+| How do you evaluate it? | A script, against labels committed before any result, with denominators and the limits printed. Today: 6 labelled fixture scenarios evaluated (2 breaks, 4 controls), 5 more registered but not evaluated. We state no accuracy target and make no real-world accuracy claim. |
+| What does the ablation show? | Version-only flags harmless drift as a problem (a false positive); the author-selected matrix finds none of the labelled breaks; consumer-derived worlds find them. Configurations needing static API analysis are not computed. The numbers are in `benchmarks/results/report.json`. |
+| How does it scale? | Content-addressed caches: identical worlds and identical projections are built and run once. We have not measured large scale and do not claim it. |
+| What about dynamic code? | Dynamic imports are recorded as dynamic, never treated as absent. The full usage index and exposure analysis are not built; without them the MVP reports NO DIVERGENCE OBSERVED or INCONCLUSIVE, not NOT EXPOSED. |
+| Isn't this Pact? | Pact checks hand-written contracts. We look for cases where the same shared code behaves differently because producer and consumer resolved different libraries, with no written contract. |
+| Can a malicious repository fool it? | It can make its own artifact fail, which is a true statement. It cannot affect the reference run or the verdict engine, and it cannot make an unrelated artifact fail. |
+| Is the result cached? | Analyses are stored and labelled. The witness re-run is live and fresh; a cached result never counts toward the 3 + 3. |
