@@ -1,13 +1,13 @@
 {
   "denominators": {
-    "labelled_evaluated_scenarios": 6,
-    "scenarios_registered": 12
+    "labelled_evaluated_scenarios": 7,
+    "scenarios_registered": 13
   },
   "environment_measurements": {
     "latency_seconds_per_scenario": {
-      "p50": 56.5,
-      "p95": 171.6,
-      "samples": 12
+      "p50": 82.4,
+      "p95": 270.2,
+      "samples": 14
     },
     "peak_rss_mb_of_this_process": 0.0,
     "store_disk_mb": 0.8
@@ -25,10 +25,10 @@
         "FN": 0,
         "FP": 1,
         "TN": 3,
-        "TP": 2,
+        "TP": 3,
         "computed": true,
         "name": "version-only",
-        "samples": 6
+        "samples": 7
       },
       "B": {
         "computed": false,
@@ -41,46 +41,46 @@
         "reason": "the usage index is not built (M6.3)"
       },
       "D": {
-        "FN": 2,
+        "FN": 3,
         "FP": 0,
         "TN": 4,
         "TP": 0,
         "computed": true,
         "name": "author-selected matrix",
-        "samples": 6
+        "samples": 7
       },
       "E": {
-        "FN": 0,
+        "FN": 1,
         "FP": 0,
         "TN": 4,
         "TP": 2,
         "computed": true,
         "name": "consumer-derived worlds",
-        "samples": 6
+        "samples": 7
       },
       "F": {
         "FN": 0,
         "FP": 0,
         "TN": 4,
-        "TP": 2,
+        "TP": 3,
         "computed": true,
         "name": "+ witness discipline",
-        "samples": 6
+        "samples": 7
       },
       "G": {
         "FN": 0,
         "FP": 0,
         "TN": 4,
-        "TP": 2,
+        "TP": 3,
         "computed": true,
         "name": "+ ddmin attribution",
-        "samples": 6
+        "samples": 7
       }
     },
     "all_match_expectations": true,
     "consumer_derived_vs_author_selected": {
       "count": 2,
-      "denominator": 2,
+      "denominator": 3,
       "meaning": "labelled breaks found only by running the artifact in consumer-derived worlds",
       "scenarios": [
         "B",
@@ -88,24 +88,27 @@
       ]
     },
     "inconclusive_rate": {
-      "findings": 3,
+      "findings": 4,
       "inconclusive_findings": 0
     },
-    "scenarios_evaluated": 6,
+    "scenarios_evaluated": 7,
     "scenarios_not_evaluated": [
-      "C",
       "E",
       "F",
       "I",
       "J",
-      "REAL1"
+      "REAL1",
+      "REAL2"
     ],
-    "scenarios_registered": 12,
+    "scenarios_registered": 13,
     "verdicts": {
       "A": [
         "NO_DRIFT"
       ],
       "B": [
+        "BREAK_WITNESSED"
+      ],
+      "C": [
         "BREAK_WITNESSED"
       ],
       "D": [
@@ -124,11 +127,11 @@
     },
     "witness_reproducibility": {
       "each_has_3_plus_3_fresh_runs": true,
-      "witnesses": 2
+      "witnesses": 3
     },
     "world_coverage": {
-      "consumers_analysed": 7,
-      "consumers_discovered": 7
+      "consumers_analysed": 8,
+      "consumers_discovered": 8
     }
   },
   "no_accuracy_target": "No accuracy target is stated: this establishes a baseline.",
@@ -144,7 +147,7 @@
   },
   "reproducibility": {
     "identical_metrics": true,
-    "metrics_sha256": "e6c7f92d507dbfd90e8ddca6e6feaf0b1b2106f0a236eacfe74eecdd9efb8a4f",
+    "metrics_sha256": "78e83612c1915beea7e6f79818fc56961aff7931e6ffce028d3309a35f9f3f14",
     "passes": 2,
     "timings_excluded": true
   }

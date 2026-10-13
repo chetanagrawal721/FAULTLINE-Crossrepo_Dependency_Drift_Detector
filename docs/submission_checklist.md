@@ -4,7 +4,7 @@ Tick an item only when you have checked it yourself. Each claim must trace to a 
 
 ## Product
 - [ ] `python tools/fl.py ci` is green on a clean checkout (and the GitHub Actions run is green).
-- [ ] `python scripts/run_fixtures.py --assert` passes (6 evaluated scenarios).
+- [ ] `python scripts/run_fixtures.py --assert` passes (7 evaluated scenarios).
 - [ ] `python scripts/conformance_report.py` was run; its header is quoted exactly (MVP conformant, or NOT conformant with the rows listed).
 - [ ] Replay of one bundle was done on a DIFFERENT computer (TC-5.2.2) and the outcome recorded in `LOGBOOK.md`.
 - [ ] Network-off FIXTURE run (TC-12.2.1) and Docker-off REPLAY run (TC-12.2.2) were rehearsed.
