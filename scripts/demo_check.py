@@ -30,6 +30,7 @@ CASES = {
         "says": "acme_showcase",
         "min_witnesses": 4,
         "oracles": {"o_import", "o_bind", "o_contract"},
+        "control": True,
     },
     "callsite": {
         "title": "A library keeps calling a keyword that urllib3 2 removed. It imports fine; only the call fails",
@@ -62,6 +63,8 @@ CASES = {
         "delta": {"werkzeug"},
         "cause": ["werkzeug"],
         "says": "cannot import name 'url_quote'",
+        "min_witnesses": 2,
+        "oracles": {"o_import", "o_tests"},                  # the import fails, and so does the library's own web test
     },
 }
 
@@ -183,8 +186,9 @@ def run_case(r: Report, name: str, token: str | None) -> None:
         ws = f.get("witnesses") or []
         r.check(len(ws) >= case["min_witnesses"], f"{case['min_witnesses']} or more witnesses in one finding", f"{len(ws)} witnesses")
         r.check(case["oracles"] <= {x.get("oracle") for x in ws}, "witnesses from every oracle", ", ".join(sorted({str(x.get('oracle')) for x in ws})))
-        states = sorted(c["state"] for c in a["cells"])
-        r.check("NO_DRIFT" in states, "the control consumer shows no drift", ", ".join(states))
+        if case.get("control"):
+            states = sorted(c["state"] for c in a["cells"])
+            r.check("NO_DRIFT" in states, "the control consumer shows no drift", ", ".join(states))
     w = f["witnesses"][0]["witness_id"] if f.get("witnesses") else None
     r.check(w is not None, "a witness exists")
     if w:

@@ -23,7 +23,7 @@ All five repositories are public under `https://github.com/chetanagrawal721/`. P
 
 | Story | Artifact | Consumer | What the judges see | Time |
 |---|---|---|---|---|
-| **Import break** (the main example above) | `faultline-fixture-acme-models` | `faultline-fixture-notify-svc` | BREAK WITNESSED: `ImportError: cannot import name 'url_quote'`; cause `werkzeug` | about 1 min |
+| **Import break** (the main example above) | `faultline-fixture-acme-models` | `faultline-fixture-notify-svc` | BREAK WITNESSED: `ImportError: cannot import name url_quote`, from the import check and from the library's own test `test_web.py::test_show_customer`; cause `werkzeug` | about 100 s |
 | **Call-site break**: the library still passes a keyword that urllib3 2 removed. It imports fine; only the call fails | `faultline-fixture-acme-http` | `faultline-fixture-orders-svc` | BREAK WITNESSED at `retry.py:7`, `Retry(total=..., method_whitelist=...)` no longer binds; the call that still binds is exercised and not reported; cause `urllib3` | about 50 s |
 | **Data-contract break**: pydantic 1 writes a payload, pydantic 2 rejects it | `faultline-fixture-acme-contracts` | `faultline-fixture-billing-svc-contract` | BREAK WITNESSED: the exact bytes `{"customer_id": 0, "email": ""}` are rejected with `middle_name: Field required`; cause `pydantic` | about 2 min |
 | **Silent divergence**: both worlds accept the data and read it differently | `faultline-fixture-acme-contracts` | `faultline-fixture-billing-svc-union` | SILENT DIVERGENCE WITNESSED: `reference=42, consumer="42"`, both values shown | about 100 s |
@@ -36,7 +36,7 @@ Suggested order for a five-minute slot: paste the main example live (it has the 
 
 Three repositories under `https://github.com/chetanagrawal721/`: the producer `faultline-fixture-acme-showcase`, the consumer `faultline-fixture-fulfilment-svc` (newer Werkzeug, urllib3 and pydantic, uses all four modules) and the control consumer `faultline-fixture-reporting-svc` (exactly the producer's own versions). One submission shows an import break, a call-site break, a data-contract break, a silent divergence (four witnesses from three oracles in one finding) and a cell with no drift and nothing to run.
 
-It attributes four witnesses one after another, so it takes **405 s the first time and 332 s with every world already built**. That is too long to wait through live. Use it like this: run `python scripts/demo_check.py --case showcase` before you go on stage, leave the finding it prints open in **Findings**, and say that it is a recorded run of the same pipeline. Paste the main pair live (about a minute).
+It attributes four witnesses one after another, so it takes **405 s the first time and 332 s with every world already built**. That is too long to wait through live. Use it like this: run `python scripts/demo_check.py --case showcase` before you go on stage, leave the finding it prints open in **Findings**, and say that it is a recorded run of the same pipeline. Paste the main pair live (about 100 seconds).
 
 ## Before the demo (once, online, on the demo machine and the backup machine)
 

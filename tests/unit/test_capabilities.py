@@ -40,13 +40,13 @@ def test_without_a_verified_sandbox_nothing_that_executes_is_available():
 
 def test_with_a_verified_sandbox_exactly_what_is_built_is_enabled_and_the_rest_says_so():
     c = build_capabilities(Mode.FIXTURE, VERIFIED)
-    assert {n for n, s in c.oracles.items() if s.state == CapabilityState.ENABLED} == {"o_import", "o_bind", "o_contract"}
-    assert c.oracles["o_tests"].state == CapabilityState.PARTIAL and "NOT_PLANNED" in c.oracles["o_tests"].reason     # exists, not in the pipeline
+    assert {n for n, s in c.oracles.items() if s.state == CapabilityState.ENABLED} == {"o_import", "o_tests", "o_bind", "o_contract"}
+    assert c.oracles["o_tests"].state == CapabilityState.ENABLED and "NOT PLANNED" in c.oracles["o_tests"].reason     # built, with its condition stated
     enabled = {n for n, s in c.features.items() if s.state == CapabilityState.ENABLED}
     assert enabled == {"repository_ingestion", "relationship_discovery", "witness_verification", "attribution_ddmin", "remediation_minimal", "evidence_bundle"}
     assert c.features["llm_assistance"].state == CapabilityState.UNAVAILABLE
     assert "Replay on a different computer is not yet confirmed" in c.features["evidence_bundle"].reason      # an unfinished claim is stated
-    assert "O-tests is not part of the live pipeline" in c.features["witness_verification"].reason
+    assert "O-tests" in c.features["witness_verification"].reason
     pypi = next(e for e in c.ecosystems if e.ecosystem.value == "pypi")
     assert pypi.runtime_witness.state == CapabilityState.ENABLED
     assert enabled_ecosystem_dimensions(c) == STATIC_ONLY | {("pypi", "resolve"), ("pypi", "world"), ("pypi", "runtime_witness")}

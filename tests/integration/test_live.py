@@ -38,7 +38,11 @@ def test_tc_4_4_1_live_analysis_stores_per_world_outcomes_with_stable_fingerprin
     assert states == {"ANALYZED", "NO_DRIFT"} and res.funnel["consumers_discovered"] == 2 and res.funnel["consumers_analysed"] == 2
     analysed = next(c for c in res.cells if c["state"] == "ANALYZED")
     runs = conn.execute("SELECT r.* FROM oracle_run r JOIN oracle_job j ON j.id=r.oracle_job_id WHERE j.cell_id=? ORDER BY j.side, r.run_index", (analysed["cell_id"],)).fetchall()
-    assert len(runs) == 6 and all(r["provenance"] == "FRESH_EXECUTION" for r in runs)
+    assert len(runs) == 12 and all(r["provenance"] == "FRESH_EXECUTION" for r in runs)                  # 6 for O-import and 6 for O-tests
+    by_oracle = {}
+    for r in conn.execute("SELECT j.oracle, j.side FROM oracle_run r JOIN oracle_job j ON j.id=r.oracle_job_id WHERE j.cell_id=?", (analysed["cell_id"],)):
+        by_oracle.setdefault(r["oracle"], []).append(r["side"])
+    assert {k: sorted(v) for k, v in by_oracle.items()} == {"o_import": ["ref"] * 3 + ["test"] * 3, "o_tests": ["ref"] * 3 + ["test"] * 3}
     ref_fp = {r["env_fingerprint"] for r in conn.execute("SELECT r.env_fingerprint FROM oracle_run r JOIN oracle_job j ON j.id=r.oracle_job_id WHERE j.cell_id=? AND j.side='ref'", (analysed["cell_id"],))}
     assert len(ref_fp) == 1 and None not in ref_fp                                           # same reference fingerprint on every run
     f = conn.execute("SELECT * FROM finding WHERE id=?", (analysed["finding_id"],)).fetchone()
@@ -46,8 +50,13 @@ def test_tc_4_4_1_live_analysis_stores_per_world_outcomes_with_stable_fingerprin
     scope = json.loads(f["scope_json"])
     assert {d["name"] for d in scope["delta"]} == {"itsdangerous", "werkzeug"} and scope["consumers"] == ["faultline-demo/notify-svc"]
     assert scope["oracle_plan"][0]["oracle"] == "o_import" and scope["oracle_plan"][0]["status"] == "RAN"
-    assert scope["oracle_plan"][1]["status"] == "NOT_PLANNED" or scope["oracle_plan"][1]["status"] == "BLOCKED"
-    assert conn.execute("SELECT COUNT(*) FROM witness WHERE cell_id=?", (analysed["cell_id"],)).fetchone()[0] == 1
+    tests = scope["oracle_plan"][1]
+    assert tests["oracle"] == "o_tests" and tests["status"] == "RAN"                                     # acme-models ships its tests and a hash-pinned test lock
+    assert sorted(tests["entries"]) == ["test_customer.py::test_default_points", "test_customer.py::test_round_trip", "test_web.py::test_show_customer"]
+    w = {x["entry_point"]: x for x in conn.execute("SELECT * FROM witness WHERE cell_id=?", (analysed["cell_id"],))}
+    assert sorted(w) == ["acme_models.web", "test_web.py::test_show_customer"]                           # the import fails, and so does the library's own web test
+    assert w["test_web.py::test_show_customer"]["oracle"] == "o_tests" and w["test_web.py::test_show_customer"]["divergence"] == "TEST_FAIL"
+    assert all(x["ref_pass"] == 3 and x["test_fail"] == 3 for x in w.values())
 
 
 def test_orders_svc_matching_the_reference_queued_no_oracle_jobs(d_scenario):

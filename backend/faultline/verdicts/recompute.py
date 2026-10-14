@@ -16,7 +16,7 @@ from .engine import LIVE_POLICY_VERSION, LIVE_PRIORITY, Evidence, decide, split_
 LEVELS_OK = ("L2", "L3", "L4", "L5")
 
 
-ORACLES = ("o_import", "o_bind", "o_contract")
+ORACLES = ("o_import", "o_tests", "o_bind", "o_contract")
 
 
 def _records(conn: sqlite3.Connection, cell_id: str, oracle: str = "o_import") -> tuple[list[RunRecord], list[RunRecord]]:

@@ -21,8 +21,11 @@ from ..oracles.o_bind import ORACLE as BIND_ORACLE
 from ..oracles.o_bind import ORACLE_VERSION as BIND_VERSION
 from ..oracles.o_bind import run_o_bind, site_payload
 from ..oracles.o_import import ORACLE, ORACLE_VERSION, plan_modules, run_o_import
+from ..oracles.o_tests import ORACLE as TESTS_ORACLE
+from ..oracles.o_tests import ORACLE_VERSION as TESTS_VERSION
+from ..oracles.o_tests import run_o_tests
 from ..relationships.engine import create_analysis, discover
-from ..resolvers.pinned import render_lock
+from ..resolvers.pinned import parse_pinned_lock, render_lock
 from ..sandbox.client import SandboxClient
 from ..storage.store import Store
 from ..usage.consumer_imports import artifact_modules, scan_imports
@@ -32,6 +35,7 @@ from ..verdicts.stats import funnel
 from ..witnesses.verify import INFRA_CLASSES, Verification, verify_cell
 from ..worlds.builder import WorldBuilder, WorldBuildError
 from ..worlds.cells import CellPlan, persist_cell, plan_cells
+from ..worlds.overlay import overlay_lock
 from .bind import artifact_sources, find_sites, module_of
 from .fixture import FixtureCell
 from .lifecycle import mark_partial, reconcile_abandoned
@@ -227,7 +231,8 @@ def execute_cell(conn, sbx, image, store, builder, aid, cell_id, plan, layout, p
         srcs = artifact_sources(art_dir)
         ctypes = o_contract.discover_types(srcs, {p: module_of(p, pyroot) for p in srcs}, set(modules))
         creason = "no pydantic model is defined in the modules the consumer imports"
-    steps = planner.after_import(planner.plan(pkg, modules, has_tests=has_tests, test_lock=False, bind_sites=len(sites), contract_types=len(ctypes),
+    test_text = _test_lock(art_dir) if has_tests else None
+    steps = planner.after_import(planner.plan(pkg, modules, has_tests=has_tests, test_lock=test_text is not None, bind_sites=len(sites), contract_types=len(ctypes),
                                               contract_reason=creason), pkg, v)
     if any(s.oracle == "o_bind" and s.status == "PLANNED" for s in steps):
         say(base + 0.095 / n, f"running O-bind (3 + 3 fresh runs) on {len(sites)} call site(s)")
@@ -240,6 +245,32 @@ def execute_cell(conn, sbx, image, store, builder, aid, cell_id, plan, layout, p
             vb = verify_cell(conn, cell, oracle=BIND_ORACLE, version=BIND_VERSION, run_in_world=run_bind, args={"sites": [p["id"] for p in payload]}, force=True)
         v = Verification(v.ref_runs + vb.ref_runs, v.test_runs + vb.test_runs, v.decisions + vb.decisions, v.problem or vb.problem)
         steps = planner.mark_ran(steps, "o_bind", tuple("bind:" + p["id"] for p in payload))
+    test_entries: set[str] = set()
+    tests_note: list[str] = []
+    if any(s.oracle == "o_tests" and s.status == "PLANNED" for s in steps):
+        say(base + 0.093 / n, "building the test overlay worlds and running the library's own tests (3 + 3 fresh runs)")
+        try:
+            ovs: dict[str, tuple[str, object]] = {}
+            for key, text in ((cell.ref_world_hash, render_lock(list(plan.reference.pinned))), (cell.test_world_hash, plan.projection.lock_text)):
+                ov = overlay_lock(text, test_text)
+                w = builder.materialize(ov.lock_text, WorldKind.OVERLAY, scopes=ov.scopes())
+                if builder.build(w, ov.lock_text).status == "FAILED":
+                    raise WorldBuildError("a test overlay world could not be built offline", details={"reason": "overlay_build_failed"})
+                ovs[key] = (w.world_hash, ov)
+        except WorldBuildError as e:
+            steps = [planner.Step("o_tests", "NOT_PLANNED", f"the test overlay could not be built: {e.message}") if s.oracle == "o_tests" else s for s in steps]
+        else:
+            def run_tests(world_hash: str):
+                return retrying(lambda: run_o_tests(sbx, image, world_hash=ovs[world_hash][0], artifact_hash=artifact, top_level=pkg, pythonpath=(pythonpath,)),
+                                checkpoint=lambda: say(base + 0.093 / n, "checking whether the job was cancelled"))()
+            with phase("verify O-tests (3 + 3 fresh runs)", cell=cell_id):
+                vt = verify_cell(conn, cell, oracle=TESTS_ORACLE, version=TESTS_VERSION, run_in_world=run_tests, args={"overlay_worlds": [ovs[k][0] for k in sorted(ovs)]}, force=True)
+            v = Verification(v.ref_runs + vt.ref_runs, v.test_runs + vt.test_runs, v.decisions + vt.decisions, v.problem or vt.problem)
+            test_entries = {d.entry for d in vt.decisions}
+            steps = planner.mark_ran(steps, "o_tests", tuple(sorted(test_entries)))
+            tests_note = [f"the test overlay kept the runtime version of {name} ({keep}) over the {want} its test lock asked for" for _k, (_h, o) in ovs.items() for name, keep, want in o.conflicts]
+            if tests_note:
+                steps = [planner.Step(x.oracle, x.status, "; ".join(tests_note) + " (the overlay is marked forced)", x.entries) if x.oracle == "o_tests" else x for x in steps]
     contract_scope: dict | None = None
     item_by_entry: dict = {}
     if any(s.oracle == "o_contract" and s.status == "PLANNED" for s in steps):
@@ -264,6 +295,8 @@ def execute_cell(conn, sbx, image, store, builder, aid, cell_id, plan, layout, p
             steps = [planner.Step("o_contract", "NOT_PLANNED", "; ".join(ex.notes) or "no input was accepted by the reference world, so there was nothing to replay")
                      if s.oracle == "o_contract" else s for s in steps]
     for dec in v.witnesses:
+        if dec.entry in test_entries:
+            continue                                   # a failing test is a witness, but its cause is searched through the import and call-site witnesses
         if dec.witness_id and dec.signature is not None:
             say(base + 0.1 / n, f"attributing the break in {dec.entry} (two-sided search)")
             site = site_by_entry.get(dec.entry)
@@ -278,6 +311,19 @@ def execute_cell(conn, sbx, image, store, builder, aid, cell_id, plan, layout, p
     state = "ANALYZED" if v.decisions else "INCONCLUSIVE"
     conn.execute("UPDATE cell SET state=? WHERE id=?", (state, cell_id))
     return fid, state
+
+
+def _test_lock(art_dir: Path) -> str | None:
+    """The artifact's hash-pinned test-only lock, or None. A lock that is not fully pinned is not used: the overlay must be exact."""
+    f = Path(art_dir) / "requirements.test.lock.txt"
+    if not f.is_file():
+        return None
+    text = f.read_text(encoding="utf-8")
+    try:
+        reqs = parse_pinned_lock(text)
+    except Exception:  # noqa: BLE001
+        return None
+    return text if reqs and all(r.hashes for r in reqs) else None
 
 
 def _with_hash(ref, world_hash: str):
