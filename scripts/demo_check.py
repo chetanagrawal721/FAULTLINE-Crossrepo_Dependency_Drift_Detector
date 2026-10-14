@@ -84,9 +84,20 @@ def run_case(r: Report, name: str, token: str | None) -> None:
     print(f"\nCase '{name}': {case['title']}")
     t0 = time.time()
     p = call("POST", "/api/projects", {"name": f"demo check · {name} · {time.strftime('%H:%M:%S')}"}, token)
+    ids = []
     for url in case["repos"]:
         repo = call("POST", f"/api/projects/{p['id']}/repositories", {"url": url, "ref": None}, token, timeout=300)
-        r.check(bool(repo.get("pinned_sha")), f"pinned {url.rsplit('/', 1)[1]}", f"commit {str(repo.get('pinned_sha'))[:10]}, {repo.get('status')}")
+        r.check(bool(repo.get("pinned_sha")), f"pinned {url.rsplit('/', 1)[1]}", f"commit {str(repo.get('pinned_sha'))[:10]}")
+        ids.append((url, repo["id"]))
+    for url, rid in ids:                                              # fetching happens in the sandbox, as a background job
+        while True:
+            repo = call("GET", f"/api/repositories/{rid}")
+            if repo["status"] in ("INGESTED", "FAILED") or time.time() - t0 > 600:
+                break
+            time.sleep(2)
+        r.check(repo["status"] == "INGESTED", f"fetched {url.rsplit('/', 1)[1]} in the sandbox", f"{repo['status']}, {int(time.time() - t0)} s")
+        if repo["status"] != "INGESTED":
+            return
     job = call("POST", f"/api/projects/{p['id']}/analyze", None, token)
     last = ""
     while job["status"] in ("QUEUED", "RUNNING"):
