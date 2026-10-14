@@ -1,5 +1,7 @@
 """The artifact under test: a pinned source tree mounted read-only. It is never built or installed (pure Python only)."""
+import os
 import shutil
+import time
 from pathlib import Path
 
 from ..core.hashing import object_hash, sha256_hex
@@ -18,16 +20,32 @@ def content_hash(root: Path) -> str:
     return "a_" + object_hash(listing)[:40]
 
 
+def _publish(tmp: Path, dest: Path) -> None:
+    """Move the finished copy into place. On Windows the rename can be refused for a moment while a virus scanner or indexer holds the new
+    folder, and two workers can race to create the same artifact; both are harmless, so retry briefly and accept a copy that someone else finished."""
+    for attempt in range(8):
+        try:
+            tmp.rename(dest)
+            return
+        except OSError:
+            if dest.exists():
+                shutil.rmtree(tmp, ignore_errors=True)               # another process finished the same content-addressed copy first
+                return
+            if attempt == 7:
+                raise
+            time.sleep(0.25 * (attempt + 1))
+
+
 def prepare_artifact(source_dir: Path, store: Store) -> str:
     """Copy the tree into the content-addressed store (once) and return its content hash."""
     h = content_hash(source_dir)
     dest = store.artifact_dir(h)
     if not dest.exists():
-        tmp = dest.with_name(dest.name + ".tmp")
+        tmp = dest.with_name(f"{dest.name}.{os.getpid()}.tmp")
         shutil.rmtree(tmp, ignore_errors=True)
         for p in _files(source_dir):
             t = tmp / p.relative_to(source_dir)
             t.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(p, t)
-        tmp.rename(dest)
+        _publish(tmp, dest)
     return h

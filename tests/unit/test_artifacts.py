@@ -28,3 +28,37 @@ def test_prepare_artifact_is_idempotent_and_content_addressed(tmp_path):
     h1 = prepare_artifact(src, store)
     h2 = prepare_artifact(src, store)
     assert h1 == h2 and (store.artifact_dir(h1) / "pkg" / "__init__.py").read_text(encoding="utf-8") == "v = 1\n"
+
+
+def test_a_refused_rename_is_retried_and_a_copy_finished_by_another_process_is_accepted(tmp_path, monkeypatch):
+    """Windows can refuse to rename a new folder for a moment (a virus scanner holds it). That must not fail an analysis."""
+    import time
+    from pathlib import Path
+
+    from faultline.oracles import artifacts
+    from faultline.storage.store import Store
+    src = tmp_path / "src"
+    (src / "pkg").mkdir(parents=True)
+    (src / "pkg" / "__init__.py").write_text("x = 1\n", encoding="utf-8")
+    monkeypatch.setattr(time, "sleep", lambda s: None)
+    real = Path.rename
+    calls = {"n": 0}
+
+    def flaky(self, target):
+        calls["n"] += 1
+        if calls["n"] <= 2:
+            raise PermissionError(5, "Access is denied")
+        return real(self, target)
+    monkeypatch.setattr(Path, "rename", flaky)
+    store = Store(tmp_path / "store")
+    h = artifacts.prepare_artifact(src, store)
+    assert calls["n"] == 3 and (store.artifact_dir(h) / "pkg" / "__init__.py").read_text() == "x = 1\n"
+    assert not list((tmp_path / "store" / "artifacts").glob("*.tmp"))                       # no half-copied folder is left behind
+
+    def refuse(self, target):
+        Path(target).mkdir(parents=True, exist_ok=True)                                     # someone else won the race
+        raise PermissionError(5, "Access is denied")
+    other = Store(tmp_path / "store2")
+    monkeypatch.setattr(Path, "rename", refuse)
+    h2 = artifacts.prepare_artifact(src, other)
+    assert other.artifact_dir(h2).exists() and not list((tmp_path / "store2" / "artifacts").glob("*.tmp"))

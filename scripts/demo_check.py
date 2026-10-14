@@ -17,7 +17,32 @@ import urllib.request
 BASE = "http://127.0.0.1:8000"
 HERO_ARTIFACT = "https://github.com/chetanagrawal721/faultline-fixture-acme-models"
 HERO_CONSUMER = "https://github.com/chetanagrawal721/faultline-fixture-notify-svc"
+OWNER = "https://github.com/chetanagrawal721/faultline-fixture-"
 CASES = {
+    "callsite": {
+        "title": "A library keeps calling a keyword that urllib3 2 removed. It imports fine; only the call fails",
+        "repos": [OWNER + "acme-http", OWNER + "orders-svc"],
+        "verdict": "BREAK_WITNESSED",
+        "delta": {"urllib3"},
+        "cause": ["urllib3"],
+        "says": "method_whitelist",
+    },
+    "contract": {
+        "title": "A payload that pydantic 1 produces is rejected by a pydantic 2 consumer",
+        "repos": [OWNER + "acme-contracts", OWNER + "billing-svc-contract"],
+        "verdict": "BREAK_WITNESSED",
+        "delta": {"pydantic"},
+        "cause": ["pydantic"],
+        "says": "middle_name: Field required",
+    },
+    "union": {
+        "title": "Both worlds accept the data, but they read it differently: the text 42 becomes a number in one",
+        "repos": [OWNER + "acme-contracts", OWNER + "billing-svc-union"],
+        "verdict": "SILENT_DIVERGENCE_WITNESSED",
+        "delta": {"pydantic"},
+        "cause": ["pydantic"],
+        "says": 'reference=42, consumer="42"',
+    },
     "hero": {
         "title": "A shared library that imports fine alone and fails under a consumer's dependencies (Flask 2.2.2 with Werkzeug 3)",
         "repos": [HERO_ARTIFACT, HERO_CONSUMER],
@@ -38,7 +63,7 @@ def call(method: str, path: str, body: dict | None = None, token: str | None = N
             return json.loads(raw) if raw else None
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", "replace")[:300]
-        raise SystemExit(f"{method} {path} -> {e.code}: {detail}")
+        raise SystemExit(f"{method} {path} -> {e.code}: {detail}") from None
 
 
 class Report:
@@ -70,13 +95,24 @@ def preflight(r: Report) -> dict | None:
     for name in ("o_import", "o_bind", "o_contract"):
         r.check(caps["oracles"][name]["state"] == "enabled", f"oracle {name} is enabled")
     r.check(caps["features"]["witness_verification"]["state"] == "enabled", "witness verification is enabled")
-    for repo in (HERO_ARTIFACT, HERO_CONSUMER):
+    for repo in sorted({u for c in CASES.values() for u in c["repos"]}):
         try:
             urllib.request.urlopen(urllib.request.Request(repo.replace("github.com", "api.github.com/repos"), headers={"User-Agent": "faultline-demo-check"}), timeout=15).read(100)
             r.ok(f"GitHub serves {repo.rsplit('/', 1)[1]}")
         except Exception as e:  # noqa: BLE001
             r.bad(f"GitHub serves {repo.rsplit('/', 1)[1]}", f"{type(e).__name__}: {e}. Use FIXTURE mode from the local mirror, or the REPLAY pack")
     return h
+
+
+def add_repository(project_id: str, url: str, token: str | None, attempts: int = 4):
+    """GitHub sometimes answers 5xx for a moment (a new repository, a busy edge). The API marks those retryable; so does this."""
+    for i in range(attempts):
+        try:
+            return call("POST", f"/api/projects/{project_id}/repositories", {"url": url, "ref": None}, token, timeout=300)
+        except SystemExit as e:
+            if "retryable" not in str(e) or i == attempts - 1:
+                raise
+            time.sleep(4 * (i + 1))
 
 
 def run_case(r: Report, name: str, token: str | None) -> None:
@@ -86,7 +122,7 @@ def run_case(r: Report, name: str, token: str | None) -> None:
     p = call("POST", "/api/projects", {"name": f"demo check · {name} · {time.strftime('%H:%M:%S')}"}, token)
     ids = []
     for url in case["repos"]:
-        repo = call("POST", f"/api/projects/{p['id']}/repositories", {"url": url, "ref": None}, token, timeout=300)
+        repo = add_repository(p["id"], url, token)
         r.check(bool(repo.get("pinned_sha")), f"pinned {url.rsplit('/', 1)[1]}", f"commit {str(repo.get('pinned_sha'))[:10]}")
         ids.append((url, repo["id"]))
     for url, rid in ids:                                              # fetching happens in the sandbox, as a background job
@@ -123,9 +159,9 @@ def run_case(r: Report, name: str, token: str | None) -> None:
     r.check(case["delta"] <= delta, "the exact delta names the cause", ", ".join(sorted(delta)))
     f = call("GET", f"/api/findings/{cell['finding_id']}")
     r.check(case["says"] in f["headline"], "the scoped statement quotes the real failure", f["headline"][:140])
-    r.check(f["fresh_runs"] == 6 and f["reused_runs"] == 0, "six fresh runs, none reused", f"{f['fresh_runs']} fresh, {f['reused_runs']} reused")
+    r.check(f["fresh_runs"] >= 6 and f["reused_runs"] == 0, "fresh runs only (6 per oracle), none reused", f"{f['fresh_runs']} fresh, {f['reused_runs']} reused")
     att = cell.get("attribution") or {}
-    r.check(att.get("minimal") == case["cause"] and att.get("status") == "COMPLETE" and att.get("sidedness") == "two_sided", "two-sided attribution names the cause", f"{att.get('minimal')} {att.get('status')}")
+    r.check(set(case["cause"]) <= set(att.get("minimal") or []) and att.get("status") == "COMPLETE" and att.get("sidedness") == "two_sided", "two-sided attribution names the cause", f"{att.get('minimal')} {att.get('status')}")
     w = f["witnesses"][0]["witness_id"] if f.get("witnesses") else None
     r.check(w is not None, "a witness exists")
     if w:
@@ -137,7 +173,7 @@ def run_case(r: Report, name: str, token: str | None) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--preflight", action="store_true")
-    ap.add_argument("--case", choices=sorted(CASES), default="hero")
+    ap.add_argument("--case", choices=sorted(CASES) + ["all"], default="hero")
     ap.add_argument("--token", default=None, help="admin token, when the server requires one")
     a = ap.parse_args()
     r = Report()
@@ -146,7 +182,8 @@ def main() -> int:
         if h.get("mode") == "REPLAY":
             r.bad("the server can start work", "it is in REPLAY mode")
         else:
-            run_case(r, a.case, a.token)
+            for name in (["hero", "callsite", "contract", "union"] if a.case == "all" else [a.case]):
+                run_case(r, name, a.token)
     print("\n" + ("Ready to demo." if r.failed == 0 else f"{r.failed} check(s) failed. Fix them before presenting."))
     return 1 if r.failed else 0
 

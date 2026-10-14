@@ -17,6 +17,21 @@ What FAULTLINE shows, in order: the two commits it pinned, the relationship with
 
 The repositories are fixtures built for this purpose; they say so in their descriptions. The same pipeline runs on any public GitHub repositories you paste.
 
+## Three more examples, one for each other kind of finding
+
+All five repositories are public under `https://github.com/chetanagrawal721/`. Paste the artifact first, then the consumer. Times are real runs of `scripts/demo_check.py`, with warm caches.
+
+| Story | Artifact | Consumer | What the judges see | Time |
+|---|---|---|---|---|
+| **Import break** (the main example above) | `faultline-fixture-acme-models` | `faultline-fixture-notify-svc` | BREAK WITNESSED: `ImportError: cannot import name 'url_quote'`; cause `werkzeug` | about 1 min |
+| **Call-site break**: the library still passes a keyword that urllib3 2 removed. It imports fine; only the call fails | `faultline-fixture-acme-http` | `faultline-fixture-orders-svc` | BREAK WITNESSED at `retry.py:7`, `Retry(total=..., method_whitelist=...)` no longer binds; the call that still binds is exercised and not reported; cause `urllib3` | about 50 s |
+| **Data-contract break**: pydantic 1 writes a payload, pydantic 2 rejects it | `faultline-fixture-acme-contracts` | `faultline-fixture-billing-svc-contract` | BREAK WITNESSED: the exact bytes `{"customer_id": 0, "email": ""}` are rejected with `middle_name: Field required`; cause `pydantic` | about 2 min |
+| **Silent divergence**: both worlds accept the data and read it differently | `faultline-fixture-acme-contracts` | `faultline-fixture-billing-svc-union` | SILENT DIVERGENCE WITNESSED: `reference=42, consumer="42"`, both values shown | about 100 s |
+
+Suggested order for a five-minute slot: the main example in full (it has the fix and the evidence bundle), then the call-site pair to show that a clean import is not enough. Keep the other two for questions about data contracts.
+
+`python scripts/demo_check.py --case all` runs all four back to back (about 6 minutes). `--case callsite`, `--case contract` and `--case union` run one.
+
 ## Before the demo (once, online, on the demo machine and the backup machine)
 
 1. Start Docker Desktop and wait until it says it is running.
