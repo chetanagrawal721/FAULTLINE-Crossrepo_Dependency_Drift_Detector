@@ -191,18 +191,24 @@ export function AppAction({
   onClick,
   quiet = false,
   disabled = false,
+  expanded,
+  reason,
 }: {
   children: ReactNode
   onClick?: () => void
   quiet?: boolean
   disabled?: boolean
+  expanded?: boolean
+  /** Why the action is unavailable, shown as the tooltip while it is disabled. */
+  reason?: string
 }) {
   return (
     <button
       className={quiet ? "app-action quiet" : "app-action"}
       onClick={onClick}
       disabled={disabled}
-      title={disabled ? "Unavailable" : undefined}
+      aria-expanded={expanded}
+      title={disabled ? reason ?? "Unavailable" : undefined}
     >
       {children}
     </button>

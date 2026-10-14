@@ -60,13 +60,13 @@
 
 /* ------------------------------------------------------------------ type scale */
 .workspace.shell,
-.workspace.shell *:not(.logo-type) {
+.workspace.shell :where(*:not(.logo-type)) {
   font-family: var(--ui-sans) !important;
   font-weight: 400 !important;
   letter-spacing: normal;
 }
 .workspace.shell { font-size: 13px !important; line-height: 1.5; }
-.workspace.shell h1 { font-size: 21px !important; line-height: 1.25 !important; font-weight: 600 !important; letter-spacing: -0.01em; margin: 0; }
+.workspace.shell h1, .workspace.shell .app-page-heading h1 { font-size: 27px !important; line-height: 1.2 !important; font-weight: 600 !important; letter-spacing: -0.015em; margin: 0; color: var(--ui-text); }
 .workspace.shell h2 { font-size: 17px !important; line-height: 1.3 !important; font-weight: 600 !important; letter-spacing: -0.005em; }
 .workspace.shell h3 { font-size: 14px !important; line-height: 1.35 !important; font-weight: 600 !important; }
 .workspace.shell p, .workspace.shell li, .workspace.shell dd, .workspace.shell td, .workspace.shell .panel-copy { font-size: 13px !important; line-height: 1.55; }

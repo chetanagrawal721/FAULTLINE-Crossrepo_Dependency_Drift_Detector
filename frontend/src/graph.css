@@ -1,0 +1,103 @@
+/* Inventory graph: a fixed-height canvas with its own pan and zoom, a minimap, and an inspector and table that scroll on their own.
+   Scoped to `.workspace.shell`; loaded after workspace.css. */
+.workspace.shell .ig-page { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.workspace.shell .ig-toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.workspace.shell .ig-search { flex: 1 1 280px; min-width: 0; display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px; border: 1px solid var(--ui-border-strong); border-radius: 6px; background: var(--ui-surface); color: var(--ui-muted); }
+.workspace.shell .ig-search input { border: 0; outline: 0 !important; background: transparent; color: var(--ui-text); height: 100%; padding: 0; min-width: 0; flex: 1; }
+.workspace.shell .ig-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.workspace.shell .ig-count { white-space: nowrap; font-size: 12px !important; }
+.workspace.shell .ig-toolbar select { width: auto; }
+.workspace.shell .ig-add { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; padding: 12px 16px; border: 1px solid var(--ui-border); border-left: 3px solid var(--accent); border-radius: 6px; background: var(--ui-surface); }
+.workspace.shell .ig-add p { margin: 2px 0 0; color: var(--ui-muted); max-width: 70ch; }
+.workspace.shell .ig-add-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.workspace.shell .ig-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--ui-border); border-radius: 8px; background: var(--ui-surface); overflow: hidden; }
+.workspace.shell .ig-summary > div { padding: 10px 16px; border-right: 1px solid var(--ui-border); display: flex; flex-direction: column; gap: 2px; }
+.workspace.shell .ig-summary > div:last-child { border-right: 0; }
+.workspace.shell .ig-summary span { color: var(--ui-muted); font-size: 11.5px !important; }
+.workspace.shell .ig-summary strong { font-size: 18px !important; font-variant-numeric: tabular-nums; }
+
+.workspace.shell .ig-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; align-items: start; --ig-h: clamp(420px, 66vh, 720px); }
+.workspace.shell .ig-stage { min-width: 0; border: 1px solid var(--ui-border); border-radius: 8px; background: var(--ui-surface); overflow: hidden; }
+.workspace.shell .ig-stage-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--ui-border); }
+.workspace.shell .ig-stage-head h3 { margin: 0; }
+.workspace.shell .ig-stage-head span { color: var(--ui-muted); font-size: 12px !important; }
+.workspace.shell .ig-canvas {
+  position: relative; height: var(--ig-h); overflow: hidden; background-color: var(--ui-bg); cursor: grab; touch-action: none; outline: none;
+  background-image: radial-gradient(var(--ui-border-strong) 0.8px, transparent 0.8px); background-size: 20px 20px;
+}
+.workspace.shell .ig-canvas.is-dragging { cursor: grabbing; }
+.workspace.shell .ig-canvas:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+.workspace.shell .ig-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+.workspace.shell .ig-edges { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.workspace.shell .ig-lane { position: absolute; font-size: 11px !important; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ui-muted); white-space: nowrap; }
+.workspace.shell .ig-edge path { fill: none; stroke: var(--ui-border-strong); stroke-width: 1.4; transition: opacity 0.15s ease; }
+.workspace.shell .ig-edge.candidate path { stroke: var(--accent); stroke-dasharray: 6 5; }
+.workspace.shell .ig-edge text { fill: var(--ui-muted); font-size: 11px !important; text-anchor: middle; }
+.workspace.shell .ig-edge.is-related path { stroke: var(--accent); stroke-width: 2.2; }
+.workspace.shell .ig-edge.is-faded { opacity: 0.12; }
+.workspace.shell .ig-node {
+  position: absolute; display: flex; flex-direction: column; justify-content: center; gap: 1px; padding: 6px 10px 6px 12px; text-align: left; cursor: pointer;
+  border: 1px solid var(--ui-border-strong); border-left: 3px solid var(--c-neutral); border-radius: 6px; background: var(--ui-surface); color: var(--ui-text); overflow: hidden;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.workspace.shell .ig-node.t-repository { border-left-color: var(--accent); }
+.workspace.shell .ig-node.t-project { border-left-color: var(--c-run); }
+.workspace.shell .ig-node.t-package { border-left-color: var(--c-ok); }
+.workspace.shell .ig-node:hover { border-color: var(--accent); }
+.workspace.shell .ig-node:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.workspace.shell .ig-node.is-selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 6px 16px rgba(0, 0, 0, 0.12); z-index: 2; }
+.workspace.shell .ig-node.is-linked { border-color: var(--accent); }
+.workspace.shell .ig-node.is-dim { opacity: 0.18; }
+.workspace.shell .ig-node strong { font-size: 13px !important; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.workspace.shell .ig-node .ig-meta { font-size: 11px !important; color: var(--ui-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.workspace.shell .ig-node .ig-detail { font-size: 10.5px !important; color: var(--ui-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.workspace.shell .ig-canvas.lod-far .ig-meta, .workspace.shell .ig-canvas.lod-far .ig-detail { display: none; }
+.workspace.shell .ig-canvas.lod-far .ig-node strong { font-size: 15px !important; }
+.workspace.shell .ig-canvas.lod-mid .ig-detail { display: none; }
+
+.workspace.shell .ig-controls { position: absolute; left: 12px; top: 12px; z-index: 5; display: flex; flex-direction: column; border: 1px solid var(--ui-border-strong); border-radius: 6px; background: var(--ui-surface); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); overflow: hidden; cursor: default; }
+.workspace.shell .ig-controls button { width: 34px; height: 32px; display: grid; place-items: center; border: 0; border-bottom: 1px solid var(--ui-border); background: transparent; color: var(--ui-text); cursor: pointer; }
+.workspace.shell .ig-controls button:hover:not(:disabled) { background: var(--ui-surface-2); }
+.workspace.shell .ig-controls button:disabled { color: var(--ui-muted); opacity: 0.5; cursor: not-allowed; }
+.workspace.shell .ig-controls button.is-idle { color: var(--ui-muted); }
+.workspace.shell .ig-controls button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-dark); }
+.workspace.shell .ig-controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.workspace.shell .ig-zoom { display: block; text-align: center; padding: 5px 0; font-size: 11px !important; color: var(--ui-muted); font-variant-numeric: tabular-nums; }
+.workspace.shell .ig-minimap { position: absolute; right: 12px; bottom: 12px; z-index: 5; border: 1px solid var(--ui-border-strong); border-radius: 6px; background: color-mix(in srgb, var(--ui-surface) 92%, transparent); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); cursor: pointer; touch-action: none; overflow: hidden; }
+.workspace.shell .ig-minimap .mm { fill: var(--c-neutral); opacity: 0.55; }
+.workspace.shell .ig-minimap .mm.t-repository { fill: var(--accent); }
+.workspace.shell .ig-minimap .mm.t-project { fill: var(--c-run); }
+.workspace.shell .ig-minimap .mm.t-package { fill: var(--c-ok); }
+.workspace.shell .ig-minimap .mm.is-selected { opacity: 1; stroke: var(--ui-text); stroke-width: 6; }
+.workspace.shell .ig-minimap .mm-view { fill: color-mix(in srgb, var(--accent) 12%, transparent); stroke: var(--accent); stroke-width: 6; }
+.workspace.shell .ig-legend { position: absolute; left: 12px; bottom: 10px; z-index: 4; display: flex; gap: 14px; font-size: 11.5px !important; color: var(--ui-muted); background: color-mix(in srgb, var(--ui-surface) 88%, transparent); padding: 4px 8px; border-radius: 4px; pointer-events: none; }
+.workspace.shell .ig-legend span { display: flex; align-items: center; gap: 6px; }
+.workspace.shell .ig-notice { position: absolute; left: 56px; top: 12px; z-index: 6; max-width: min(520px, calc(100% - 72px)); padding: 8px 12px; border: 1px solid var(--ui-border-strong); border-left: 3px solid var(--accent); border-radius: 6px; background: var(--ui-surface); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12); font-size: 12.5px !important; cursor: default; }
+.workspace.shell .ig-hint { margin: 0; padding: 8px 16px; border-top: 1px solid var(--ui-border); color: var(--ui-muted); font-size: 12px !important; }
+
+.workspace.shell .ig-inspector { border: 1px solid var(--ui-border); border-radius: 8px; background: var(--ui-surface); padding: 14px 16px; min-width: 0; max-height: calc(var(--ig-h) + 82px); overflow-y: auto; overscroll-behavior: contain; }
+.workspace.shell .ig-inspector-head { display: flex; justify-content: space-between; align-items: center; color: var(--ui-muted); font-size: 12px !important; }
+.workspace.shell .ig-clear { border: 0; background: transparent; color: var(--accent-dark); cursor: pointer; padding: 2px 4px; }
+.workspace.shell .ig-clear:hover { text-decoration: underline; }
+.workspace.shell .ig-chip { display: inline-block; margin-top: 10px; padding: 2px 8px; border: 1px solid var(--ui-border-strong); border-radius: 4px; font-size: 11px !important; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ui-muted); }
+.workspace.shell .ig-inspector h3 { margin: 8px 0 4px; font-size: 16px !important; overflow-wrap: anywhere; }
+.workspace.shell .ig-inspector > code { display: inline-block; margin-bottom: 4px; }
+.workspace.shell .ig-label { display: block; margin: 14px 0 4px; color: var(--ui-muted); font-size: 11.5px !important; letter-spacing: 0.04em; text-transform: uppercase; }
+.workspace.shell .ig-inspector p { margin: 0 0 4px; color: var(--ui-muted); overflow-wrap: anywhere; }
+.workspace.shell .ig-connections { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; max-height: 220px; overflow-y: auto; }
+.workspace.shell .ig-connections button { width: 100%; display: grid; grid-template-columns: 34px minmax(0, 1fr); column-gap: 8px; align-items: baseline; padding: 6px 8px; border: 0; border-radius: 4px; background: transparent; color: var(--ui-text); text-align: left; cursor: pointer; }
+.workspace.shell .ig-connections button:hover { background: var(--ui-surface-2); }
+.workspace.shell .ig-dir { color: var(--ui-muted); font-size: 11px !important; text-transform: uppercase; }
+.workspace.shell .ig-conn-label { overflow-wrap: anywhere; }
+.workspace.shell .ig-connections small { grid-column: 2; color: var(--ui-muted); }
+.workspace.shell .inspector-actions { margin-top: 12px; }
+.workspace.shell .ig-table { max-height: 340px; overflow: auto; overscroll-behavior: contain; }
+.workspace.shell .ig-table .data-table th { position: sticky; top: 0; z-index: 1; }
+@media (max-width: 1100px) {
+  .workspace.shell .ig-layout { grid-template-columns: minmax(0, 1fr); }
+  .workspace.shell .ig-inspector { max-height: 360px; }
+  .workspace.shell .ig-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace.shell .ig-world { transition: none !important; }
+}

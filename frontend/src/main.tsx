@@ -5,6 +5,7 @@ import "./index.css"
 import "./motion.css";
 import "./app.css";
 import "./workspace.css";
+import "./graph.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
