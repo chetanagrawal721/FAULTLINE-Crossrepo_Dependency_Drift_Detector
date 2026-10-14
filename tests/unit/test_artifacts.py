@@ -62,3 +62,18 @@ def test_a_refused_rename_is_retried_and_a_copy_finished_by_another_process_is_a
     monkeypatch.setattr(Path, "rename", refuse)
     h2 = artifacts.prepare_artifact(src, other)
     assert other.artifact_dir(h2).exists() and not list((tmp_path / "store2" / "artifacts").glob("*.tmp"))
+
+
+def test_the_content_hash_does_not_depend_on_how_the_operating_system_orders_file_names(tmp_path):
+    """Windows sorts Path objects case-insensitively, Linux case-sensitively. The hash must be the same for the same files on both."""
+    import json
+
+    from faultline.core.hashing import object_hash, sha256_hex
+    from faultline.oracles import artifacts
+    (tmp_path / "pkg").mkdir()
+    for name, text in (("README.md", "r"), ("a.py", "a"), ("B.py", "b"), ("pkg/Zed.py", "z"), ("pkg/alpha.py", "x")):
+        (tmp_path / name).write_text(text, encoding="utf-8")
+    expected = sorted([n, sha256_hex(t.encode())] for n, t in (("README.md", "r"), ("a.py", "a"), ("B.py", "b"), ("pkg/Zed.py", "z"), ("pkg/alpha.py", "x")))
+    assert [e[0] for e in expected] == ["B.py", "README.md", "a.py", "pkg/Zed.py", "pkg/alpha.py"]             # plain string order, upper case first
+    assert artifacts.content_hash(tmp_path) == "a_" + object_hash(expected)[:40]
+    assert json.dumps(expected)

@@ -70,8 +70,11 @@ def remediate(conn: sqlite3.Connection, sbx, image: str, store: Store, finding_i
     if f is None or f["verdict"] != "BREAK_WITNESSED":
         return Remediation("NONE", "remediation applies to a witnessed break only")
     cell = conn.execute("SELECT * FROM cell WHERE id=?", (f["cell_id"],)).fetchone()
-    wit = conn.execute("SELECT * FROM witness WHERE cell_id=? ORDER BY rowid", (cell["id"],)).fetchall()
-    att = conn.execute("SELECT a.* FROM attribution a JOIN witness w ON w.id=a.witness_id WHERE w.cell_id=? ORDER BY a.rowid DESC LIMIT 1", (cell["id"],)).fetchone()
+    # the finding's own evidence, not witness.cell_id: a repeated analysis reuses the earlier witnesses, which belong to the earlier cell
+    wit = conn.execute("SELECT w.* FROM witness w JOIN finding_evidence fe ON fe.evidence_id=w.id AND fe.evidence_kind='WITNESS' WHERE fe.finding_id=? ORDER BY fe.rowid",
+                       (finding_id,)).fetchall()
+    att = conn.execute("SELECT a.* FROM attribution a JOIN finding_evidence fe ON fe.evidence_id=a.witness_id AND fe.evidence_kind='WITNESS' "
+                       "WHERE fe.finding_id=? ORDER BY fe.rowid ASC LIMIT 1", (finding_id,)).fetchone()
     before = sorted(w["entry_point"] for w in wit)
     minimal = json.loads(att["minimal_set_json"]) if att else []
     if len(minimal) != 1 and constraint is None:

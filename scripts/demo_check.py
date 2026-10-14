@@ -9,6 +9,8 @@ Nothing is mocked: this is the run you would do in front of the judges, with the
 """
 import argparse
 import json
+import os
+import subprocess
 import sys
 import time
 import urllib.error
@@ -19,6 +21,16 @@ HERO_ARTIFACT = "https://github.com/chetanagrawal721/faultline-fixture-acme-mode
 HERO_CONSUMER = "https://github.com/chetanagrawal721/faultline-fixture-notify-svc"
 OWNER = "https://github.com/chetanagrawal721/faultline-fixture-"
 CASES = {
+    "showcase": {
+        "title": "One library, two consumers, one paste: an import break, a call-site break, a data-contract break, a silent divergence and a control with nothing to run",
+        "repos": [OWNER + "acme-showcase", OWNER + "fulfilment-svc", OWNER + "reporting-svc"],
+        "verdict": "BREAK_WITNESSED",
+        "delta": {"werkzeug", "urllib3", "pydantic"},
+        "cause": [],
+        "says": "acme_showcase",
+        "min_witnesses": 4,
+        "oracles": {"o_import", "o_bind", "o_contract"},
+    },
     "callsite": {
         "title": "A library keeps calling a keyword that urllib3 2 removed. It imports fine; only the call fails",
         "repos": [OWNER + "acme-http", OWNER + "orders-svc"],
@@ -95,12 +107,17 @@ def preflight(r: Report) -> dict | None:
     for name in ("o_import", "o_bind", "o_contract"):
         r.check(caps["oracles"][name]["state"] == "enabled", f"oracle {name} is enabled")
     r.check(caps["features"]["witness_verification"]["state"] == "enabled", "witness verification is enabled")
+    # the rate limit is read from the free endpoint; the repositories are checked with git, which does not use the API quota
+    try:
+        core = json.load(urllib.request.urlopen(urllib.request.Request("https://api.github.com/rate_limit", headers={"User-Agent": "faultline-demo-check"}), timeout=15))["resources"]["core"]
+        mins = max(0, int((core["reset"] - time.time()) / 60))
+        enough = core["remaining"] >= 30
+        (r.ok if enough else r.bad)("GitHub API quota for this machine", f"{core['remaining']} of {core['limit']} calls left, resets in {mins} min" + ("" if enough or core["limit"] > 60 else ". Start the server with GITHUB_TOKEN set (60 an hour is not enough to rehearse)"))
+    except Exception as e:  # noqa: BLE001
+        r.bad("GitHub API is reachable", f"{type(e).__name__}: {e}. Use FIXTURE mode from the local mirror, or the REPLAY pack")
     for repo in sorted({u for c in CASES.values() for u in c["repos"]}):
-        try:
-            urllib.request.urlopen(urllib.request.Request(repo.replace("github.com", "api.github.com/repos"), headers={"User-Agent": "faultline-demo-check"}), timeout=15).read(100)
-            r.ok(f"GitHub serves {repo.rsplit('/', 1)[1]}")
-        except Exception as e:  # noqa: BLE001
-            r.bad(f"GitHub serves {repo.rsplit('/', 1)[1]}", f"{type(e).__name__}: {e}. Use FIXTURE mode from the local mirror, or the REPLAY pack")
+        ok = subprocess.run(["git", "ls-remote", "--exit-code", "--heads", repo + ".git"], capture_output=True, timeout=60, env={**os.environ, "GIT_TERMINAL_PROMPT": "0"}).returncode == 0
+        r.check(ok, f"GitHub serves {repo.rsplit('/', 1)[1]}")
     return h
 
 
@@ -162,6 +179,12 @@ def run_case(r: Report, name: str, token: str | None) -> None:
     r.check(f["fresh_runs"] >= 6 and f["reused_runs"] == 0, "fresh runs only (6 per oracle), none reused", f"{f['fresh_runs']} fresh, {f['reused_runs']} reused")
     att = cell.get("attribution") or {}
     r.check(set(case["cause"]) <= set(att.get("minimal") or []) and att.get("status") == "COMPLETE" and att.get("sidedness") == "two_sided", "two-sided attribution names the cause", f"{att.get('minimal')} {att.get('status')}")
+    if case.get("min_witnesses"):
+        ws = f.get("witnesses") or []
+        r.check(len(ws) >= case["min_witnesses"], f"{case['min_witnesses']} or more witnesses in one finding", f"{len(ws)} witnesses")
+        r.check(case["oracles"] <= {x.get("oracle") for x in ws}, "witnesses from every oracle", ", ".join(sorted({str(x.get('oracle')) for x in ws})))
+        states = sorted(c["state"] for c in a["cells"])
+        r.check("NO_DRIFT" in states, "the control consumer shows no drift", ", ".join(states))
     w = f["witnesses"][0]["witness_id"] if f.get("witnesses") else None
     r.check(w is not None, "a witness exists")
     if w:
@@ -182,7 +205,7 @@ def main() -> int:
         if h.get("mode") == "REPLAY":
             r.bad("the server can start work", "it is in REPLAY mode")
         else:
-            for name in (["hero", "callsite", "contract", "union"] if a.case == "all" else [a.case]):
+            for name in (["hero", "callsite", "contract", "union", "showcase"] if a.case == "all" else [a.case]):
                 run_case(r, name, a.token)
     print("\n" + ("Ready to demo." if r.failed == 0 else f"{r.failed} check(s) failed. Fix them before presenting."))
     return 1 if r.failed else 0

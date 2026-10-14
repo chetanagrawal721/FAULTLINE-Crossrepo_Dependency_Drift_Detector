@@ -1,0 +1,4 @@
+flask==2.2.2
+urllib3==2.2.3
+pydantic==2.7.4
+acme-showcase @ git+https://github.com/faultline-demo/acme-showcase@scenario-S

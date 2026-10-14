@@ -32,8 +32,11 @@ DEMO = {
     "acme-contracts": ("acme-contracts", "Pydantic wire models. Optional field without a default; Union[int, str]."),
     "billing-svc-contract": ("billing-svc/J", "Consumer on pydantic 2 that parses CustomerRequest payloads."),
     "billing-svc-union": ("billing-svc/E", "Consumer on pydantic 2 that parses Ref payloads."),
+    "acme-showcase": ("acme-showcase", "One library with four modules: an import break, a call-site break, a data-contract break and a silent divergence."),
+    "fulfilment-svc": ("fulfilment-svc", "Consumer on Werkzeug 3, urllib3 2 and pydantic 2 that uses all four modules."),
+    "reporting-svc": ("reporting-svc", "Control consumer: resolves exactly the library's own dependencies."),
 }
-LOCAL_TO_PUBLISHED = {"acme-http": "acme-http", "acme-contracts": "acme-contracts", "acme-models": "acme-models"}
+LOCAL_TO_PUBLISHED = {"acme-http": "acme-http", "acme-contracts": "acme-contracts", "acme-models": "acme-models", "acme-showcase": "acme-showcase"}
 
 
 def git(cwd: Path, *args: str) -> str:

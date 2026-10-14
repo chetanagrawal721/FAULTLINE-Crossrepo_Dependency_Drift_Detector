@@ -16,7 +16,8 @@ def _files(root: Path) -> list[Path]:
 
 def content_hash(root: Path) -> str:
     """Hash of the source tree: sorted relative paths with the hash of each file's bytes."""
-    listing = [[p.relative_to(root).as_posix(), sha256_hex(p.read_bytes())] for p in _files(root)]
+    # sorted by the path text itself: sorting Path objects is case-insensitive on Windows and case-sensitive on Linux, which gave one tree two hashes
+    listing = sorted([p.relative_to(root).as_posix(), sha256_hex(p.read_bytes())] for p in _files(root))
     return "a_" + object_hash(listing)[:40]
 
 

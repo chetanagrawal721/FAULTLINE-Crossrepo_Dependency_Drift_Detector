@@ -28,9 +28,15 @@ All five repositories are public under `https://github.com/chetanagrawal721/`. P
 | **Data-contract break**: pydantic 1 writes a payload, pydantic 2 rejects it | `faultline-fixture-acme-contracts` | `faultline-fixture-billing-svc-contract` | BREAK WITNESSED: the exact bytes `{"customer_id": 0, "email": ""}` are rejected with `middle_name: Field required`; cause `pydantic` | about 2 min |
 | **Silent divergence**: both worlds accept the data and read it differently | `faultline-fixture-acme-contracts` | `faultline-fixture-billing-svc-union` | SILENT DIVERGENCE WITNESSED: `reference=42, consumer="42"`, both values shown | about 100 s |
 
-Suggested order for a five-minute slot: the main example in full (it has the fix and the evidence bundle), then the call-site pair to show that a clean import is not enough. Keep the other two for questions about data contracts.
+Suggested order for a five-minute slot: paste the main example live (it has the fix and the evidence bundle), then the call-site pair to show that a clean import is not enough. Keep the other two, and the showcase result, for questions.
 
-`python scripts/demo_check.py --case all` runs all four back to back (about 6 minutes). `--case callsite`, `--case contract` and `--case union` run one.
+`python scripts/demo_check.py --case all` runs all five back to back (about 14 minutes). `--case callsite`, `--case contract`, `--case union` and `--case showcase` run one.
+
+### The one-paste showcase
+
+Three repositories under `https://github.com/chetanagrawal721/`: the producer `faultline-fixture-acme-showcase`, the consumer `faultline-fixture-fulfilment-svc` (newer Werkzeug, urllib3 and pydantic, uses all four modules) and the control consumer `faultline-fixture-reporting-svc` (exactly the producer's own versions). One submission shows an import break, a call-site break, a data-contract break, a silent divergence (four witnesses from three oracles in one finding) and a cell with no drift and nothing to run.
+
+It attributes four witnesses one after another, so it takes **405 s the first time and 332 s with every world already built**. That is too long to wait through live. Use it like this: run `python scripts/demo_check.py --case showcase` before you go on stage, leave the finding it prints open in **Findings**, and say that it is a recorded run of the same pipeline. Paste the main pair live (about a minute).
 
 ## Before the demo (once, online, on the demo machine and the backup machine)
 

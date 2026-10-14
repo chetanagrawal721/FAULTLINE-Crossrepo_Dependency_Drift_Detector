@@ -38,7 +38,8 @@ def stale_findings(conn: sqlite3.Connection, analysis_id: str) -> list[sqlite3.R
 def recompute_finding(conn: sqlite3.Connection, finding: sqlite3.Row) -> str:
     """Re-decide one finding from its stored runs. Returns the new verdict."""
     scope = json.loads(finding["scope_json"] or "{}")
-    witnesses = {w["entry_point"]: w["id"] for w in conn.execute("SELECT id, entry_point FROM witness WHERE cell_id=?", (finding["cell_id"],))}
+    witnesses = {w["entry_point"]: w["id"] for w in conn.execute(
+        "SELECT w.id, w.entry_point FROM witness w JOIN finding_evidence fe ON fe.evidence_id=w.id AND fe.evidence_kind='WITNESS' WHERE fe.finding_id=?", (finding["id"],))}
     decisions = []
     problem = None
     for oracle in ORACLES:                                                    # every oracle that ran for this cell, in the order the pipeline used

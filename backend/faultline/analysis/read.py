@@ -69,7 +69,10 @@ def analysis_view(conn: sqlite3.Connection, analysis_id: str) -> AnalysisView:
 
 
 def _attribution(conn: sqlite3.Connection, cell_id: str) -> AttributionView | None:
-    a = conn.execute("SELECT a.* FROM attribution a JOIN witness w ON w.id = a.witness_id WHERE w.cell_id=? ORDER BY a.rowid DESC LIMIT 1", (cell_id,)).fetchone()
+    # Found through the cell's own finding, not through witness.cell_id: when the same repositories are analysed again, the witness is the earlier
+    # one (same artifact, same worlds, same entry), so its cell is the earlier cell. The finding of THIS analysis still lists it as its evidence.
+    a = conn.execute("SELECT a.* FROM attribution a JOIN finding_evidence fe ON fe.evidence_id = a.witness_id AND fe.evidence_kind = 'WITNESS' "
+                     "JOIN finding f ON f.id = fe.finding_id WHERE f.cell_id=? ORDER BY fe.rowid ASC LIMIT 1", (cell_id,)).fetchone()
     if a is None:
         return None
     meta = json.loads(a["notes_json"] or "{}")
