@@ -24,9 +24,13 @@ jobs:
         run: python tools/fl.py ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}      # control-plane GitHub API rate limit only; never passed into a container
+      - name: Replay a committed witness bundle on this clean machine (TC-5.2.2)
+        run: .venv/bin/python scripts/replay_bundle.py evidence/bundles/scenario-D-witness.zip --log release/replay.log
       - name: Release manifest (toolchain, image, lock and source hashes)
         run: python scripts/release_manifest.py --out release/manifest.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: release-manifest
-          path: release/manifest.json
+          name: release-evidence
+          path: |
+            release/manifest.json
+            release/replay.log
