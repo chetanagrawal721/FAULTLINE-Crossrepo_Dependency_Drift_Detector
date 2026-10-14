@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 
 from ...analysis.read import analysis_view, latest_analysis_id
 from ...analysis.whypath import inventory_graph, why_path
-from ...core.errors import NotFoundError
+from ...core.errors import InvalidTransitionError, NotFoundError
 from ...core.ids import new_id
 from ...core.models import Job
 from ...core.views import AnalysisView, InventoryGraph, WhyPath
@@ -42,8 +42,11 @@ def project_inventory(project_id: str, conn=Depends(get_conn)) -> InventoryGraph
 @router.post("/witnesses/{witness_id}/rerun", response_model=Job, status_code=202, dependencies=[Depends(require_token)])
 def rerun(witness_id: str, conn=Depends(get_conn)) -> Job:
     """Run the witness's oracle again (3 fresh runs per world). A live action: refused in REPLAY mode."""
-    if conn.execute("SELECT 1 FROM witness WHERE id=?", (witness_id,)).fetchone() is None:
+    w = conn.execute("SELECT oracle FROM witness WHERE id=?", (witness_id,)).fetchone()
+    if w is None:
         raise NotFoundError(f"witness {witness_id} not found")
+    if w["oracle"] != "o_import":
+        raise InvalidTransitionError(f"live re-run is available for import witnesses; this witness comes from {w['oracle']}. Run the analysis again to check it again.")
     job, _ = jobs.create_job(conn, "rerun_witness", {"witness_id": witness_id}, f"rerun:{witness_id}:{new_id('r')}")
     return job
 

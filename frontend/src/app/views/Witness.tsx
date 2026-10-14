@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { api, type FindingDetail, type RunView } from "../../api/client";
 import { useAsync, words } from "../../lib/hooks";
 import type { AppView } from "../../lib/route";
@@ -42,14 +43,27 @@ function RunCard({ title, run, expectPass }: { title: string; run: RunView | und
 }
 
 function Board({ d, go }: { d: FindingDetail; go: Go }) {
-  const w = d.witnesses[0];
-  const slot = (side: string, i: number) => d.runs.filter((r) => r.side === side).sort((a, b) => a.run_index - b.run_index)[i];
-  const refFresh = d.runs.filter((r) => r.side === "ref" && r.provenance === "FRESH_EXECUTION" && r.failure_class === "NONE").length;
-  const testFresh = d.runs.filter((r) => r.side === "test" && r.provenance === "FRESH_EXECUTION" && r.failure_class !== "NONE").length;
+  const [pick, setPick] = useState(0);
+  const w = d.witnesses[Math.min(pick, d.witnesses.length - 1)];
+  // a witness is judged on its own six runs: a finding can have several witnesses (one per oracle), and their runs must not be added together
+  const mine = w ? d.runs.filter((r) => w.ref_run_ids.includes(r.run_id) || w.test_run_ids.includes(r.run_id)) : d.runs;
+  const slot = (side: string, i: number) => mine.filter((r) => r.side === side).sort((a, b) => a.run_index - b.run_index)[i];
+  const refFresh = mine.filter((r) => r.side === "ref" && r.provenance === "FRESH_EXECUTION" && r.failure_class === "NONE").length;
+  const testFresh = mine.filter((r) => r.side === "test" && r.provenance === "FRESH_EXECUTION" && r.failure_class !== "NONE").length;
   const satisfied = Boolean(w) && refFresh >= 3 && testFresh >= 3;
-  const bad = d.runs.find((r) => r.side === "test" && failing(r));
+  const bad = mine.find((r) => r.side === "test" && failing(r));
+  const fresh = mine.filter((r) => r.provenance === "FRESH_EXECUTION").length;
   return (
     <>
+      {d.witnesses.length > 1 && (
+        <div className="app-tabs" role="tablist" aria-label="Witnesses of this finding" data-testid="witness-tabs">
+          {d.witnesses.map((x, i) => (
+            <button key={x.witness_id} role="tab" aria-selected={i === pick} className={i === pick ? "active" : ""} onClick={() => setPick(i)} title={x.entry_point}>
+              {x.oracle.replace("o_", "O-")}: {x.entry_point.length > 34 ? `${x.entry_point.slice(0, 33)}…` : x.entry_point}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="witness-rule" data-testid="witness-rule">
         {[
           ["Reference", `${refFresh} / 3 fresh passes`],
@@ -63,7 +77,7 @@ function Board({ d, go }: { d: FindingDetail; go: Go }) {
           </div>
         ))}
       </div>
-      <Panel title="Six-run witness board" meta={`${d.fresh_runs} fresh · ${d.reused_runs} reused`}>
+      <Panel title="Six-run witness board" meta={`${fresh} fresh · ${mine.length - fresh} reused`}>
         <div className="run-board" data-testid="run-board">
           {[0, 1, 2].map((i) => (
             <RunCard key={`r${i}`} title={`Reference ${i + 1}`} run={slot("ref", i)} expectPass />

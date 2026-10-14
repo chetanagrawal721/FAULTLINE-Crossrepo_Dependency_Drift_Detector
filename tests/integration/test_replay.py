@@ -16,7 +16,7 @@ pytestmark = pytest.mark.docker
 @pytest.fixture(scope="module")
 def bundle(d_scenario, daemon, tmp_path_factory):  # noqa: F811
     conn, res, ids = d_scenario
-    wid = conn.execute("SELECT id FROM witness ORDER BY rowid DESC LIMIT 1").fetchone()[0]
+    wid = conn.execute("SELECT id FROM witness WHERE oracle='o_import' ORDER BY rowid DESC LIMIT 1").fetchone()[0]
     info = write_bundle(conn, wid, tmp_path_factory.mktemp("b") / "witness.zip", daemon.store, mode="LIVE")
     return info.path
 

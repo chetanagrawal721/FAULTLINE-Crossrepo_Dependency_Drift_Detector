@@ -70,6 +70,8 @@ def replay(bundle_path: str | Path, sbx: SandboxClient, image: str, store: Store
         plan = json.loads(read["plan/oracle_plan.json"])
         sig = FailureSignature.model_validate(json.loads(read["witness.json"])["signature"])
         env = json.loads(read["env/env_profile.json"])
+        if plan.get("oracle", "o_import") != "o_import":
+            raise ReplayRefused([f"replay supports import witnesses; this bundle comes from {plan['oracle']}, so nothing was executed"])
         entry = plan["entry_point"]
         args = plan.get("args", {})
         modules = args.get("modules") or [entry]
@@ -152,7 +154,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         res = replay(args[0], SandboxClient(), default_image(), Store(Settings.from_env().store_path))
     except ReplayRefused as e:
-        print("REFUSED: the bundle failed verification, nothing was executed")
+        print("REFUSED: nothing was executed")
         for err in e.errors:
             print("  -", err)
         return 1
