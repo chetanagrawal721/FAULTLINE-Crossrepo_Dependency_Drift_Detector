@@ -1,0 +1,144 @@
+"""Preflight and end-to-end rehearsal of the demo, through the same HTTP API the interface uses.
+
+    python scripts/demo_check.py                 # preflight, then the hero case on the published repositories
+    python scripts/demo_check.py --preflight     # only the checks (Docker, sandbox, API, GitHub)
+    python scripts/demo_check.py --case hero     # a named case from CASES below
+
+Each case submits two real public repositories, waits for the real analysis, and checks the outcome against what the demo script says.
+Nothing is mocked: this is the run you would do in front of the judges, with the clock on it. Exit status 1 if anything differs.
+"""
+import argparse
+import json
+import sys
+import time
+import urllib.error
+import urllib.request
+
+BASE = "http://127.0.0.1:8000"
+HERO_ARTIFACT = "https://github.com/chetanagrawal721/faultline-fixture-acme-models"
+HERO_CONSUMER = "https://github.com/chetanagrawal721/faultline-fixture-notify-svc"
+CASES = {
+    "hero": {
+        "title": "A shared library that imports fine alone and fails under a consumer's dependencies (Flask 2.2.2 with Werkzeug 3)",
+        "repos": [HERO_ARTIFACT, HERO_CONSUMER],
+        "verdict": "BREAK_WITNESSED",
+        "delta": {"werkzeug"},
+        "cause": ["werkzeug"],
+        "says": "cannot import name 'url_quote'",
+    },
+}
+
+
+def call(method: str, path: str, body: dict | None = None, token: str | None = None, timeout: int = 60):
+    req = urllib.request.Request(BASE + path, method=method, data=json.dumps(body).encode() if body is not None else None,
+                                 headers={"Accept": "application/json", "Content-Type": "application/json", **({"Authorization": f"Bearer {token}"} if token else {})})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            raw = r.read()
+            return json.loads(raw) if raw else None
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode("utf-8", "replace")[:300]
+        raise SystemExit(f"{method} {path} -> {e.code}: {detail}")
+
+
+class Report:
+    def __init__(self) -> None:
+        self.failed = 0
+
+    def ok(self, label: str, detail: str = "") -> None:
+        print(f"  ok    {label}{('  ' + detail) if detail else ''}")
+
+    def bad(self, label: str, detail: str = "") -> None:
+        self.failed += 1
+        print(f"  FAIL  {label}{('  ' + detail) if detail else ''}")
+
+    def check(self, cond: bool, label: str, detail: str = "") -> None:
+        (self.ok if cond else self.bad)(label, detail)
+
+
+def preflight(r: Report) -> dict | None:
+    print("Preflight")
+    try:
+        h = call("GET", "/api/health", timeout=10)
+    except (SystemExit, urllib.error.URLError, OSError) as e:
+        r.bad("the API answers", f"{e}. Start it with: python tools/fl.py up")
+        return None
+    r.check(h.get("status") == "ok" and h.get("db") == "ok", "the API and database are healthy", f"mode {h.get('mode')}, schema v{h.get('schema_version')}")
+    caps = call("GET", "/api/capabilities")
+    sb = caps["sandbox"]
+    r.check(bool(sb["verified"]), "the sandbox boundary is verified (Docker is up)", sb["reason"])
+    for name in ("o_import", "o_bind", "o_contract"):
+        r.check(caps["oracles"][name]["state"] == "enabled", f"oracle {name} is enabled")
+    r.check(caps["features"]["witness_verification"]["state"] == "enabled", "witness verification is enabled")
+    for repo in (HERO_ARTIFACT, HERO_CONSUMER):
+        try:
+            urllib.request.urlopen(urllib.request.Request(repo.replace("github.com", "api.github.com/repos"), headers={"User-Agent": "faultline-demo-check"}), timeout=15).read(100)
+            r.ok(f"GitHub serves {repo.rsplit('/', 1)[1]}")
+        except Exception as e:  # noqa: BLE001
+            r.bad(f"GitHub serves {repo.rsplit('/', 1)[1]}", f"{type(e).__name__}: {e}. Use FIXTURE mode from the local mirror, or the REPLAY pack")
+    return h
+
+
+def run_case(r: Report, name: str, token: str | None) -> None:
+    case = CASES[name]
+    print(f"\nCase '{name}': {case['title']}")
+    t0 = time.time()
+    p = call("POST", "/api/projects", {"name": f"demo check · {name} · {time.strftime('%H:%M:%S')}"}, token)
+    for url in case["repos"]:
+        repo = call("POST", f"/api/projects/{p['id']}/repositories", {"url": url, "ref": None}, token, timeout=300)
+        r.check(bool(repo.get("pinned_sha")), f"pinned {url.rsplit('/', 1)[1]}", f"commit {str(repo.get('pinned_sha'))[:10]}, {repo.get('status')}")
+    job = call("POST", f"/api/projects/{p['id']}/analyze", None, token)
+    last = ""
+    while job["status"] in ("QUEUED", "RUNNING"):
+        time.sleep(3)
+        job = call("GET", f"/api/jobs/{job['job_id']}")
+        msg = f"{job['status']} {int((job.get('progress') or 0) * 100)}% {job.get('message') or ''}"
+        if msg != last:
+            print(f"        {msg}")
+            last = msg
+        if time.time() - t0 > 900:
+            r.bad("the analysis finished within 15 minutes")
+            return
+    r.check(job["status"] == "DONE", "the analysis job finished", f"{job['status']} in {int(time.time() - t0)} s")
+    if job["status"] != "DONE":
+        return
+    a = call("GET", f"/api/projects/{p['id']}/analysis")
+    cell = next((c for c in a["cells"] if c.get("verdict")), None)
+    r.check(cell is not None, "a finding was produced")
+    if cell is None:
+        return
+    r.check(cell["verdict"] == case["verdict"], f"verdict is {case['verdict']}", cell["verdict"])
+    delta = {d["name"] for d in cell["delta"]}
+    r.check(case["delta"] <= delta, "the exact delta names the cause", ", ".join(sorted(delta)))
+    f = call("GET", f"/api/findings/{cell['finding_id']}")
+    r.check(case["says"] in f["headline"], "the scoped statement quotes the real failure", f["headline"][:140])
+    r.check(f["fresh_runs"] == 6 and f["reused_runs"] == 0, "six fresh runs, none reused", f"{f['fresh_runs']} fresh, {f['reused_runs']} reused")
+    att = cell.get("attribution") or {}
+    r.check(att.get("minimal") == case["cause"] and att.get("status") == "COMPLETE" and att.get("sidedness") == "two_sided", "two-sided attribution names the cause", f"{att.get('minimal')} {att.get('status')}")
+    w = f["witnesses"][0]["witness_id"] if f.get("witnesses") else None
+    r.check(w is not None, "a witness exists")
+    if w:
+        m = call("GET", f"/api/witnesses/{w}/bundle/manifest", timeout=120)
+        r.check(bool(m["verified"]), "the evidence bundle verifies (hashes, paths, sizes)", f"{len(m['files'])} files")
+    print(f"\n  Open it: {BASE}/#/app/finding/{cell['finding_id']}   (total {int(time.time() - t0)} s)")
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--preflight", action="store_true")
+    ap.add_argument("--case", choices=sorted(CASES), default="hero")
+    ap.add_argument("--token", default=None, help="admin token, when the server requires one")
+    a = ap.parse_args()
+    r = Report()
+    h = preflight(r)
+    if h is not None and not a.preflight and r.failed == 0:
+        if h.get("mode") == "REPLAY":
+            r.bad("the server can start work", "it is in REPLAY mode")
+        else:
+            run_case(r, a.case, a.token)
+    print("\n" + ("Ready to demo." if r.failed == 0 else f"{r.failed} check(s) failed. Fix them before presenting."))
+    return 1 if r.failed else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

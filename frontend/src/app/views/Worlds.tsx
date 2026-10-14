@@ -130,7 +130,12 @@ function Matrix({ analysis, selected, onSelect, go }: { analysis: AnalysisView; 
 export function WorldsView({ go }: { go: Go }) {
   const { analysis, analysisLoading, project } = useWorkspace();
   const [selected, setSelected] = useState<string | null>(null);
-  useEffect(() => setSelected(analysis?.cells[0]?.id ?? null), [analysis?.id]);
+  useEffect(() => {
+    // open on the cell that matters most: a witnessed one, then any with a verdict, then the first
+    const cs = analysis?.cells ?? [];
+    const first = cs.find((c) => c.verdict === "BREAK_WITNESSED" || c.verdict === "SILENT_DIVERGENCE_WITNESSED") ?? cs.find((c) => c.verdict && c.state !== "NO_DRIFT") ?? cs[0];
+    setSelected(first?.id ?? null);
+  }, [analysis?.id]);
   if (analysisLoading && !analysis) return <Loading what="the world matrix" />;
   if (!analysis) {
     return (
