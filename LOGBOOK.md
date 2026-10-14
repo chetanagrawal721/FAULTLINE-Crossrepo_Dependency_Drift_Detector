@@ -1063,3 +1063,14 @@ Format: `### <UTC time> | <EVENT> | <id> | by <name>` followed by details.
 ### 2026-10-14 02:05 UTC | DONE | M11.1 | by Chetan Agrawal
 - Final traceability and consistency pass
 - test cases passed: 1/1
+
+### 2026-10-14 03:15 UTC | TC PASS | TC-5.2.2 | by Chetan Agrawal
+- Replay on a clean machine
+- evidence: evidence/M5.2/TC-5.2.2.txt
+
+### 2026-10-14 03:15 UTC | DONE | M5.2 | by Chetan Agrawal
+- Portable evidence bundle, verifier and replay
+- test cases passed: 3/3
+
+### 2026-10-14 03:15 UTC | NOTE | - | by Chetan Agrawal
+- M5.2: the committed witness bundle was replayed on a fresh GitHub Actions Linux runner (run 38503618448): the failure reproduced with the identical signature; outcome ENVIRONMENT_LIMITED because CI builds its own sandbox image and the digest differs. Found and fixed on the way: the artifact content hash depended on the operating system (Windows sorts Path objects case-insensitively), so Windows evidence could not be verified on Linux.

@@ -1,0 +1,13 @@
+TC-5.2.2 Replay on a clean machine
+Machine: a fresh GitHub Actions runner (ubuntu-24.04), a different computer from the one that produced the bundle (Windows 11).
+Run: https://github.com/chetanagrawal721/FAULTLINE-Crossrepo_Dependency_Drift_Detector/actions/runs/38503618448
+
+machine: Linux 6.17.0-1022-azure (x86_64), python 3.12.15
+bundle: scenario-D-witness.zip, 23668 bytes
+started: 2026-10-14T03:13:59Z
+outcome: ENVIRONMENT_LIMITED
+  - artifact a_a5d885a78dab3ac4bc8894ca251b9ead4de2867b was missing from this machine's store and was restored from the bundle (hash verified)
+  - the failure reproduced with the identical signature, but the execution image differs (bundle sha256:0130950487fc5db2b426d81555cd1dd1d9cf940b3ffd4be53835389c511bff27, here sha256:7e3dc411152e8b9b25e5fa4085dc8cc24e08ecd2d2661c368e4af79e3217e67d)
+finished: 2026-10-14T03:14:12Z
+
+Reading: the failure reproduced with the identical normalized signature (reference 3/3 pass, consumer 3/3 fail). The outcome is ENVIRONMENT_LIMITED, not EXACT_REPRODUCTION, because CI builds its own copy of the sandbox image and its digest differs from the one the bundle was made with. The test case accepts ENVIRONMENT_LIMITED with the reasons recorded.
