@@ -77,8 +77,9 @@
       "status": "done"
     },
     "M11.1": {
+      "done": "2026-10-14 02:05 UTC",
       "started": "2026-10-13 22:47 UTC",
-      "status": "in_progress"
+      "status": "done"
     },
     "M11.2": {
       "done": "2026-10-13 11:58 UTC",
@@ -221,7 +222,8 @@
       "status": "done"
     },
     "M5.7": {
-      "status": "in_progress"
+      "done": "2026-10-14 02:05 UTC",
+      "status": "done"
     },
     "M6.2": {
       "done": "2026-10-13 22:03 UTC",
@@ -522,6 +524,12 @@
     "TC-1.8.2": {
       "date": "2026-10-12 20:57 UTC",
       "evidence": "evidence/M1.8/TC-1.8.2.txt",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-11.1.1": {
+      "date": "2026-10-14 02:05 UTC",
+      "evidence": "evidence/M11.1/TC-11.1.1.txt",
       "note": "",
       "status": "pass"
     },
@@ -1029,9 +1037,21 @@
       "note": "",
       "status": "pass"
     },
+    "TC-5.7.1": {
+      "date": "2026-10-14 02:04 UTC",
+      "evidence": "evidence/M5.7/TC-5.7.1.txt",
+      "note": "",
+      "status": "pass"
+    },
     "TC-5.7.2": {
       "date": "2026-10-13 13:24 UTC",
       "evidence": "evidence/M5.7/TC-5.7.2.txt",
+      "note": "",
+      "status": "pass"
+    },
+    "TC-5.7.3": {
+      "date": "2026-10-14 02:05 UTC",
+      "evidence": "evidence/M5.7/TC-5.7.3.txt",
       "note": "",
       "status": "pass"
     },

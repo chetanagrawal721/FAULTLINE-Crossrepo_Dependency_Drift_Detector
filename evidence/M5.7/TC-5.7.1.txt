@@ -1,0 +1,36 @@
+PASS             FR-1         2 test target(s) passed
+PASS             FR-2         1 test target(s) passed
+PASS             FR-3         3 test target(s) passed
+PASS             FR-4         2 test target(s) passed
+PASS             FR-5         2 test target(s) passed
+PASS             FR-6         2 test target(s) passed
+PASS             FR-7         1 test target(s) passed
+PASS             FR-8         3 test target(s) passed
+PASS             FR-9a        2 test target(s) passed
+PASS             FR-9b        1 test target(s) passed
+PASS             FR-9c        2 test target(s) passed
+PASS             FR-10        3 test target(s) passed
+PASS             FR-11        1 test target(s) passed
+PASS             FR-12        2 test target(s) passed
+PASS             FR-13        1 test target(s) passed
+PASS             FR-19        1 test target(s) passed
+PASS             ER-1         1 test target(s) passed
+PASS             ER-2         1 test target(s) passed
+PASS             ER-3         1 test target(s) passed
+PASS             ER-4         1 test target(s) passed
+PASS             ER-5         1 test target(s) passed
+PASS             ER-6         1 test target(s) passed
+PASS             SR-2         2 test target(s) passed
+PASS             SR-3         1 test target(s) passed
+PASS             SR-4         4 test target(s) passed
+PASS             SR-5         2 test target(s) passed
+PASS             SR-7         1 test target(s) passed
+PASS             SR-8         1 test target(s) passed
+PASS             PC-4         1 test target(s) passed
+PASS             PC-5         1 test target(s) passed
+PASS             PC-10        1 test target(s) passed
+PASS             REF-POLICY   2 test target(s) passed
+PASS             NFR-3        1 test target(s) passed
+PASS             NFR-6        5 test target(s) passed
+
+MVP conformant: every canonical MUST row passed. NOT release-hardened: that needs Gate E (security release gate, evaluation, clean-machine replay).

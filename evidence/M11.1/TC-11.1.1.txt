@@ -1,0 +1,9 @@
+collecting ... collected 5 items
+
+tests/unit/test_master_consistency.py::test_the_frozen_contract_enums_equal_the_masters PASSED [ 20%]
+tests/unit/test_master_consistency.py::test_the_verdict_words_equal_the_masters_section_7_1 PASSED [ 40%]
+tests/unit/test_master_consistency.py::test_witness_classes_and_cell_states_match_the_masters_schema PASSED [ 60%]
+tests/unit/test_master_consistency.py::test_the_oracle_names_differ_from_the_masters_excerpt_only_as_approved PASSED [ 80%]
+tests/unit/test_master_consistency.py::test_no_forbidden_wording_in_user_facing_code_and_docs PASSED [100%]
+
+============================== 5 passed in 0.18s ==============================

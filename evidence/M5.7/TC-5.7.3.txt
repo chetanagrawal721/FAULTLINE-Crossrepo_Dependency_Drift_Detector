@@ -1,0 +1,1 @@
+MVP conformant: every canonical MUST row passed. NOT release-hardened: that needs Gate E (security release gate, evaluation, clean-machine replay).

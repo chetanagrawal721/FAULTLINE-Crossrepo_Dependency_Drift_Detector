@@ -1043,3 +1043,23 @@ Format: `### <UTC time> | <EVENT> | <id> | by <name>` followed by details.
 
 ### 2026-10-13 22:47 UTC | START | M11.1 | by Chetan Agrawal
 - Final traceability and consistency pass
+
+### 2026-10-14 02:04 UTC | TC PASS | TC-5.7.1 | by Chetan Agrawal
+- Report is complete
+- evidence: evidence/M5.7/TC-5.7.1.txt
+
+### 2026-10-14 02:05 UTC | TC PASS | TC-5.7.3 | by Chetan Agrawal
+- Gate D is not Gate E
+- evidence: evidence/M5.7/TC-5.7.3.txt
+
+### 2026-10-14 02:05 UTC | TC PASS | TC-11.1.1 | by Chetan Agrawal
+- No divergence from the master
+- evidence: evidence/M11.1/TC-11.1.1.txt
+
+### 2026-10-14 02:05 UTC | DONE | M5.7 | by Chetan Agrawal
+- Conformance report and Gate D decision
+- test cases passed: 3/3
+
+### 2026-10-14 02:05 UTC | DONE | M11.1 | by Chetan Agrawal
+- Final traceability and consistency pass
+- test cases passed: 1/1
