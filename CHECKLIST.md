@@ -9,10 +9,10 @@ Legend: `[x]` done and all test cases passed, `[~]` in progress, `[!]` blocked, 
 
 | Gate | Name | Milestones | Declared |
 |---|---|---|---|
-| A | Runnable skeleton | 6/6 | no |
-| B | Fixture-backed proof | 9/9 | no |
-| C | First live vertical slice | 15/15 | no |
-| D | PS07-compliant MVP (every canonical MUST) | 11/11 | no |
+| A | Runnable skeleton | 6/6 | 2026-10-14 03:15 UTC |
+| B | Fixture-backed proof | 9/9 | 2026-10-14 03:15 UTC |
+| C | First live vertical slice | 15/15 | 2026-10-14 03:15 UTC |
+| D | PS07-compliant MVP (every canonical MUST) | 11/11 | 2026-10-14 03:15 UTC |
 | E | Release-hardened deployment | 3/5 | no |
 | S | Showtime: demo and submission readiness | 1/5 | no |
 | X | Expansion (each item independent) | 4/12 | no |

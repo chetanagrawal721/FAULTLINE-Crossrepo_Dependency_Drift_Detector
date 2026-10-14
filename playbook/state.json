@@ -1,5 +1,22 @@
 {
-  "gates": {},
+  "gates": {
+    "A": {
+      "declared": "2026-10-14 03:15 UTC",
+      "waivers": []
+    },
+    "B": {
+      "declared": "2026-10-14 03:15 UTC",
+      "waivers": []
+    },
+    "C": {
+      "declared": "2026-10-14 03:15 UTC",
+      "waivers": []
+    },
+    "D": {
+      "declared": "2026-10-14 03:15 UTC",
+      "waivers": []
+    }
+  },
   "milestones": {
     "M0.1": {
       "done": "2026-10-12 18:53 UTC",

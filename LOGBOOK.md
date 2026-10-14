@@ -1074,3 +1074,19 @@ Format: `### <UTC time> | <EVENT> | <id> | by <name>` followed by details.
 
 ### 2026-10-14 03:15 UTC | NOTE | - | by Chetan Agrawal
 - M5.2: the committed witness bundle was replayed on a fresh GitHub Actions Linux runner (run 38503618448): the failure reproduced with the identical signature; outcome ENVIRONMENT_LIMITED because CI builds its own sandbox image and the digest differs. Found and fixed on the way: the artifact content hash depended on the operating system (Windows sorts Path objects case-insensitively), so Windows evidence could not be verified on Linux.
+
+### 2026-10-14 03:15 UTC | GATE DECLARED | Gate A | by Chetan Agrawal
+- Runnable skeleton
+- no waivers
+
+### 2026-10-14 03:15 UTC | GATE DECLARED | Gate B | by Chetan Agrawal
+- Fixture-backed proof
+- no waivers
+
+### 2026-10-14 03:15 UTC | GATE DECLARED | Gate C | by Chetan Agrawal
+- First live vertical slice
+- no waivers
+
+### 2026-10-14 03:15 UTC | GATE DECLARED | Gate D | by Chetan Agrawal
+- PS07-compliant MVP (every canonical MUST)
+- no waivers
