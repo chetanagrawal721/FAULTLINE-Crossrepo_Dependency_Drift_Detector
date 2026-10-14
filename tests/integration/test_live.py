@@ -133,7 +133,7 @@ def test_tc_5_1_4_the_ui_labels_every_forced_world_in_the_why_path(d_scenario, t
             except Exception as e:  # noqa: BLE001
                 pytest.skip(f"Chromium is not installed: {e}")
             page = browser.new_page()
-            page.goto(f"http://127.0.0.1:{port}/")
+            page.goto(f"http://127.0.0.1:{port}/#/app/worlds")
             wp = page.get_by_test_id("why-path").first
             wp.wait_for(timeout=30000)
             wp.locator("summary").click()
